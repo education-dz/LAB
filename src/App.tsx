@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './firebase';
@@ -47,7 +47,7 @@ export default function App() {
   }
 
   return (
-    <Router basename={import.meta.env.MODE === 'production' ? '/LAB' : '/'}>
+    <Router>
       {user && <FirebaseSetup />}
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />

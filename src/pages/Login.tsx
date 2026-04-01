@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
+  sendPasswordResetEmail,
   GoogleAuthProvider, 
   FacebookAuthProvider,
   RecaptchaVerifier,
@@ -23,6 +24,7 @@ declare global {
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isResetting, setIsResetting] = useState(false);
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -165,6 +167,8 @@ export default function Login() {
         setError('انتهت صلاحية رمز التحقق. يرجى المحاولة مرة أخرى.');
       } else if (err.code === 'auth/invalid-verification-code') {
         setError('رمز التحقق غير صحيح.');
+      } else if (err.code === 'auth/captcha-check-failed' || err.message?.includes('Hostname match not found')) {
+        setError(`خطأ في التحقق: يجب إضافة النطاق (${window.location.hostname}) إلى قائمة "Authorized domains" في إعدادات Firebase Authentication.`);
       } else if (err.code === 'auth/too-many-requests') {
         setError('تم إرسال الكثير من الطلبات. يرجى المحاولة لاحقاً.');
       } else if (err.code === 'auth/operation-not-allowed') {
@@ -200,6 +204,30 @@ export default function Login() {
     // Trigger the same logic by calling handlePhoneAuth with a dummy event
     const dummyEvent = { preventDefault: () => {} } as React.FormEvent;
     handlePhoneAuth(dummyEvent);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('يرجى إدخال البريد الإلكتروني أولاً.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setError('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد.');
+      setIsResetting(false);
+    } catch (err: any) {
+      console.error('Reset password error:', err);
+      if (err.code === 'auth/user-not-found') {
+        setError('هذا البريد الإلكتروني غير مسجل لدينا.');
+      } else {
+        setError('حدث خطأ أثناء محاولة إرسال رابط إعادة التعيين.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -407,7 +435,58 @@ export default function Login() {
             </button>
           </div>
 
-          {authMethod === 'email' ? (
+          {isResetting ? (
+            <form onSubmit={handleResetPassword} className="space-y-6">
+              <div className="text-center mb-6">
+                <h4 className="text-xl font-black text-primary">إعادة تعيين كلمة المرور</h4>
+                <p className="text-on-surface/60 text-sm">أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة التعيين.</p>
+                <p className="text-[10px] text-error font-bold mt-2 italic">ملاحظة: إذا لم تجد الرسالة، يرجى التحقق من مجلد الرسائل غير المرغوب فيها (Spam).</p>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs font-black text-on-surface/40 uppercase tracking-widest mr-2" htmlFor="reset-email">البريد الإلكتروني</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-on-surface/30 group-focus-within:text-primary transition-colors">
+                    <User size={22} />
+                  </div>
+                  <input 
+                    className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[24px] py-5 pr-14 pl-6 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none"
+                    id="reset-email" 
+                    type="email" 
+                    placeholder="name@institution.dz"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className={cn(
+                  "text-xs font-black p-4 rounded-2xl text-center border animate-shake",
+                  error.includes('تم إرسال') ? "bg-primary/10 text-primary border-primary/20" : "bg-error/10 text-error border-error/20"
+                )}>
+                  {error}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-4">
+                <button 
+                  disabled={loading}
+                  className="w-full bg-primary hover:bg-primary-container text-on-primary font-black py-5 rounded-full shadow-2xl shadow-primary/20 transform active:scale-95 transition-all flex items-center justify-center gap-3 group text-lg disabled:opacity-50" 
+                  type="submit"
+                >
+                  <span>{loading ? 'جاري الإرسال...' : 'إرسال رابط التعيين'}</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => { setIsResetting(false); setError(''); }}
+                  className="text-sm font-bold text-on-surface/60 hover:text-primary transition-colors"
+                >
+                  العودة لتسجيل الدخول
+                </button>
+              </div>
+            </form>
+          ) : authMethod === 'email' ? (
             <form onSubmit={handleAuth} className="space-y-6">
               <div className="space-y-3">
                 <label className="block text-xs font-black text-on-surface/40 uppercase tracking-widest mr-2" htmlFor="email">البريد الإلكتروني</label>
@@ -430,7 +509,15 @@ export default function Login() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center mr-2">
                   <label className="block text-xs font-black text-on-surface/40 uppercase tracking-widest" htmlFor="password">كلمة المرور</label>
-                  {isLogin && <a className="text-xs text-primary font-black hover:underline" href="#">نسيت كلمة المرور؟</a>}
+                  {isLogin && (
+                    <button 
+                      type="button"
+                      onClick={() => setIsResetting(true)}
+                      className="text-xs text-primary font-black hover:underline"
+                    >
+                      نسيت كلمة المرور؟
+                    </button>
+                  )}
                 </div>
                 <div className="relative group">
                   <div className="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-on-surface/30 group-focus-within:text-primary transition-colors">
