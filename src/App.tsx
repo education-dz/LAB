@@ -47,7 +47,7 @@ export default function App() {
   }
 
   return (
-    <Router>
+    <Router basename={import.meta.env.MODE === 'production' ? '/LAB' : '/'}>
       {user && <FirebaseSetup />}
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
