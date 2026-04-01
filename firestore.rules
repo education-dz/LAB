@@ -39,7 +39,7 @@ service cloud.firestore {
     }
     function isAdmin() {
       return isAuthenticated() && 
-        (request.auth.token.email == "faycalassoul@gmail.com" ||
+        ((request.auth.token.email == "faycalassoul@gmail.com" && request.auth.token.email_verified == true) ||
          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
@@ -66,6 +66,10 @@ service cloud.firestore {
 
     match /settings/{userId} {
       allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    match /_connection_test_/{docId} {
+      allow read: if isAuthenticated();
     }
   }
 }

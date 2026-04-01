@@ -44,7 +44,7 @@ import {
   PhoneMultiFactorGenerator,
   ConfirmationResult
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as XLSX from 'xlsx';
 import { SCHOOL_DB } from '../data/schools';
@@ -387,7 +387,8 @@ export default function SettingsPage() {
     setIsCheckingConnection(true);
     setConnectionStatus('idle');
     try {
-      await getDoc(doc(db, '_connection_test_', 'ping'));
+      // Use getDocFromServer for a real network test
+      await getDocFromServer(doc(db, '_connection_test_', 'ping'));
       setConnectionStatus('success');
       setTimeout(() => setConnectionStatus('idle'), 5000);
     } catch (error: any) {
