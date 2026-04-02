@@ -9,10 +9,10 @@ export default function FirebaseSetup() {
         const chemicalsSnap = await getDocs(getUserCollection('chemicals'));
         if (chemicalsSnap.empty) {
           const initialChemicals = [
-            { name: 'حمض الهيدروكلوريك', formula: 'HCl', cas: '7647-01-0', purity: '37%', storageTemp: '15-25°C', expiryDate: '2026-05-12', quantity: 5.2, unit: 'L', hazardClass: 'Corrosive', location: 'خزانة A-12' },
-            { name: 'هيدروكسيد الصوديوم', formula: 'NaOH', cas: '1310-73-2', purity: '98%', storageTemp: 'Room Temp', expiryDate: '2025-08-20', quantity: 2.5, unit: 'kg', hazardClass: 'Corrosive', location: 'خزانة B-04' },
-            { name: 'إيثانول', formula: 'C2H5OH', cas: '64-17-5', purity: '95%', storageTemp: 'Cool', expiryDate: '2026-06-20', quantity: 25, unit: 'L', hazardClass: 'Flammable', location: 'خزانة F-01' },
-            { name: 'نترات الفضة', formula: 'AgNO3', cas: '7761-88-8', purity: '99.8%', storageTemp: 'Dark', expiryDate: '2024-11-02', quantity: 0.5, unit: 'kg', hazardClass: 'Oxidizer', location: 'خزانة C-02' },
+            { nameEn: 'Hydrochloric Acid', nameAr: 'حمض الهيدروكلوريك', formula: 'HCl', casNumber: '7647-01-0', storageTemp: '15-25°C', expiryDate: '2026-05-12', quantity: 5.2, unit: 'L', hazardClass: 'danger', state: 'liquid', ghs: ['GHS05', 'GHS07'], shelf: 'خزانة A-12', notes: 'تركيز 37%' },
+            { nameEn: 'Sodium Hydroxide', nameAr: 'هيدروكسيد الصوديوم', formula: 'NaOH', casNumber: '1310-73-2', storageTemp: 'Room Temp', expiryDate: '2025-08-20', quantity: 2.5, unit: 'kg', hazardClass: 'danger', state: 'solid', ghs: ['GHS05'], shelf: 'خزانة B-04', notes: 'نقاوه 98%' },
+            { nameEn: 'Ethanol', nameAr: 'إيثانول', formula: 'C2H5OH', casNumber: '64-17-5', storageTemp: 'Cool', expiryDate: '2026-06-20', quantity: 25, unit: 'L', hazardClass: 'danger', state: 'liquid', ghs: ['GHS02', 'GHS07'], shelf: 'خزانة F-01', notes: 'نقاوه 95%' },
+            { nameEn: 'Silver Nitrate', nameAr: 'نترات الفضة', formula: 'AgNO3', casNumber: '7761-88-8', storageTemp: 'Dark', expiryDate: '2024-11-02', quantity: 0.5, unit: 'kg', hazardClass: 'danger', state: 'solid', ghs: ['GHS03', 'GHS05', 'GHS09'], shelf: 'خزانة C-02', notes: 'نقاوه 99.8%' },
           ];
           for (const chem of initialChemicals) {
             await addDoc(getUserCollection('chemicals'), chem);

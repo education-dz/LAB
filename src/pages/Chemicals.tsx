@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { getChemicalIntelligence, ChemicalIntelligence } from '../services/geminiService';
+import { getChemicalIntelligence, ChemicalIntelligence, ensureApiKey } from '../services/geminiService';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -255,6 +255,14 @@ export default function Chemicals() {
 
   const handleBulkSmartUpdate = async () => {
     setIsBulkConfirmOpen(false);
+    
+    // Ensure API key is available before starting
+    const hasKey = await ensureApiKey();
+    if (!hasKey) {
+      alert('يرجى اختيار مفتاح API الخاص بك لاستخدام ميزة التحديث الذكي.');
+      return;
+    }
+
     setIsBulkUpdating(true);
     setBulkProgress({ current: 0, total: chemicals.length });
 

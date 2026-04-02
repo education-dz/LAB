@@ -3,7 +3,7 @@ import { onSnapshot, query, where, doc, writeBatch, serverTimestamp, getDocs } f
 import { db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
-import { GoogleGenAI, Type } from "@google/genai";
+import { ensureApiKey, getEquipmentIntelligence } from '../services/geminiService';
 import { 
   FileText, 
   Package, 
@@ -136,16 +136,19 @@ export default function Dashboard() {
               const name = item['الاسم'] || item['Name'] || 'مادة غير مسمى';
               const quantity = Number(item['الكمية'] || item['Quantity']);
               batch.set(docRef, {
-                name: String(name).trim() || 'مادة غير مسمى',
+                nameEn: item['Name'] || item['الاسم'] || 'Unnamed Chemical',
+                nameAr: item['الاسم'] || item['Name'] || 'مادة غير مسمى',
                 formula: item['الصيغة'] || item['Formula'] || '',
-                cas: item['CAS'] || '',
-                purity: item['النقاء'] || item['Purity'] || '',
+                casNumber: item['CAS'] || item['casNumber'] || '',
                 storageTemp: item['درجة التخزين'] || item['Storage'] || '',
                 expiryDate: formatDate(item['تاريخ الانتهاء'] || item['Expiry']),
                 quantity: isNaN(quantity) ? 0 : quantity,
                 unit: item['الوحدة'] || item['Unit'] || 'ml',
+                state: item['الحالة'] || 'solid',
                 hazardClass: (item['الخطورة'] || item['Hazard'] || 'safe').toLowerCase() === 'danger' ? 'danger' : 'safe',
-                location: item['الموقع'] || item['Location'] || '',
+                shelf: item['الموقع'] || item['Location'] || '',
+                ghs: [],
+                notes: item['ملاحظات'] || '',
                 createdAt: serverTimestamp()
               });
             } else if (collectionName === 'teachers') {
@@ -211,6 +214,13 @@ export default function Dashboard() {
   const [isSmartUpdating, setIsSmartUpdating] = useState(false);
 
   const handleSmartUpdate = async () => {
+    // Ensure API key is available before starting
+    const hasKey = await ensureApiKey();
+    if (!hasKey) {
+      setNotification({ message: 'يرجى اختيار مفتاح API الخاص بك لاستخدام ميزة التحديث الذكي.', type: 'error' });
+      return;
+    }
+
     setIsSmartUpdating(true);
     try {
       const snap = await getDocs(getUserCollection('equipment'));
@@ -221,45 +231,20 @@ export default function Dashboard() {
         return;
       }
 
-      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-      if (!apiKey) {
-        throw new Error('Gemini API key is missing.');
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Analyze these laboratory equipment items and provide: 
-        1. A better Arabic name.
-        2. A concise Arabic description.
-        3. An English keyword for image search (Unsplash/Picsum).
-        Items: ${JSON.stringify(items.map(i => ({ id: i.id, name: i.name })))}`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                smartNameAr: { type: Type.STRING },
-                smartDescriptionAr: { type: Type.STRING },
-                imageKeyword: { type: Type.STRING }
-              },
-              required: ["id", "smartNameAr", "smartDescriptionAr", "imageKeyword"]
-            }
-          }
+      // Process in chunks to avoid large payloads
+      const CHUNK_SIZE = 10;
+      for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+        const chunk = items.slice(i, i + CHUNK_SIZE);
+        const itemsToProcess = chunk.map(item => ({ id: item.id, name: item.name }));
+        
+        const enrichedData = await getEquipmentIntelligence(itemsToProcess);
+        
+        if (!enrichedData) {
+          throw new Error('فشل الحصول على بيانات الذكاء الاصطناعي.');
         }
-      });
 
-      const enrichedData = JSON.parse(response.text);
-      
-      // Batch update in chunks of 450
-      const CHUNK_SIZE = 450;
-      for (let i = 0; i < enrichedData.length; i += CHUNK_SIZE) {
-        const chunk = enrichedData.slice(i, i + CHUNK_SIZE);
         const batch = writeBatch(db);
-        chunk.forEach((update: any) => {
+        enrichedData.forEach((update: any) => {
           const docRef = doc(getUserCollection('equipment'), update.id);
           batch.update(docRef, {
             smartNameAr: update.smartNameAr,
@@ -269,6 +254,11 @@ export default function Dashboard() {
           });
         });
         await batch.commit();
+        
+        // Small delay between chunks to respect rate limits (15 RPM for free tier)
+        if (i + CHUNK_SIZE < items.length) {
+          await new Promise(r => setTimeout(r, 5000));
+        }
       }
 
       setNotification({ message: 'تم التحديث الذكي للمخزون بنجاح!', type: 'success' });

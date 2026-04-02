@@ -35,7 +35,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { GoogleGenAI, Type } from "@google/genai";
+import { ensureApiKey, getEquipmentIntelligence } from '../services/geminiService';
 
 interface Equipment {
   id: string;
@@ -427,89 +427,49 @@ export default function Equipment() {
       return;
     }
 
+    setIsSmartUpdateConfirmOpen(false);
+
+    // Ensure API key is available before starting
+    const hasKey = await ensureApiKey();
+    if (!hasKey) {
+      alert('يرجى اختيار مفتاح API الخاص بك لاستخدام ميزة التحديث الذكي.');
+      return;
+    }
+
     setIsSmartUpdating(true);
     setBulkProgress({ current: 0, total: equipment.length });
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-      if (!apiKey) {
-        throw new Error('Gemini API key is missing.');
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      
       // Process in chunks to avoid large payloads
       const CHUNK_SIZE = 10;
       for (let i = 0; i < equipment.length; i += CHUNK_SIZE) {
         const chunk = equipment.slice(i, i + CHUNK_SIZE);
+        const itemsToProcess = chunk.map(item => ({ id: item.id, name: item.name }));
         
-        let success = false;
-        let retries = 0;
-        const MAX_RETRIES = 3;
-
-        while (!success && retries < MAX_RETRIES) {
-          try {
-            const response = await ai.models.generateContent({
-              model: "gemini-3-flash-preview",
-              contents: `Analyze these laboratory equipment items and provide: 
-              1. A better Arabic name (smartNameAr).
-              2. A concise Arabic description (smartDescriptionAr).
-              3. An English keyword for image search (imageKeyword).
-              Items: ${JSON.stringify(chunk.map(item => ({ id: item.id, name: item.name })))}`,
-              config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      id: { type: Type.STRING },
-                      smartNameAr: { type: Type.STRING },
-                      smartDescriptionAr: { type: Type.STRING },
-                      imageKeyword: { type: Type.STRING }
-                    },
-                    required: ["id", "smartNameAr", "smartDescriptionAr", "imageKeyword"]
-                  }
-                }
-              }
-            });
-
-            const enrichedData = JSON.parse(response.text);
-            const batch = writeBatch(db);
-            
-            enrichedData.forEach((update: any) => {
-              const docRef = doc(getUserCollection('equipment'), update.id);
-              batch.update(docRef, {
-                smartNameAr: update.smartNameAr,
-                smartDescriptionAr: update.smartDescriptionAr,
-                imageKeyword: update.imageKeyword,
-                lastSmartUpdate: serverTimestamp()
-              });
-            });
-            
-            await batch.commit();
-            success = true;
-          } catch (err: any) {
-            const errorStr = err.message || String(err);
-            if (errorStr.includes('429') || errorStr.includes('quota') || errorStr.includes('RESOURCE_EXHAUSTED')) {
-              retries++;
-              if (retries < MAX_RETRIES) {
-                // Exponential backoff: 5s, 10s, 20s
-                const waitTime = Math.pow(2, retries - 1) * 5000;
-                console.warn(`Quota exceeded. Retrying in ${waitTime/1000}s... (Attempt ${retries}/${MAX_RETRIES})`);
-                await new Promise(r => setTimeout(r, waitTime));
-              } else {
-                throw new Error('تم تجاوز حد الاستخدام المسموح به للذكاء الاصطناعي. يرجى المحاولة مرة أخرى لاحقاً.');
-              }
-            } else {
-              throw err;
-            }
-          }
+        const enrichedData = await getEquipmentIntelligence(itemsToProcess);
+        
+        if (!enrichedData) {
+          throw new Error('فشل الحصول على بيانات الذكاء الاصطناعي.');
         }
 
+        const batch = writeBatch(db);
+        enrichedData.forEach((update: any) => {
+          const docRef = doc(getUserCollection('equipment'), update.id);
+          batch.update(docRef, {
+            smartNameAr: update.smartNameAr,
+            smartDescriptionAr: update.smartDescriptionAr,
+            imageKeyword: update.imageKeyword,
+            lastSmartUpdate: serverTimestamp()
+          });
+        });
+        
+        await batch.commit();
         setBulkProgress({ current: Math.min(i + CHUNK_SIZE, equipment.length), total: equipment.length });
-        // Larger delay to respect rate limits (15 RPM for free tier)
-        await new Promise(r => setTimeout(r, 4000));
+        
+        // Small delay between chunks to respect rate limits (15 RPM for free tier)
+        if (i + CHUNK_SIZE < equipment.length) {
+          await new Promise(r => setTimeout(r, 5000));
+        }
       }
 
       alert('تم التحديث الذكي لجميع التجهيزات بنجاح!');
