@@ -17,6 +17,8 @@ import Archive from './pages/Archive';
 import Teachers from './pages/Teachers';
 import DailyReport from './pages/DailyReport';
 import Settings from './pages/Settings';
+import InventoryDashboard from './pages/InventoryDashboard';
+import Maintenance from './pages/Maintenance';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import DataDeletion from './pages/DataDeletion';
 import TermsOfService from './pages/TermsOfService';
@@ -66,6 +68,8 @@ export default function App() {
           element={user ? <Layout /> : <Navigate to="/login" />}
         >
           <Route index element={<Dashboard />} />
+          <Route path="inventory" element={<InventoryDashboard />} />
+          <Route path="maintenance" element={<Maintenance />} />
           <Route path="chemicals" element={<Chemicals />} />
           <Route path="equipment" element={<Equipment />} />
           <Route path="tech-inventory" element={<TechInventory />} />

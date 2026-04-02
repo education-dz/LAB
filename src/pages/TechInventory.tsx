@@ -56,7 +56,7 @@ const getSmartImage = (name: string, keyword?: string) => {
   return `https://picsum.photos/seed/${encodeURIComponent(searchKey)}/800/600`;
 };
 
-export default function TechInventory() {
+export default function TechInventory({ isNested = false }: { isNested?: boolean }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [devices, setDevices] = useState<Equipment[]>([]);
@@ -112,66 +112,70 @@ export default function TechInventory() {
   ];
 
   return (
-    <div className="space-y-12 max-w-7xl mx-auto px-6 pb-24 rtl font-sans" dir="rtl">
+    <div className={cn("space-y-12 max-w-7xl mx-auto pb-24 rtl font-sans", !isNested && "px-6")} dir="rtl">
       {/* Header */}
-      <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-4">
-        <div className="text-right space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-full text-primary text-xs font-black uppercase tracking-widest mb-2">
-            <Monitor size={14} />
-            جرد التجهيزات التكنولوجية
+      {!isNested && (
+        <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-4">
+          <div className="text-right space-y-3 relative z-10">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-full text-primary text-xs font-black uppercase tracking-widest mb-2">
+              <Monitor size={14} />
+              جرد التجهيزات التكنولوجية
+            </div>
+            <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">الأجهزة الحساسة</h1>
+            <p className="text-on-surface/60 text-xl font-bold">مراقبة حالة <span className="text-primary italic">المعايرة والمواصفات</span> التقنية</p>
           </div>
-          <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">الأجهزة الحساسة</h1>
-          <p className="text-on-surface/60 text-xl font-bold">مراقبة حالة <span className="text-primary italic">المعايرة والمواصفات</span> التقنية</p>
-        </div>
-        
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="relative group">
-            <input 
-              className="w-80 bg-white border border-outline/10 rounded-full px-6 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-xl"
-              placeholder="البحث عن جهاز..." 
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-outline" size={20} />
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="relative group">
+              <input 
+                className="w-80 bg-white border border-outline/10 rounded-full px-6 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-xl"
+                placeholder="البحث عن جهاز..." 
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-outline" size={20} />
+            </div>
+            <button className="bg-primary text-on-primary px-8 py-4 rounded-full font-black flex items-center gap-3 shadow-2xl shadow-primary/30 hover:bg-primary-container transition-all active:scale-95">
+              <Plus size={22} />
+              إضافة جهاز
+            </button>
           </div>
-          <button className="bg-primary text-on-primary px-8 py-4 rounded-full font-black flex items-center gap-3 shadow-2xl shadow-primary/30 hover:bg-primary-container transition-all active:scale-95">
-            <Plus size={22} />
-            إضافة جهاز
-          </button>
-        </div>
 
-        {/* Decorative elements */}
-        <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-      </header>
+          {/* Decorative elements */}
+          <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        </header>
+      )}
 
       {/* Stats Overview */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className={cn(
-              "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl",
-              stat.color
-            )}
-          >
-            <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
-            <div className="relative z-10 flex justify-between items-start mb-6">
-              <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                <stat.icon size={24} />
+      {!isNested && (
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className={cn(
+                "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl",
+                stat.color
+              )}
+            >
+              <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex justify-between items-start mb-6">
+                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                  <stat.icon size={24} />
+                </div>
               </div>
-            </div>
-            <div className="relative z-10">
-              <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest mb-1">{stat.label}</p>
-              <span className="text-5xl font-black tracking-tighter group-hover:scale-110 transition-transform inline-block">{stat.value}</span>
-              <p className="text-[10px] font-bold mt-2 opacity-60">{stat.trend}</p>
-            </div>
-          </motion.div>
-        ))}
-      </section>
+              <div className="relative z-10">
+                <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest mb-1">{stat.label}</p>
+                <span className="text-5xl font-black tracking-tighter group-hover:scale-110 transition-transform inline-block">{stat.value}</span>
+                <p className="text-[10px] font-bold mt-2 opacity-60">{stat.trend}</p>
+              </div>
+            </motion.div>
+          ))}
+        </section>
+      )}
 
       {/* Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

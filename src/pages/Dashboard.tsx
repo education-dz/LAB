@@ -302,17 +302,11 @@ export default function Dashboard() {
   };
 
   const modules = [
-    { title: 'التقارير اليومية', desc: 'تسجيل ومتابعة النشاطات اليومية للمخبر والحصص التطبيقية.', count: counts.reports.toString(), icon: FileText, color: 'bg-primary/10', path: '/daily-report' },
-    { title: 'جرد التجهيزات', desc: 'قاعدة بيانات شاملة للأجهزة والمعدات الزجاجية والميكانيكية.', count: counts.equipment.toString(), icon: Package, color: 'bg-primary/5', path: '/equipment' },
-    { title: 'الكواشف الكيميائية', desc: 'تتبع المحاليل، تواريخ الصلاحية، ودرجات الخطورة Safety Data.', count: counts.chemicals.toString(), icon: FlaskConical, color: 'bg-surface-container-low', path: '/chemicals' },
-    { title: 'جرد التجهيزات التكنولوجية', desc: 'واجهة عرض للأجهزة الحساسة (المجاهر الرقمية، أجهزة الطيف) تظهر حالة المعايرة والمواصفات التقنية لكل جهاز.', count: 'جديد', icon: Monitor, color: 'bg-primary/10', path: '/tech-inventory' },
-    { title: 'جرد الزجاجيات والكسور', desc: 'سجل دقيق لمتابعة الأدوات الزجاجية (كؤوس، دوارق) وحساب القيمة المالية للفواقد والكسور.', count: 'جديد', icon: Beaker, color: 'bg-primary/5', path: '/glassware-breakage' },
+    { title: 'لوحة الجرد الشاملة', desc: 'إدارة كافة ممتلكات المخبر من كواشف، أجهزة، زجاجيات ونفايات في مكان واحد.', count: (counts.chemicals + counts.equipment).toString(), icon: Database, color: 'bg-primary/10', path: '/inventory' },
+    { title: 'التقارير اليومية', desc: 'تسجيل ومتابعة النشاطات اليومية للمخبر والحصص التطبيقية.', count: counts.reports.toString(), icon: FileText, color: 'bg-primary/5', path: '/daily-report' },
     { title: 'التحضير الذكي للنماذج', desc: 'مكتبة رقمية للقوالب الرسمية تتيح رقمنة المستندات الورقية وتتبع حالة التوقيعات والاعتمادات.', count: 'جديد', icon: BookOpen, color: 'bg-surface-container-low', path: '/smart-forms' },
-    { title: 'إدارة النفايات الكيميائية', desc: 'نظام مخصص للتعامل مع المواد المنتهية الصلاحية والتالفة وفق بروتوكولات التحييد والأكسدة المعتمدة.', count: 'جديد', icon: Trash2, color: 'bg-surface-container-high', path: '/chemical-waste' },
     { title: 'إدارة الخريطة التربوية', desc: 'أداة بصرية لتوزيع الأفواج التربوية والمستويات الدراسية على المخابر المتاحة وتعيين الأساتذة المشرفين.', count: 'جديد', icon: Map, color: 'bg-primary/10', path: '/educational-map' },
-    { title: 'جرد المستهلكات و SDS', desc: 'سجل متقدم يربط كل مادة مستهلكة بملف بيانات السلامة الخاص بها، مع تنبيهات ذكية لنقص المخزون.', count: 'جديد', icon: Package, color: 'bg-primary/5', path: '/consumables-sds' },
     { title: 'مركز النسخ الاحتياطي', desc: 'واجهة تقنية متطورة لمراقبة حجم البيانات وإدارة النسخ الاحتياطي بصيغة JSON لضمان سلامة السجلات.', count: 'جديد', icon: Database, color: 'bg-surface-container-low', path: '/backup' },
-    { title: 'الصيانة والإصلاح', desc: 'سجلات صيانة الأجهزة المعطلة وطلبات تصليح الوسائل التعليمية.', count: counts.brokenEquip.toString(), icon: Wrench, color: 'bg-surface-container-high', path: '/equipment' },
     { title: 'فريق الأساتذة', desc: 'قائمة أساتذة العلوم والفيزياء المستفيدين من خدمات المخبر.', count: counts.teachers.toString(), icon: Users, color: 'bg-primary/10', path: '/teachers' },
     { title: 'المتابعة البيداغوجية', desc: 'مواءمة الوسائل مع المناهج الدراسية والدروس التطبيقية.', count: '12', icon: BookOpen, color: 'bg-primary/5', path: '/reports' },
     { title: 'جدول الحصص', desc: 'التوقيت الأسبوعي لاستخدام المخابر وتوزيع القاعات.', count: 'اليوم', icon: Calendar, color: 'bg-surface-container-low', path: '/reports' },
@@ -434,36 +428,6 @@ export default function Dashboard() {
           )}
         </section>
       )}
-
-      {/* Quick Access to Specialized Units */}
-      <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {[
-          { label: 'الأجهزة التقنية', path: '/tech-inventory', icon: Monitor, color: 'bg-[#4a7c59]/5 text-[#4a7c59]' },
-          { label: 'جرد الزجاجيات', path: '/glassware-breakage', icon: Beaker, color: 'bg-[#4a7c59]/5 text-[#4a7c59]' },
-          { label: 'النماذج الذكية', path: '/smart-forms', icon: FileText, color: 'bg-[#4a7c59]/5 text-[#4a7c59]' },
-          { label: 'النفايات الكيميائية', path: '/chemical-waste', icon: Trash2, color: 'bg-error/5 text-error' },
-          { label: 'الخريطة التربوية', path: '/educational-map', icon: Map, color: 'bg-[#4a7c59]/5 text-[#4a7c59]' },
-          { label: 'المستهلكات & SDS', path: '/consumables-sds', icon: Package, color: 'bg-[#4a7c59]/5 text-[#4a7c59]' },
-          { label: 'مركز النسخ الاحتياطي', path: '/backup', icon: Database, color: 'bg-[#d4a574]/5 text-[#d4a574]' },
-        ].map((unit, i) => (
-          <motion.div
-            key={unit.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            onClick={() => navigate(unit.path)}
-            className={cn(
-              "flex flex-col items-center justify-center p-6 rounded-[32px] border border-outline/5 shadow-sm hover:shadow-md transition-all group text-center gap-3 cursor-pointer",
-              unit.color
-            )}
-          >
-            <div className="p-3 rounded-2xl bg-white shadow-sm group-hover:scale-110 transition-transform">
-              <unit.icon size={20} />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tight leading-tight">{unit.label}</span>
-          </motion.div>
-        ))}
-      </section>
 
       {/* Stats Strip */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

@@ -64,7 +64,7 @@ interface MaintenanceLog {
   note: string;
 }
 
-export default function Equipment() {
+export default function Equipment({ isNested = false }: { isNested?: boolean }) {
   const [searchParams] = useSearchParams();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -570,139 +570,145 @@ export default function Equipment() {
   const totalBroken = equipment.reduce((acc, curr) => acc + (curr.brokenQuantity || 0), 0);
 
   return (
-    <div className="space-y-12 max-w-7xl mx-auto px-6 pb-24 rtl font-sans" dir="rtl">
+    <div className={cn("space-y-12 max-w-7xl mx-auto pb-24 rtl font-sans", !isNested && "px-6")} dir="rtl">
       {/* Header */}
-      <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-4">
-        <div className="text-right space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-full text-primary text-xs font-black uppercase tracking-widest mb-2">
-            <Package size={14} />
-            إدارة المخزون والعتاد
+      {!isNested && (
+        <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-4">
+          <div className="text-right space-y-3 relative z-10">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-full text-primary text-xs font-black uppercase tracking-widest mb-2">
+              <Package size={14} />
+              إدارة المخزون والعتاد
+            </div>
+            <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">جرد الزجاجيات والعتاد</h1>
+            <p className="text-on-surface/60 text-xl font-bold">إدارة وتتبع <span className="text-primary italic">الأدوات الزجاجية</span> والأجهزة التكنولوجية</p>
           </div>
-          <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">جرد الزجاجيات والعتاد</h1>
-          <p className="text-on-surface/60 text-xl font-bold">إدارة وتتبع <span className="text-primary italic">الأدوات الزجاجية</span> والأجهزة التكنولوجية</p>
-        </div>
-        
-        <div className="flex flex-wrap gap-4 relative z-10">
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleImportXLS} 
-            className="hidden" 
-            accept=".xls,.xlsx"
-          />
-          <button 
-            onClick={handlePrintList}
-            className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
-          >
-            <Printer size={20} />
-            طباعة القائمة
-          </button>
-          <button 
-            onClick={handleExportPDF}
-            className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
-          >
-            <FileDown size={20} />
-            تصدير PDF
-          </button>
-          <button 
-            onClick={() => setIsSmartUpdateConfirmOpen(true)}
-            disabled={isSmartUpdating}
-            className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
-          >
-            {isSmartUpdating ? (
-              <RefreshCw size={20} className="animate-spin" />
-            ) : (
-              <Sparkles size={20} />
-            )}
-            تحديث ذكي للكل
-          </button>
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isImporting}
-            className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
-          >
-            {isImporting ? (
-              <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            ) : (
-              <FileUp size={20} />
-            )}
-            استيراد XLS
-          </button>
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-primary text-on-primary px-8 py-3.5 rounded-full font-black flex items-center gap-2 shadow-2xl shadow-primary/30 hover:bg-primary-container hover:shadow-primary/40 transition-all active:scale-95"
-          >
-            <Plus size={22} />
-            إضافة صنف
-          </button>
-        </div>
+          
+          <div className="flex flex-wrap gap-4 relative z-10">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImportXLS} 
+              className="hidden" 
+              accept=".xls,.xlsx"
+            />
+            <button 
+              onClick={handlePrintList}
+              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+            >
+              <Printer size={20} />
+              طباعة القائمة
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+            >
+              <FileDown size={20} />
+              تصدير PDF
+            </button>
+            <button 
+              onClick={() => setIsSmartUpdateConfirmOpen(true)}
+              disabled={isSmartUpdating}
+              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
+            >
+              {isSmartUpdating ? (
+                <RefreshCw size={20} className="animate-spin" />
+              ) : (
+                <Sparkles size={20} />
+              )}
+              تحديث ذكي للكل
+            </button>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
+            >
+              {isImporting ? (
+                <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              ) : (
+                <FileUp size={20} />
+              )}
+              استيراد XLS
+            </button>
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-primary text-on-primary px-8 py-3.5 rounded-full font-black flex items-center gap-2 shadow-2xl shadow-primary/30 hover:bg-primary-container hover:shadow-primary/40 transition-all active:scale-95"
+            >
+              <Plus size={22} />
+              إضافة صنف
+            </button>
+          </div>
 
-        {/* Decorative elements */}
-        <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-      </header>
+          {/* Decorative elements */}
+          <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        </header>
+      )}
 
       {/* Quick Access to Specialized Units */}
-      <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {[
-          { label: 'الأجهزة التقنية', path: '/tech-inventory', icon: Monitor, color: 'bg-primary/5 text-primary' },
-          { label: 'جرد الزجاجيات', path: '/glassware-breakage', icon: Beaker, color: 'bg-primary/5 text-primary' },
-          { label: 'النماذج الذكية', path: '/smart-forms', icon: FileText, color: 'bg-primary/5 text-primary' },
-          { label: 'النفايات الكيميائية', path: '/chemical-waste', icon: Trash2, color: 'bg-error/5 text-error' },
-          { label: 'الخريطة التربوية', path: '/educational-map', icon: Map, color: 'bg-primary/5 text-primary' },
-          { label: 'المستهلكات & SDS', path: '/consumables-sds', icon: Package, color: 'bg-primary/5 text-primary' },
-        ].map((unit, i) => (
-          <motion.a
-            key={unit.label}
-            href={`#${unit.path}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className={cn(
-              "flex flex-col items-center justify-center p-6 rounded-[32px] border border-outline/5 shadow-sm hover:shadow-md transition-all group text-center gap-3",
-              unit.color
-            )}
-          >
-            <div className="p-3 rounded-2xl bg-white shadow-sm group-hover:scale-110 transition-transform">
-              <unit.icon size={20} />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tight leading-tight">{unit.label}</span>
-          </motion.a>
-        ))}
-      </section>
+      {!isNested && (
+        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[
+            { label: 'الأجهزة التقنية', path: '/tech-inventory', icon: Monitor, color: 'bg-primary/5 text-primary' },
+            { label: 'جرد الزجاجيات', path: '/glassware-breakage', icon: Beaker, color: 'bg-primary/5 text-primary' },
+            { label: 'النماذج الذكية', path: '/smart-forms', icon: FileText, color: 'bg-primary/5 text-primary' },
+            { label: 'النفايات الكيميائية', path: '/chemical-waste', icon: Trash2, color: 'bg-error/5 text-error' },
+            { label: 'الخريطة التربوية', path: '/educational-map', icon: Map, color: 'bg-primary/5 text-primary' },
+            { label: 'المستهلكات & SDS', path: '/consumables-sds', icon: Package, color: 'bg-primary/5 text-primary' },
+          ].map((unit, i) => (
+            <motion.a
+              key={unit.label}
+              href={`#${unit.path}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className={cn(
+                "flex flex-col items-center justify-center p-6 rounded-[32px] border border-outline/5 shadow-sm hover:shadow-md transition-all group text-center gap-3",
+                unit.color
+              )}
+            >
+              <div className="p-3 rounded-2xl bg-white shadow-sm group-hover:scale-110 transition-transform">
+                <unit.icon size={20} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-tight leading-tight">{unit.label}</span>
+            </motion.a>
+          ))}
+        </section>
+      )}
 
       {/* Stats */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {[
-          { label: 'إجمالي القطع', value: totalPieces, icon: Package, color: 'bg-primary/10', textColor: 'text-primary', status: 'all' },
-          { label: 'السليم/المتوفر', value: totalAvailable, icon: CheckCircle, color: 'bg-primary/5', textColor: 'text-primary', status: 'functional' },
-          { label: 'المكسور/التالف', value: totalBroken, icon: AlertTriangle, color: 'bg-error/10', textColor: 'text-error', status: 'broken' },
-          { label: 'بحاجة لمعايرة', value: '08', icon: Wrench, color: 'bg-surface-container-low', textColor: 'text-primary', status: 'maintenance' },
-        ].map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            onClick={() => setFilterStatus(stat.status)}
-            className={cn(
-              "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl cursor-pointer",
-              stat.color,
-              filterStatus === stat.status && "ring-4 ring-primary/20 border-primary"
-            )}
-          >
-            <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
-            <div className="relative z-10 flex justify-between items-start mb-6">
-              <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                <stat.icon size={24} />
+      {!isNested && (
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {[
+            { label: 'إجمالي القطع', value: totalPieces, icon: Package, color: 'bg-primary/10', textColor: 'text-primary', status: 'all' },
+            { label: 'السليم/المتوفر', value: totalAvailable, icon: CheckCircle, color: 'bg-primary/5', textColor: 'text-primary', status: 'functional' },
+            { label: 'المكسور/التالف', value: totalBroken, icon: AlertTriangle, color: 'bg-error/10', textColor: 'text-error', status: 'broken' },
+            { label: 'بحاجة لمعايرة', value: '08', icon: Wrench, color: 'bg-surface-container-low', textColor: 'text-primary', status: 'maintenance' },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              onClick={() => setFilterStatus(stat.status)}
+              className={cn(
+                "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl cursor-pointer",
+                stat.color,
+                filterStatus === stat.status && "ring-4 ring-primary/20 border-primary"
+              )}
+            >
+              <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex justify-between items-start mb-6">
+                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                  <stat.icon size={24} />
+                </div>
               </div>
-            </div>
-            <div className="relative z-10">
-              <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest mb-1">{stat.label}</p>
-              <span className={cn("text-5xl font-black tracking-tighter group-hover:scale-110 transition-transform inline-block", stat.textColor)}>{stat.value}</span>
-            </div>
-          </motion.div>
-        ))}
-      </section>
+              <div className="relative z-10">
+                <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest mb-1">{stat.label}</p>
+                <span className={cn("text-5xl font-black tracking-tighter group-hover:scale-110 transition-transform inline-block", stat.textColor)}>{stat.value}</span>
+              </div>
+            </motion.div>
+          ))}
+        </section>
+      )}
 
       {/* Main Content */}
       <div className="bg-white rounded-[50px] overflow-hidden shadow-2xl border border-outline/5 relative">

@@ -62,7 +62,7 @@ const GHS_ICONS: Record<string, string> = {
   'GHS09': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/GHS-pictogram-pollut.svg/100px-GHS-pictogram-pollut.svg.png',
 };
 
-export default function Chemicals() {
+export default function Chemicals({ isNested = false }: { isNested?: boolean }) {
   const [searchParams] = useSearchParams();
   const [chemicals, setChemicals] = useState<Chemical[]>([]);
   const [loading, setLoading] = useState(true);
@@ -784,112 +784,116 @@ export default function Chemicals() {
   const lowStockCount = chemicals.filter(c => c.quantity < 10).length;
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto px-4 pb-20">
+    <div className={cn("space-y-10 max-w-7xl mx-auto pb-20", !isNested && "px-4")}>
       {/* Header */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
-        <div className="text-right space-y-1">
-          <h1 className="text-5xl font-black text-primary tracking-tighter">المخزن الكيميائي</h1>
-          <p className="text-secondary/80 text-lg font-medium">إدارة وتتبع المحاليل والكواشف الكيميائية</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleImportXLS} 
-            className="hidden" 
-            accept=".xls,.xlsx"
-          />
-          <button 
-            onClick={handlePrintList}
-            className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
-          >
-            <Printer size={20} />
-            طباعة القائمة
-          </button>
-          <button 
-            onClick={handleExportPDF}
-            className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
-          >
-            <FileText size={20} />
-            تصدير PDF
-          </button>
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isImporting}
-            className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm disabled:opacity-50"
-          >
-            {isImporting ? (
-              <div className="w-5 h-5 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin" />
-            ) : (
-              <FileUp size={20} />
-            )}
-            استيراد XLS
-          </button>
-          <button 
-            onClick={handleExportXLS}
-            className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
-          >
-            <Download size={20} />
-            تصدير الجرد
-          </button>
-          <button 
-            onClick={() => setIsBulkConfirmOpen(true)}
-            disabled={isBulkUpdating || chemicals.length === 0}
-            className="bg-primary text-on-primary px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20 disabled:opacity-50"
-            title="تحديث ذكي لجميع المواد في القائمة"
-          >
-            {isBulkUpdating ? (
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span className="text-xs">{bulkProgress.current}/{bulkProgress.total}</span>
-              </div>
-            ) : (
-              <Sparkles size={20} />
-            )}
-            تحديث ذكي للكل
-          </button>
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-primary text-on-primary px-8 py-3.5 rounded-full flex items-center gap-2 font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
-          >
-            <Plus size={20} />
-            إضافة مادة
-          </button>
-        </div>
-      </header>
+      {!isNested && (
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
+          <div className="text-right space-y-1">
+            <h1 className="text-5xl font-black text-primary tracking-tighter">المخزن الكيميائي</h1>
+            <p className="text-secondary/80 text-lg font-medium">إدارة وتتبع المحاليل والكواشف الكيميائية</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImportXLS} 
+              className="hidden" 
+              accept=".xls,.xlsx"
+            />
+            <button 
+              onClick={handlePrintList}
+              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+            >
+              <Printer size={20} />
+              طباعة القائمة
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+            >
+              <FileText size={20} />
+              تصدير PDF
+            </button>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm disabled:opacity-50"
+            >
+              {isImporting ? (
+                <div className="w-5 h-5 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin" />
+              ) : (
+                <FileUp size={20} />
+              )}
+              استيراد XLS
+            </button>
+            <button 
+              onClick={handleExportXLS}
+              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+            >
+              <Download size={20} />
+              تصدير الجرد
+            </button>
+            <button 
+              onClick={() => setIsBulkConfirmOpen(true)}
+              disabled={isBulkUpdating || chemicals.length === 0}
+              className="bg-primary text-on-primary px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20 disabled:opacity-50"
+              title="تحديث ذكي لجميع المواد في القائمة"
+            >
+              {isBulkUpdating ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="text-xs">{bulkProgress.current}/{bulkProgress.total}</span>
+                </div>
+              ) : (
+                <Sparkles size={20} />
+              )}
+              تحديث ذكي للكل
+            </button>
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-primary text-on-primary px-8 py-3.5 rounded-full flex items-center gap-2 font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+            >
+              <Plus size={20} />
+              إضافة مادة
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-surface-container-low p-7 rounded-[32px] border border-outline/5 hover:border-outline/20 transition-all group">
-          <p className="text-xs text-secondary/60 font-black uppercase tracking-widest mb-3">إجمالي المواد</p>
-          <h3 className="text-4xl font-black text-primary group-hover:scale-110 transition-transform origin-right">{chemicals.length}</h3>
-        </div>
-        <div className="bg-error-container/40 p-7 rounded-[32px] border border-error/10 hover:border-error/20 transition-all group">
-          <p className="text-xs text-on-error-container/60 font-black uppercase tracking-widest mb-3">مواد خطرة</p>
-          <h3 className="text-4xl font-black text-error group-hover:scale-110 transition-transform origin-right">
-            {chemicals.filter(c => (c.ghs && c.ghs.length > 0) || c.hazardClass === 'danger').length}
-          </h3>
-        </div>
-        <div className="bg-tertiary-fixed/40 p-7 rounded-[32px] border border-tertiary/10 hover:border-tertiary/20 transition-all group">
-          <p className="text-xs text-on-tertiary-fixed/60 font-black uppercase tracking-widest mb-3">تنتهي قريباً</p>
-          <h3 className="text-4xl font-black text-tertiary group-hover:scale-110 transition-transform origin-right">
-            {chemicals.filter(c => {
-              if (!c.expiryDate) return false;
-              const expiry = new Date(c.expiryDate);
-              const threeMonthsFromNow = new Date();
-              threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
-              return expiry < threeMonthsFromNow && expiry > new Date();
-            }).length.toString().padStart(2, '0')}
-          </h3>
-        </div>
-        <div className="bg-primary p-7 rounded-[32px] text-on-primary shadow-xl shadow-primary/20 hover:shadow-2xl transition-all group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-          <div className="relative z-10">
-            <p className="text-white/60 text-xs font-black uppercase tracking-widest mb-3">سعة التخزين</p>
-            <h3 className="text-4xl font-black">68%</h3>
+      {!isNested && (
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-surface-container-low p-7 rounded-[32px] border border-outline/5 hover:border-outline/20 transition-all group">
+            <p className="text-xs text-secondary/60 font-black uppercase tracking-widest mb-3">إجمالي المواد</p>
+            <h3 className="text-4xl font-black text-primary group-hover:scale-110 transition-transform origin-right">{chemicals.length}</h3>
           </div>
-        </div>
-      </section>
+          <div className="bg-error-container/40 p-7 rounded-[32px] border border-error/10 hover:border-error/20 transition-all group">
+            <p className="text-xs text-on-error-container/60 font-black uppercase tracking-widest mb-3">مواد خطرة</p>
+            <h3 className="text-4xl font-black text-error group-hover:scale-110 transition-transform origin-right">
+              {chemicals.filter(c => (c.ghs && c.ghs.length > 0) || c.hazardClass === 'danger').length}
+            </h3>
+          </div>
+          <div className="bg-tertiary-fixed/40 p-7 rounded-[32px] border border-tertiary/10 hover:border-tertiary/20 transition-all group">
+            <p className="text-xs text-on-tertiary-fixed/60 font-black uppercase tracking-widest mb-3">تنتهي قريباً</p>
+            <h3 className="text-4xl font-black text-tertiary group-hover:scale-110 transition-transform origin-right">
+              {chemicals.filter(c => {
+                if (!c.expiryDate) return false;
+                const expiry = new Date(c.expiryDate);
+                const threeMonthsFromNow = new Date();
+                threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+                return expiry < threeMonthsFromNow && expiry > new Date();
+              }).length.toString().padStart(2, '0')}
+            </h3>
+          </div>
+          <div className="bg-primary p-7 rounded-[32px] text-on-primary shadow-xl shadow-primary/20 hover:shadow-2xl transition-all group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10">
+              <p className="text-white/60 text-xs font-black uppercase tracking-widest mb-3">سعة التخزين</p>
+              <h3 className="text-4xl font-black">68%</h3>
+            </div>
+          </div>
+        </section>
+      )}
 
       {lowStockCount > 0 && (
         <motion.div 
