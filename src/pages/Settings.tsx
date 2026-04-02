@@ -116,7 +116,7 @@ export default function SettingsPage() {
           // Determine collection based on headers or a specific field
           let collectionName: 'chemicals' | 'teachers' | 'equipment' = 'chemicals';
           if (item['المادة'] || item['Subject']) collectionName = 'teachers';
-          else if (item['النوع'] || item['Type']) collectionName = 'equipment';
+          else if (item['النوع'] || item['Type'] || item['تعيين الجهاز'] || item['اسم الجهاز'] || item['رقم الجرد']) collectionName = 'equipment';
 
           const docRef = doc(getUserCollection(collectionName));
           
@@ -149,15 +149,22 @@ export default function SettingsPage() {
           } else if (collectionName === 'equipment') {
             const type = (item['النوع'] || item['Type'] || 'other').toLowerCase();
             const status = (item['الحالة'] || item['Status'] || 'functional').toLowerCase();
-            const name = item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
+            const name = item['اسم الجهاز'] || item['تعيين الجهاز'] || item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
+            const quantity = Number(item['الكمية'] || item['الكمية الإجمالية'] || item['Total'] || 0);
+
             batch.set(docRef, {
               name: String(name).trim() || 'جهاز غير مسمى',
               type: type === 'زجاجيات' || type === 'glassware' ? 'glassware' : type === 'أجهزة' || type === 'tech' ? 'tech' : 'other',
-              serialNumber: item['الرقم التسلسلي'] || item['Serial'] || '',
-              status: status === 'سليم' || status === 'functional' ? 'functional' : status === 'صيانة' || status === 'maintenance' ? 'maintenance' : 'broken',
-              totalQuantity: Number(item['الكمية الإجمالية'] || item['Total'] || 0),
-              availableQuantity: Number(item['الكمية المتوفرة'] || item['Available'] || 0),
-              brokenQuantity: Number(item['الكمية التالفة'] || item['Broken'] || 0),
+              serialNumber: item['رقم الجرد'] || item['الرقم التسلسلي'] || item['Serial'] || '',
+              status: status === 'سليم' || status === 'جيدة' || status === 'functional' ? 'functional' : status === 'صيانة' || status === 'maintenance' ? 'maintenance' : 'broken',
+              totalQuantity: isNaN(quantity) ? 0 : quantity,
+              availableQuantity: isNaN(quantity) ? 0 : quantity,
+              brokenQuantity: 0,
+              supplier: item['المورد'] || item['الممون'] || '',
+              location: item['الموقع'] || '',
+              notes: item['ملاحظات'] || '',
+              foundationalInventory: item['سنة الاقتناء'] || item['الجرد التأسيسي'] || '',
+              decennialReview: item['المراجعة العشرية'] || '',
               createdAt: serverTimestamp()
             });
           }
@@ -467,15 +474,17 @@ export default function SettingsPage() {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error: any) {
-      console.error(`Error linking ${providerName}:`, error);
-      if (error.code === 'auth/credential-already-in-use') {
-        setLinkingError('هذا الحساب مرتبط بالفعل بمستخدم آخر.');
-      } else if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
         setLinkingError('تم إغلاق نافذة تسجيل الدخول قبل إتمام العملية.');
-      } else if (error.code === 'auth/operation-not-allowed') {
-        setLinkingError('تسجيل الدخول عبر فيسبوك غير مفعل في إعدادات Firebase.');
       } else {
-        setLinkingError('حدث خطأ أثناء ربط الحساب. يرجى المحاولة مرة أخرى.');
+        console.error(`Error linking ${providerName}:`, error);
+        if (error.code === 'auth/credential-already-in-use') {
+          setLinkingError('هذا الحساب مرتبط بالفعل بمستخدم آخر.');
+        } else if (error.code === 'auth/operation-not-allowed') {
+          setLinkingError('تسجيل الدخول عبر فيسبوك غير مفعل في إعدادات Firebase.');
+        } else {
+          setLinkingError('حدث خطأ أثناء ربط الحساب. يرجى المحاولة مرة أخرى.');
+        }
       }
     }
   };

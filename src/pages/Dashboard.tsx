@@ -104,7 +104,7 @@ export default function Dashboard() {
           // Determine collection based on headers or a specific field
           let collectionName = 'chemicals';
           if (item['المادة'] || item['Subject']) collectionName = 'teachers';
-          else if (item['النوع'] || item['Type']) collectionName = 'equipment';
+          else if (item['النوع'] || item['Type'] || item['تعيين الجهاز']) collectionName = 'equipment';
 
           const docRef = doc(getUserCollection(collectionName));
           
@@ -142,15 +142,22 @@ export default function Dashboard() {
           } else if (collectionName === 'equipment') {
             const type = (item['النوع'] || item['Type'] || 'other').toLowerCase();
             const status = (item['الحالة'] || item['Status'] || 'functional').toLowerCase();
-            const name = item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
+            const name = item['تعيين الجهاز'] || item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
+            const quantity = Number(item['الكمية'] || item['الكمية الإجمالية'] || item['Total'] || 0);
+            
             batch.set(docRef, {
               name: String(name).trim() || 'جهاز غير مسمى',
               type: type === 'زجاجيات' || type === 'glassware' ? 'glassware' : type === 'أجهزة' || type === 'tech' ? 'tech' : 'other',
-              serialNumber: item['الرقم التسلسلي'] || item['Serial'] || '',
+              serialNumber: item['رقم الجرد'] || item['الرقم التسلسلي'] || item['Serial'] || '',
               status: status === 'سليم' || status === 'functional' ? 'functional' : status === 'صيانة' || status === 'maintenance' ? 'maintenance' : 'broken',
-              totalQuantity: Number(item['الكمية الإجمالية'] || item['Total'] || 0),
-              availableQuantity: Number(item['الكمية المتوفرة'] || item['Available'] || 0),
-              brokenQuantity: Number(item['الكمية التالفة'] || item['Broken'] || 0),
+              totalQuantity: isNaN(quantity) ? 0 : quantity,
+              availableQuantity: isNaN(quantity) ? 0 : quantity,
+              brokenQuantity: 0,
+              supplier: item['الممون'] || '',
+              location: item['الموقع'] || '',
+              notes: item['ملاحظات'] || '',
+              foundationalInventory: item['الجرد التأسيسي'] || '',
+              decennialReview: item['المراجعة العشرية'] || '',
               createdAt: serverTimestamp()
             });
           }
@@ -253,7 +260,12 @@ export default function Dashboard() {
                 <h4 className="font-black text-lg mb-1 text-error">تنبيه حرج: مخزون الكواشف</h4>
                 <p className="text-sm text-error/70 font-bold">هناك {counts.lowStock} مواد كيميائية وصلت إلى الحد الأدنى.</p>
               </div>
-              <button className="relative z-10 bg-error text-white text-xs font-black px-8 py-4 rounded-full shadow-lg shadow-error/20 hover:bg-error/90 transition-all active:scale-95">معالجة المخزون</button>
+              <button 
+                onClick={() => navigate('/chemicals')}
+                className="relative z-10 bg-error text-white text-xs font-black px-8 py-4 rounded-full shadow-lg shadow-error/20 hover:bg-error/90 transition-all active:scale-95"
+              >
+                معالجة المخزون
+              </button>
             </motion.div>
           )}
           
@@ -272,7 +284,12 @@ export default function Dashboard() {
                 <h4 className="font-black text-lg mb-1 text-primary">صيانة مطلوبة</h4>
                 <p className="text-sm text-primary/70 font-bold">هناك {counts.brokenEquip} أجهزة تحتاج إلى صيانة فورية.</p>
               </div>
-              <button className="relative z-10 bg-primary text-on-primary text-xs font-black px-8 py-4 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">سجل الصيانة</button>
+              <button 
+                onClick={() => navigate('/equipment')}
+                className="relative z-10 bg-primary text-on-primary text-xs font-black px-8 py-4 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+              >
+                سجل الصيانة
+              </button>
             </motion.div>
           )}
         </section>

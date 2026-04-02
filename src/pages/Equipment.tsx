@@ -37,6 +37,11 @@ interface Equipment {
   brokenQuantity: number;
   lastCalibration?: string;
   nextCalibration?: string;
+  supplier?: string;
+  location?: string;
+  notes?: string;
+  foundationalInventory?: string;
+  decennialReview?: string;
 }
 
 interface MaintenanceLog {
@@ -52,6 +57,8 @@ export default function Equipment() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +74,12 @@ export default function Equipment() {
     status: 'functional',
     totalQuantity: 0,
     availableQuantity: 0,
-    brokenQuantity: 0
+    brokenQuantity: 0,
+    supplier: '',
+    location: '',
+    notes: '',
+    foundationalInventory: '',
+    decennialReview: ''
   });
 
   useEffect(() => {
@@ -140,16 +152,22 @@ export default function Equipment() {
           const docRef = doc(getUserCollection('equipment'));
           const type = (item['النوع'] || item['Type'] || 'other').toLowerCase();
           const status = (item['الحالة'] || item['Status'] || 'functional').toLowerCase();
-          const name = item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
+          const name = item['تعيين الجهاز'] || item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
+          const quantity = Number(item['الكمية'] || item['الكمية الإجمالية'] || item['Total'] || 0);
           
           batch.set(docRef, {
             name: String(name).trim() || 'جهاز غير مسمى',
             type: type === 'زجاجيات' || type === 'glassware' ? 'glassware' : type === 'أجهزة' || type === 'tech' ? 'tech' : 'other',
-            serialNumber: item['الرقم التسلسلي'] || item['Serial'] || '',
+            serialNumber: item['رقم الجرد'] || item['الرقم التسلسلي'] || item['Serial'] || '',
             status: status === 'سليم' || status === 'functional' ? 'functional' : status === 'صيانة' || status === 'maintenance' ? 'maintenance' : 'broken',
-            totalQuantity: Number(item['الكمية الإجمالية'] || item['Total'] || 0),
-            availableQuantity: Number(item['الكمية المتوفرة'] || item['Available'] || 0),
-            brokenQuantity: Number(item['الكمية التالفة'] || item['Broken'] || 0),
+            totalQuantity: isNaN(quantity) ? 0 : quantity,
+            availableQuantity: isNaN(quantity) ? 0 : quantity,
+            brokenQuantity: 0,
+            supplier: item['الممون'] || '',
+            location: item['الموقع'] || '',
+            notes: item['ملاحظات'] || '',
+            foundationalInventory: item['الجرد التأسيسي'] || '',
+            decennialReview: item['المراجعة العشرية'] || '',
             createdAt: serverTimestamp()
           });
         });
@@ -202,6 +220,31 @@ export default function Equipment() {
     }
   };
 
+  const handleExportXLS = () => {
+    if (equipment.length === 0) {
+      alert('لا توجد بيانات لتصديرها.');
+      return;
+    }
+
+    const exportData = equipment.map(e => ({
+      'رقم الجرد': e.serialNumber || '---',
+      'تعيين الجهاز': e.name,
+      'النوع': e.type === 'glassware' ? 'زجاجيات' : e.type === 'tech' ? 'أجهزة تقنية' : 'أخرى',
+      'الكمية': e.totalQuantity,
+      'الممون': e.supplier || '---',
+      'الموقع': e.location || '---',
+      'الحالة': e.status === 'functional' ? 'سليم' : e.status === 'maintenance' ? 'صيانة' : 'تالف',
+      'الجرد التأسيسي': e.foundationalInventory || '---',
+      'المراجعة العشرية': e.decennialReview || '---',
+      'ملاحظات': e.notes || '---'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Equipment");
+    XLSX.writeFile(workbook, `جرد_العتاد_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   const handlePrint = (e: Equipment) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -244,9 +287,12 @@ export default function Equipment() {
     printWindow.document.close();
   };
 
-  const filteredEquipment = equipment.filter(e => 
-    e.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEquipment = equipment.filter(e => {
+    const matchesSearch = e.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === 'all' || e.type === filterType;
+    const matchesStatus = filterStatus === 'all' || e.status === filterStatus;
+    return matchesSearch && matchesType && matchesStatus;
+  });
 
   const totalPieces = equipment.reduce((acc, curr) => acc + (curr.totalQuantity || 0), 0);
   const totalAvailable = equipment.reduce((acc, curr) => acc + (curr.availableQuantity || 0), 0);
@@ -285,7 +331,10 @@ export default function Equipment() {
             )}
             استيراد XLS
           </button>
-          <button className="bg-white text-primary border-2 border-primary/10 px-8 py-4 rounded-full font-black flex items-center gap-3 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95">
+          <button 
+            onClick={handleExportXLS}
+            className="bg-white text-primary border-2 border-primary/10 px-8 py-4 rounded-full font-black flex items-center gap-3 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+          >
             <Download size={22} />
             تصدير الجرد
           </button>
@@ -305,19 +354,21 @@ export default function Equipment() {
       {/* Stats */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {[
-          { label: 'إجمالي القطع', value: totalPieces, icon: Package, color: 'bg-primary/10', textColor: 'text-primary' },
-          { label: 'السليم/المتوفر', value: totalAvailable, icon: CheckCircle, color: 'bg-primary/5', textColor: 'text-primary' },
-          { label: 'المكسور/التالف', value: totalBroken, icon: AlertTriangle, color: 'bg-error/10', textColor: 'text-error' },
-          { label: 'بحاجة لمعايرة', value: '08', icon: Wrench, color: 'bg-surface-container-low', textColor: 'text-primary' },
+          { label: 'إجمالي القطع', value: totalPieces, icon: Package, color: 'bg-primary/10', textColor: 'text-primary', status: 'all' },
+          { label: 'السليم/المتوفر', value: totalAvailable, icon: CheckCircle, color: 'bg-primary/5', textColor: 'text-primary', status: 'functional' },
+          { label: 'المكسور/التالف', value: totalBroken, icon: AlertTriangle, color: 'bg-error/10', textColor: 'text-error', status: 'broken' },
+          { label: 'بحاجة لمعايرة', value: '08', icon: Wrench, color: 'bg-surface-container-low', textColor: 'text-primary', status: 'maintenance' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
+            onClick={() => setFilterStatus(stat.status)}
             className={cn(
-              "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl",
-              stat.color
+              "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl cursor-pointer",
+              stat.color,
+              filterStatus === stat.status && "ring-4 ring-primary/20 border-primary"
             )}
           >
             <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
@@ -347,9 +398,18 @@ export default function Equipment() {
             />
           </div>
           <div className="flex gap-4">
-            <div className="flex items-center gap-2 bg-white px-6 py-4 rounded-full border border-outline/10 shadow-sm">
+            <div className="flex items-center gap-2 bg-white px-6 py-2 rounded-full border border-outline/10 shadow-sm">
               <Filter size={18} className="text-primary/40" />
-              <span className="text-sm font-black text-primary">تصفية حسب النوع</span>
+              <select 
+                className="bg-transparent border-none text-sm font-black text-primary focus:ring-0 cursor-pointer"
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+              >
+                <option value="all">كل الأنواع</option>
+                <option value="glassware">زجاجيات</option>
+                <option value="tech">أجهزة تقنية</option>
+                <option value="other">أخرى</option>
+              </select>
             </div>
             <div className="flex items-center gap-2 text-primary/40 px-4">
               <Sparkles size={20} />
@@ -362,18 +422,20 @@ export default function Equipment() {
           <table className="w-full text-right border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 text-on-surface/40 text-xs font-black uppercase tracking-[0.2em]">
-                <th className="px-10 py-6">الصنف والبيانات التقنية</th>
-                <th className="px-10 py-6 text-center">الإجمالي</th>
-                <th className="px-10 py-6 text-center">المكسور</th>
-                <th className="px-10 py-6 text-center">المتوفر</th>
-                <th className="px-10 py-6 text-center">الحالة التشغيلية</th>
+                <th className="px-10 py-6">رقم الجرد</th>
+                <th className="px-10 py-6">تعيين الجهاز</th>
+                <th className="px-10 py-6 text-center">الكمية</th>
+                <th className="px-10 py-6 text-center">الممون</th>
+                <th className="px-10 py-6 text-center">الموقع</th>
+                <th className="px-10 py-6 text-center">الحالة</th>
+                <th className="px-10 py-6 text-center">ملاحظات</th>
                 <th className="px-10 py-6"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline/5">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-10 py-24 text-center">
+                  <td colSpan={8} className="px-10 py-24 text-center">
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
                       <p className="text-on-surface/40 font-black uppercase tracking-widest text-xs">جاري تحميل البيانات...</p>
@@ -382,7 +444,7 @@ export default function Equipment() {
                 </tr>
               ) : filteredEquipment.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-10 py-24 text-center">
+                  <td colSpan={8} className="px-10 py-24 text-center">
                     <div className="flex flex-col items-center gap-4 opacity-20">
                       <Package size={64} />
                       <p className="text-xl font-black">لا توجد أصناف مطابقة للبحث</p>
@@ -393,29 +455,26 @@ export default function Equipment() {
                 filteredEquipment.map((e) => (
                   <tr key={e.id} className="hover:bg-primary/[0.02] transition-colors group">
                     <td className="px-10 py-8">
-                      <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-[24px] bg-surface-container-low flex items-center justify-center text-primary shadow-inner group-hover:scale-110 transition-transform duration-500">
-                          {e.type === 'tech' ? <Monitor size={32} /> : <Beaker size={32} />}
+                      <span className="text-sm font-black text-primary/60 bg-surface-container-low px-3 py-1 rounded-full">
+                        {e.serialNumber || '---'}
+                      </span>
+                    </td>
+                    <td className="px-10 py-8">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-inner">
+                          {e.type === 'tech' ? <Monitor size={24} /> : <Beaker size={24} />}
                         </div>
-                        <div>
-                          <p className="text-xl font-black text-primary mb-1 font-serif">{e.name}</p>
-                          <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/30 bg-surface-container-low px-2 py-0.5 rounded">SN: {e.serialNumber || 'N/A'}</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{e.type === 'glassware' ? 'زجاجيات' : e.type === 'tech' ? 'أجهزة تقنية' : 'أخرى'}</span>
-                          </div>
-                        </div>
+                        <p className="text-lg font-black text-primary font-serif">{e.name}</p>
                       </div>
                     </td>
                     <td className="px-10 py-8 text-center">
-                      <span className="text-2xl font-black text-primary/40">{e.totalQuantity}</span>
+                      <span className="text-xl font-black text-primary">{e.totalQuantity}</span>
                     </td>
                     <td className="px-10 py-8 text-center">
-                      <span className="text-2xl font-black text-error">{e.brokenQuantity}</span>
+                      <span className="text-sm font-bold text-on-surface/60">{e.supplier || '---'}</span>
                     </td>
                     <td className="px-10 py-8 text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/5 border-2 border-primary/10 text-2xl font-black text-primary shadow-inner">
-                        {e.availableQuantity}
-                      </div>
+                      <span className="text-sm font-bold text-on-surface/60">{e.location || '---'}</span>
                     </td>
                     <td className="px-10 py-8 text-center">
                       <select 
@@ -427,10 +486,13 @@ export default function Equipment() {
                         value={e.status}
                         onChange={(ev) => handleUpdateStatus(e.id, e.status, ev.target.value)}
                       >
-                        <option value="functional">سليم / نشط</option>
-                        <option value="maintenance">قيد الصيانة</option>
-                        <option value="broken">تالف / خارج الخدمة</option>
+                        <option value="functional">سليم</option>
+                        <option value="maintenance">صيانة</option>
+                        <option value="broken">تالف</option>
                       </select>
+                    </td>
+                    <td className="px-10 py-8 text-center">
+                      <p className="text-xs text-on-surface/40 max-w-[150px] truncate" title={e.notes}>{e.notes || '---'}</p>
                     </td>
                     <td className="px-10 py-8 text-left">
                       <div className="flex gap-3 justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
@@ -444,7 +506,12 @@ export default function Equipment() {
                               status: e.status,
                               totalQuantity: e.totalQuantity,
                               availableQuantity: e.availableQuantity,
-                              brokenQuantity: e.brokenQuantity
+                              brokenQuantity: e.brokenQuantity,
+                              supplier: e.supplier || '',
+                              location: e.location || '',
+                              notes: e.notes || '',
+                              foundationalInventory: e.foundationalInventory || '',
+                              decennialReview: e.decennialReview || ''
                             });
                             setIsAddModalOpen(true);
                           }}
@@ -526,7 +593,12 @@ export default function Equipment() {
                       status: 'functional',
                       totalQuantity: 0,
                       availableQuantity: 0,
-                      brokenQuantity: 0
+                      brokenQuantity: 0,
+                      supplier: '',
+                      location: '',
+                      notes: '',
+                      foundationalInventory: '',
+                      decennialReview: ''
                     });
                   }} 
                   className="p-4 hover:bg-error/10 hover:text-error rounded-full transition-all active:scale-90"
@@ -602,6 +674,51 @@ export default function Equipment() {
                       const val = Number(e.target.value);
                       setNewEquipment({...newEquipment, brokenQuantity: val, availableQuantity: (newEquipment.totalQuantity || 0) - val});
                     }}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الممون</label>
+                  <input 
+                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                    placeholder="اسم الممون"
+                    value={newEquipment.supplier}
+                    onChange={e => setNewEquipment({...newEquipment, supplier: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الموقع</label>
+                  <input 
+                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                    placeholder="مكان التخزين"
+                    value={newEquipment.location}
+                    onChange={e => setNewEquipment({...newEquipment, location: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الجرد التأسيسي</label>
+                  <input 
+                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                    placeholder="بيانات الجرد التأسيسي"
+                    value={newEquipment.foundationalInventory}
+                    onChange={e => setNewEquipment({...newEquipment, foundationalInventory: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">المراجعة العشرية</label>
+                  <input 
+                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                    placeholder="بيانات المراجعة العشرية"
+                    value={newEquipment.decennialReview}
+                    onChange={e => setNewEquipment({...newEquipment, decennialReview: e.target.value})}
+                  />
+                </div>
+                <div className="col-span-full space-y-3">
+                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">ملاحظات</label>
+                  <textarea 
+                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner min-h-[100px]"
+                    placeholder="أي ملاحظات إضافية..."
+                    value={newEquipment.notes}
+                    onChange={e => setNewEquipment({...newEquipment, notes: e.target.value})}
                   />
                 </div>
                 <div className="md:col-span-2 pt-8">
