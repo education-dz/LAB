@@ -1,9 +1,18 @@
+@font-face {
+  font-family: 'ManaraDocsAmatti';
+  src: url('/ManaraDocs_Amatti.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&family=Work+Sans:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Amiri", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-report: "ManaraDocsAmatti", "Amiri", serif;
   --font-mono: "Work Sans", ui-monospace, SFMono-Regular, monospace;
 
   --color-primary: #2b3d22;
