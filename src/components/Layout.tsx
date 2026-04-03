@@ -57,7 +57,7 @@ export default function Layout() {
     <div className="min-h-screen bg-surface flex rtl text-right" dir="rtl">
       {/* SideNavBar */}
       <aside className={cn(
-        "fixed right-0 top-0 h-full z-40 flex flex-col bg-surface-container-low transition-all duration-300",
+        "fixed right-0 top-0 h-full z-40 flex flex-col bg-surface-container-low transition-all duration-300 no-print",
         isSidebarOpen ? "w-72" : "w-20"
       )}>
         <div className="p-6 flex flex-col items-center gap-2">
@@ -110,11 +110,11 @@ export default function Layout() {
 
       {/* Main Content Area */}
       <div className={cn(
-        "flex-1 flex flex-col transition-all duration-300",
+        "flex-1 flex flex-col transition-all duration-300 print:mr-0",
         isSidebarOpen ? "mr-72" : "mr-20"
       )}>
         {/* TopAppBar */}
-        <header className="h-16 bg-surface/80 backdrop-blur-md sticky top-0 z-30 flex justify-between items-center px-8">
+        <header className="h-16 bg-surface/80 backdrop-blur-md sticky top-0 z-30 flex justify-between items-center px-8 no-print">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -187,7 +187,7 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="p-8">
+        <main className="p-8 print:p-0">
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>

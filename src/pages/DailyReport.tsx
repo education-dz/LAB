@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Printer, ChevronLeft, Save, History, FileText, Loader2, CheckCircle2, Clock, Boxes } from 'lucide-react';
+import { Trash2, Plus, Printer, ChevronLeft, Save, History, FileText, Loader2, CheckCircle2, Clock, Boxes, FileDown, FileJson } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, query, where, getDocs, serverTimestamp, orderBy, onSnapshot, addDoc } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
@@ -10,6 +10,8 @@ import { useTimeSlots } from '../hooks/useTimeSlots';
 import TimeSlotManager from '../components/TimeSlotManager';
 import ClassPicker from '../components/ClassPicker';
 import ResourcePicker from '../components/ResourcePicker';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ReportRow {
   id: number;
@@ -263,6 +265,118 @@ export default function DailyReport() {
     window.print();
   };
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    // Add a simple header
+    doc.setFontSize(18);
+    doc.text('التقرير اليومي للمخبر', 105, 20, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`التاريخ: ${date}`, 105, 30, { align: 'center' });
+    doc.text(`المؤسسة: ${institution?.school || ''}`, 105, 35, { align: 'center' });
+
+    const tableData = rows.map((row, index) => [
+      row.notes,
+      row.equipment,
+      row.activityTitle,
+      row.class,
+      row.time,
+      `${row.teacher}\n(${row.teacherSubject || ''})`,
+      index + 1
+    ]);
+
+    autoTable(doc, {
+      head: [['ملاحظات', 'الوسائل والمواد', 'النشاط', 'القسم', 'التوقيت', 'الأستاذ', 'رقم']],
+      body: tableData,
+      startY: 45,
+      styles: { 
+        font: 'helvetica', 
+        halign: 'right',
+        fontSize: 10,
+        cellPadding: 5
+      },
+      headStyles: { 
+        fillColor: [43, 61, 34], // primary color
+        textColor: [255, 255, 255],
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 10, halign: 'center' }
+      },
+      theme: 'grid'
+    });
+
+    doc.save(`daily-report-${date}.pdf`);
+  };
+
+  const handleExportWord = () => {
+    const header = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='utf-8'><title>التقرير اليومي للمخبر</title>
+      <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 8px; text-align: right; }
+        .header { text-align: center; margin-bottom: 20px; }
+      </style>
+      </head><body>
+    `;
+    const footer = "</body></html>";
+    
+    let tableHtml = `
+      <div class="header">
+        <h1>التقرير اليومي للمخبر</h1>
+        <p>التاريخ: ${date}</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>رقم</th>
+            <th>الأستاذ</th>
+            <th>التوقيت</th>
+            <th>القسم</th>
+            <th>النشاط</th>
+            <th>الوسائل والمواد</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    rows.forEach((row, index) => {
+      tableHtml += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${row.teacher}<br/>${row.teacherSubject || ''}</td>
+          <td>${row.time}</td>
+          <td>${row.class}</td>
+          <td>${row.activityTitle}</td>
+          <td>${row.equipment}</td>
+          <td>${row.notes}</td>
+        </tr>
+      `;
+    });
+
+    tableHtml += "</tbody></table>";
+    
+    const source = header + tableHtml + footer;
+    const blob = new Blob(['\ufeff', source], {
+      type: 'application/msword'
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `daily-report-${date}.doc`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const loadReport = (report: SavedReport) => {
     setDate(report.date);
     const fetchedRows = (report.rows || []).map((row: any, i: number) => ({
@@ -364,25 +478,42 @@ export default function DailyReport() {
             {isSaving ? <Loader2 size={22} className="animate-spin" /> : <Save size={22} />}
             حفظ التقرير
           </button>
-          <button 
-            onClick={handlePrint}
-            className="bg-primary text-on-primary px-10 py-4 rounded-full flex items-center gap-3 shadow-xl shadow-primary/20 hover:bg-primary-container transition-all active:scale-95 font-black"
-          >
-            <Printer size={22} />
-            طباعة
-          </button>
+          
+          <div className="flex bg-white rounded-full border-2 border-primary/10 p-1.5 shadow-md gap-1">
+            <button 
+              onClick={handleExportPDF}
+              className="p-3 text-primary hover:bg-primary/5 rounded-full transition-all hover:scale-110 active:scale-95"
+              title="تصدير PDF"
+            >
+              <FileDown size={22} />
+            </button>
+            <button 
+              onClick={handleExportWord}
+              className="p-3 text-primary hover:bg-primary/5 rounded-full transition-all hover:scale-110 active:scale-95"
+              title="تصدير Word"
+            >
+              <FileText size={22} />
+            </button>
+            <button 
+              onClick={handlePrint}
+              className="bg-primary text-on-primary px-12 py-3 rounded-full flex items-center gap-3 shadow-xl shadow-primary/30 hover:bg-primary-container transition-all active:scale-95 font-black ring-4 ring-primary/10"
+            >
+              <Printer size={22} />
+              طباعة التقرير
+            </button>
+          </div>
         </div>
       </div>
 
       <AnimatePresence mode="wait">
         {activeTab === 'new' ? (
-          <motion.div 
-            key="new-report"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="max-w-5xl mx-auto bg-white rounded-[40px] shadow-2xl p-8 md:p-16 min-h-[29.7cm] border border-outline/5 font-serif print:shadow-none print:border-none print:p-0 relative overflow-hidden"
-          >
+            <motion.div 
+              key="new-report"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-5xl mx-auto bg-white rounded-[40px] shadow-2xl p-8 md:p-16 min-h-[29.7cm] border border-outline/5 font-serif print:shadow-none print:border-none print:p-0 relative overflow-hidden print:max-w-none print:w-full print:rounded-none"
+            >
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-[200px] -mr-20 -mt-20 print:hidden" />
         
