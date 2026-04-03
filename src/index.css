@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Work+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&family=Work+Sans:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Amiri", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Work Sans", ui-monospace, SFMono-Regular, monospace;
 
   --color-primary: #2b3d22;
@@ -84,22 +85,29 @@
     background-color: white !important;
     padding: 0 !important;
     margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   @page {
-    margin: 1cm;
-    size: auto;
+    margin: 1.5cm;
+    size: A4 portrait;
   }
 
   /* Ensure the report container takes full width and is visible */
-  #root {
+  #root, main {
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
   }
 
-  main {
-    padding: 0 !important;
+  .print-container {
+    width: 100% !important;
     margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
   }
 }
 

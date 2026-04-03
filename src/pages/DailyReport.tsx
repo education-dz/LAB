@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Printer, ChevronLeft, Save, History, FileText, Loader2, CheckCircle2, Clock, Boxes, FileDown, FileJson } from 'lucide-react';
+import { Trash2, Plus, Printer, ChevronLeft, Save, History, FileText, Loader2, CheckCircle2, Clock, Boxes, FileDown, FileJson, ChevronUp, ChevronDown, User, Users, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc, setDoc, query, where, getDocs, serverTimestamp, orderBy, onSnapshot, addDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, query, where, getDocs, serverTimestamp, orderBy, onSnapshot, addDoc, limit, deleteDoc } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -42,6 +42,7 @@ interface InstitutionSettings {
 interface SavedReport {
   id: string;
   date: string;
+  reportNumber?: string;
   rows: Omit<ReportRow, 'id'>[];
   labNotes: string;
   supervisorNotes: string;
@@ -65,6 +66,7 @@ export default function DailyReport() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [reportNumber, setReportNumber] = useState<string>('');
   const [rows, setRows] = useState<ReportRow[]>([
     { id: 1, teacher: '', teacherSubject: '', time: '', class: '', activityType: '', activityTitle: '', equipment: '', notes: '' },
   ]);
@@ -74,6 +76,8 @@ export default function DailyReport() {
   const [institution, setInstitution] = useState<InstitutionSettings | null>(null);
   const [history, setHistory] = useState<SavedReport[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -169,6 +173,31 @@ export default function DailyReport() {
     }
   }, [activeTab]);
 
+  const generateNextReportNumber = async () => {
+    if (!auth.currentUser) return '01';
+    
+    try {
+      const reportsRef = getUserCollection('daily_reports');
+      const q = query(
+        reportsRef,
+        where('createdBy', '==', auth.currentUser.uid),
+        orderBy('createdAt', 'desc'),
+        limit(1)
+      );
+      
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return '01';
+      
+      const lastReport = snapshot.docs[0].data();
+      const lastNumber = parseInt(lastReport.reportNumber || '0');
+      const nextNumber = (lastNumber + 1).toString().padStart(2, '0');
+      return nextNumber;
+    } catch (error) {
+      console.error('Error generating report number:', error);
+      return '01';
+    }
+  };
+
   const fetchReportForDate = async (selectedDate: string) => {
     if (!auth.currentUser) return;
     
@@ -183,6 +212,7 @@ export default function DailyReport() {
       
       if (!querySnapshot.empty) {
         const reportData = querySnapshot.docs[0].data();
+        setReportNumber(reportData.reportNumber || '');
         const fetchedRows = (reportData.rows || []).map((row: any, i: number) => ({
           id: i + 1,
           teacher: row.teacher || '',
@@ -199,6 +229,9 @@ export default function DailyReport() {
         setSupervisorNotes(reportData.supervisorNotes || '');
         setDirectorNotes(reportData.directorNotes || '');
       } else {
+        // New report
+        const nextNum = await generateNextReportNumber();
+        setReportNumber(nextNum);
         // Reset to empty rows if no report found for this date
         setRows([
           { id: 1, teacher: '', teacherSubject: '', time: '', class: '', activityType: '', activityTitle: '', equipment: '', notes: '' },
@@ -234,6 +267,18 @@ export default function DailyReport() {
     setRows(rows.map(r => r.id === id ? { ...r, [field]: value } : r));
   };
 
+  const moveRow = (id: number, direction: 'up' | 'down') => {
+    const index = rows.findIndex(r => r.id === id);
+    if (index === -1) return;
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === rows.length - 1) return;
+
+    const newRows = [...rows];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newRows[index], newRows[targetIndex]] = [newRows[targetIndex], newRows[index]];
+    setRows(newRows);
+  };
+
   const handleSave = async () => {
     if (!auth.currentUser) return;
     setIsSaving(true);
@@ -241,6 +286,7 @@ export default function DailyReport() {
       const reportId = `${auth.currentUser.uid}_${date}`;
       await setDoc(doc(getUserCollection('daily_reports'), reportId), {
         date,
+        reportNumber,
         dayName: getDayName(date),
         rows,
         labNotes,
@@ -260,12 +306,37 @@ export default function DailyReport() {
     }
   };
 
-  const handlePrint = () => {
+  const handleDelete = async () => {
+    if (!auth.currentUser) return;
+    setIsDeleting(true);
+    try {
+      const reportId = `${auth.currentUser.uid}_${date}`;
+      await deleteDoc(doc(getUserCollection('daily_reports'), reportId));
+      
+      // Reset state
+      setRows([
+        { id: 1, teacher: '', teacherSubject: '', time: '', class: '', activityType: '', activityTitle: '', equipment: '', notes: '' },
+      ]);
+      setLabNotes('');
+      setSupervisorNotes('');
+      setDirectorNotes('');
+      setReportNumber(await generateNextReportNumber());
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'daily_reports');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handlePrint = async () => {
+    await handleSave();
     window.focus();
     window.print();
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    await handleSave();
     const doc = new jsPDF('p', 'mm', 'a4');
     
     // Add a simple header
@@ -315,7 +386,8 @@ export default function DailyReport() {
     doc.save(`daily-report-${date}.pdf`);
   };
 
-  const handleExportWord = () => {
+  const handleExportWord = async () => {
+    await handleSave();
     const header = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
       <head><meta charset='utf-8'><title>التقرير اليومي للمخبر</title>
@@ -379,6 +451,7 @@ export default function DailyReport() {
 
   const loadReport = (report: SavedReport) => {
     setDate(report.date);
+    setReportNumber(report.reportNumber || '');
     const fetchedRows = (report.rows || []).map((row: any, i: number) => ({
       id: i + 1,
       teacher: row.teacher || '',
@@ -429,6 +502,43 @@ export default function DailyReport() {
         }}
         initialValue={resourcePickerState.rowId !== null ? rows.find(r => r.id === resourcePickerState.rowId)?.equipment : ''}
       />
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm no-print">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[32px] p-8 max-w-md w-full shadow-2xl border border-outline/10 text-center"
+            >
+              <div className="w-20 h-20 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Trash2 size={40} className="text-error" />
+              </div>
+              <h3 className="text-2xl font-black text-primary mb-2">تأكيد الحذف</h3>
+              <p className="text-secondary font-bold mb-8">هل أنت متأكد من رغبتك في حذف هذا التقرير؟ لا يمكن التراجع عن هذا الإجراء.</p>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 py-4 rounded-2xl bg-surface-container-high text-primary font-black hover:bg-surface-container-highest transition-all"
+                >
+                  إلغاء
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 py-4 rounded-2xl bg-error text-on-error font-black shadow-lg shadow-error/20 hover:bg-error/90 transition-all flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
+                  تأكيد الحذف
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation & Tabs */}
       <div className="max-w-5xl mx-auto mb-10 no-print flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-4">
@@ -457,7 +567,7 @@ export default function DailyReport() {
               )}
             >
               <History size={18} />
-              الأرشيف اليومي
+              أرشيف التقارير اليومية
             </button>
           </div>
         </div>
@@ -477,6 +587,15 @@ export default function DailyReport() {
           >
             {isSaving ? <Loader2 size={22} className="animate-spin" /> : <Save size={22} />}
             حفظ التقرير
+          </button>
+
+          <button 
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isDeleting || activeTab === 'history'}
+            className="bg-white text-error border-2 border-error/10 px-6 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-error/30 transition-all active:scale-95 font-black disabled:opacity-50"
+          >
+            {isDeleting ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
+            حذف
           </button>
           
           <div className="flex bg-white rounded-full border-2 border-primary/10 p-1.5 shadow-md gap-1">
@@ -512,57 +631,64 @@ export default function DailyReport() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="max-w-5xl mx-auto bg-white rounded-[40px] shadow-2xl p-8 md:p-16 min-h-[29.7cm] border border-outline/5 font-serif print:shadow-none print:border-none print:p-0 relative overflow-hidden print:max-w-none print:w-full print:rounded-none"
+              className="max-w-5xl mx-auto bg-white rounded-[40px] shadow-2xl p-8 md:p-16 min-h-[29.7cm] border border-outline/5 font-serif print:shadow-none print:border-none print:p-0 relative overflow-hidden print:max-w-none print:w-full print:rounded-none print-container"
             >
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-[200px] -mr-20 -mt-20 print:hidden" />
         
             {/* Header */}
-            <div className="relative z-10 flex justify-between items-start border-b-2 border-primary pb-6 mb-10">
-              <div className="text-right text-[10px] font-black space-y-1.5 text-primary/80">
-                <p>{institution?.directorate}</p>
-                <p>{institution?.school}</p>
-                <p>الرقم: <span className="border-b border-dotted border-primary px-4 inline-block min-w-[60px]"></span> / 2026</p>
+            <div className="relative z-10 flex justify-between items-start border-b-2 border-primary pb-8 mb-12">
+              <div className="text-right text-[11px] font-bold space-y-2 text-primary">
+                <p className="font-black">{institution?.directorate}</p>
+                <p className="font-black">{institution?.school}</p>
+                <p className="text-xs pt-2">الرقم: <span className="border-b-2 border-primary px-6 inline-block min-w-[80px] text-center font-black">{reportNumber}</span> / {new Date(date).getFullYear()}</p>
               </div>
-              <div className="text-center space-y-2">
-                <p className="text-base font-black text-primary tracking-tight">الجمهورية الجزائرية الديمقراطية الشعبية</p>
-                <p className="text-xs font-bold text-primary/70">وزارة التربية الوطنية</p>
+              <div className="text-center space-y-3 flex-1 px-4">
+                <p className="text-xl font-black text-primary tracking-tight leading-relaxed">الجمهورية الجزائرية الديمقراطية الشعبية</p>
+                <p className="text-sm font-black text-primary/80">وزارة التربية الوطنية</p>
+                <div className="w-24 h-1 bg-primary/20 mx-auto rounded-full" />
               </div>
-              <div className="text-left text-[10px] font-black space-y-1.5 text-primary/80">
-                <p>السنة الدراسية: <span className="border-b border-dotted border-primary px-4">2026/2025</span></p>
+              <div className="text-left text-[11px] font-bold space-y-2 text-primary">
+                <p className="font-black">السنة الدراسية: <span className="border-b-2 border-primary px-4 inline-block font-black">2026/2025</span></p>
               </div>
             </div>
 
-            <h2 className="relative z-10 text-3xl font-black text-center mb-12 text-primary tracking-widest">التقريـر اليومي للمخبر</h2>
+            <div className="text-center mb-12">
+              <h2 className="relative z-10 text-4xl font-black text-primary uppercase tracking-[0.2em] inline-block">
+                التقرير اليومي للمخبر
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-1.5 bg-primary rounded-full" />
+              </h2>
+            </div>
 
             {/* Date Info */}
-            <div className="relative z-10 flex flex-wrap gap-10 mb-12 text-sm font-bold text-primary">
-              <div className="flex items-center gap-4 bg-surface-container-low/30 px-6 py-3 rounded-2xl border border-outline/5">
+            <div className="relative z-10 flex flex-wrap gap-10 mb-12 text-sm font-bold text-primary print:mb-8">
+              <div className="flex items-center gap-4 bg-surface-container-low/30 px-6 py-3 rounded-2xl border border-outline/5 print:bg-transparent print:border-none print:px-0">
                 <label className="font-black opacity-40 uppercase tracking-widest text-[10px]">التاريخ:</label>
                 <input 
-                  className="bg-transparent outline-none text-center w-40 font-black border-b border-primary/20 focus:border-primary transition-all" 
+                  className="bg-transparent outline-none text-center w-40 font-black border-b border-primary/20 focus:border-primary transition-all print:border-none print:text-black" 
                   type="date" 
                   value={date}
                   onChange={(e) => handleDateChange(e.target.value)}
                 />
               </div>
-              <div className="flex items-center gap-4 bg-surface-container-low/30 px-6 py-3 rounded-2xl border border-outline/5">
+              <div className="flex items-center gap-4 bg-surface-container-low/30 px-6 py-3 rounded-2xl border border-outline/5 print:bg-transparent print:border-none print:px-0">
                 <label className="font-black opacity-40 uppercase tracking-widest text-[10px]">الموافق ليوم:</label>
-                <span className="font-black text-primary min-w-[80px] text-center">{getDayName(date)}</span>
+                <span className="font-black text-primary min-w-[80px] text-center print:text-black">{getDayName(date)}</span>
               </div>
             </div>
 
         {/* Main Table */}
         <div className="relative z-10 overflow-x-auto">
           <table className="w-full border-collapse border-2 border-primary/20">
-                <thead>
-                  <tr className="bg-surface-container-low text-primary text-[11px] font-black uppercase tracking-widest">
+                <thead className="bg-primary/5 print:bg-transparent">
+                  <tr className="text-primary text-[11px] font-black uppercase tracking-widest print:text-black">
                     <th className="border-2 border-primary/20 p-4 w-12">رقم</th>
                     <th className="border-2 border-primary/20 p-4 w-1/5">الأستاذ(ة)</th>
                     <th className="border-2 border-primary/20 p-4 w-32">التوقيت</th>
                     <th className="border-2 border-primary/20 p-4 w-32">القسم</th>
                     <th className="border-2 border-primary/20 p-4">النشاط التطبيقي</th>
                     <th className="border-2 border-primary/20 p-4 w-1/5">الأجهزة المستعملة</th>
+                    <th className="border-2 border-primary/20 p-4 w-16 no-print">ترتيب</th>
                     <th className="border-2 border-primary/20 p-4 w-32">ملاحظات</th>
                     <th className="border-2 border-primary/20 p-4 w-12 no-print"></th>
                   </tr>
@@ -571,7 +697,7 @@ export default function DailyReport() {
                   {rows.map((row, index) => (
                     <tr key={row.id} className="hover:bg-primary/5 transition-colors group">
                       <td className="border-2 border-primary/20 p-4 text-center text-xs font-black text-primary/60">{index + 1}</td>
-                      <td className="border-2 border-primary/20 p-2">
+                      <td className="border-2 border-primary/20 p-2 relative group/teacher">
                         <div className="flex flex-col items-center gap-1">
                           <select 
                             className="w-full border-none bg-transparent text-center text-xs font-bold outline-none focus:bg-surface-container-low/50 rounded-lg py-1 transition-all appearance-none" 
@@ -603,8 +729,14 @@ export default function DailyReport() {
                             </span>
                           )}
                         </div>
+                        <button 
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-primary/10 text-primary rounded-lg opacity-0 group-hover/teacher:opacity-100 transition-all hover:bg-primary hover:text-on-primary no-print"
+                          title="اختيار الأستاذ"
+                        >
+                          <User size={14} />
+                        </button>
                       </td>
-                      <td className="border-2 border-primary/20 p-2">
+                      <td className="border-2 border-primary/20 p-2 relative group/time">
                         <input 
                           className="w-full border-none bg-transparent text-center text-xs font-bold outline-none focus:bg-surface-container-low/50 rounded-lg py-2 transition-all" 
                           type="text" 
@@ -617,8 +749,14 @@ export default function DailyReport() {
                             <option key={slot} value={slot} />
                           ))}
                         </datalist>
+                        <button 
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-primary/10 text-primary rounded-lg opacity-0 group-hover/time:opacity-100 transition-all hover:bg-primary hover:text-on-primary no-print"
+                          title="تحديد الوقت"
+                        >
+                          <Clock size={14} />
+                        </button>
                       </td>
-                      <td className="border-2 border-primary/20 p-2">
+                      <td className="border-2 border-primary/20 p-2 relative group/class">
                         <input 
                           className="w-full border-none bg-transparent text-center text-xs font-bold outline-none focus:bg-surface-container-low/50 rounded-lg py-2 transition-all cursor-pointer" 
                           type="text" 
@@ -627,8 +765,15 @@ export default function DailyReport() {
                           value={row.class}
                           onClick={() => setPickerState({ isOpen: true, rowId: row.id })}
                         />
+                        <button 
+                          onClick={() => setPickerState({ isOpen: true, rowId: row.id })}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-primary/10 text-primary rounded-lg opacity-0 group-hover/class:opacity-100 transition-all hover:bg-primary hover:text-on-primary no-print"
+                          title="اختيار القسم"
+                        >
+                          <Users size={14} />
+                        </button>
                       </td>
-                      <td className="border-2 border-primary/20 p-2">
+                      <td className="border-2 border-primary/20 p-2 relative group/activity">
                         <div className="flex flex-col gap-2">
                           <select 
                             className="w-full border-none bg-surface-container-low/30 text-right text-[11px] font-bold outline-none focus:bg-surface-container-low/50 rounded-lg py-2 px-3 transition-all appearance-none"
@@ -649,6 +794,12 @@ export default function DailyReport() {
                             onChange={(e) => updateRow(row.id, 'activityTitle', e.target.value)}
                           />
                         </div>
+                        <button 
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-primary/10 text-primary rounded-lg opacity-0 group-hover/activity:opacity-100 transition-all hover:bg-primary hover:text-on-primary no-print"
+                          title="وصف النشاط"
+                        >
+                          <BookOpen size={14} />
+                        </button>
                       </td>
                       <td className="border-2 border-primary/20 p-2">
                         <div className="relative group/resources">
@@ -671,6 +822,26 @@ export default function DailyReport() {
                             title="اختيار الوسائل والمواد"
                           >
                             <Boxes size={14} />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="border-2 border-primary/20 p-2 text-center no-print">
+                        <div className="flex flex-col items-center -space-y-1">
+                          <button 
+                            onClick={() => moveRow(row.id, 'up')}
+                            disabled={index === 0}
+                            className="p-1 text-primary/40 hover:text-primary disabled:opacity-10 transition-all"
+                            title="تحريك للأعلى"
+                          >
+                            <ChevronUp size={18} />
+                          </button>
+                          <button 
+                            onClick={() => moveRow(row.id, 'down')}
+                            disabled={index === rows.length - 1}
+                            className="p-1 text-primary/40 hover:text-primary disabled:opacity-10 transition-all"
+                            title="تحريك للأسفل"
+                          >
+                            <ChevronDown size={18} />
                           </button>
                         </div>
                       </td>
@@ -705,29 +876,29 @@ export default function DailyReport() {
             </button>
 
             {/* Observations */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 mt-16">
-              <div className="space-y-4">
-                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">ملاحظات {institution?.jobTitle || 'ملحق مخبري'}:</label>
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 mt-16 print:mt-8 print:gap-4">
+              <div className="space-y-4 print:space-y-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest print:text-black">ملاحظات {institution?.jobTitle || 'ملحق مخبري'}:</label>
                 <textarea 
-                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-sm font-bold outline-none focus:border-primary/20 transition-all min-h-[150px] resize-none"
+                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-sm font-bold outline-none focus:border-primary/20 transition-all min-h-[150px] resize-none print:bg-transparent print:border-b print:border-black print:rounded-none print:p-2 print:min-h-[80px]"
                   placeholder="اكتب ملاحظاتك هنا..."
                   value={labNotes}
                   onChange={(e) => setLabNotes(e.target.value)}
                 />
               </div>
-              <div className="space-y-4">
-                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">ملاحظات الناظر:</label>
+              <div className="space-y-4 print:space-y-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest print:text-black">ملاحظات الناظر:</label>
                 <textarea 
-                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-sm font-bold outline-none focus:border-primary/20 transition-all min-h-[150px] resize-none"
+                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-sm font-bold outline-none focus:border-primary/20 transition-all min-h-[150px] resize-none print:bg-transparent print:border-b print:border-black print:rounded-none print:p-2 print:min-h-[80px]"
                   placeholder="ملاحظات الناظر..."
                   value={supervisorNotes}
                   onChange={(e) => setSupervisorNotes(e.target.value)}
                 />
               </div>
-              <div className="space-y-4">
-                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">ملاحظات مدير المؤسسة:</label>
+              <div className="space-y-4 print:space-y-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest print:text-black">ملاحظات مدير المؤسسة:</label>
                 <textarea 
-                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-sm font-bold outline-none focus:border-primary/20 transition-all min-h-[150px] resize-none"
+                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-sm font-bold outline-none focus:border-primary/20 transition-all min-h-[150px] resize-none print:bg-transparent print:border-b print:border-black print:rounded-none print:p-2 print:min-h-[80px]"
                   placeholder="ملاحظات المدير..."
                   value={directorNotes}
                   onChange={(e) => setDirectorNotes(e.target.value)}
@@ -736,18 +907,18 @@ export default function DailyReport() {
             </div>
 
             {/* Footer Signatures */}
-            <div className="relative z-10 grid grid-cols-3 gap-8 mt-20 text-center">
-              <div className="space-y-12">
-                <p className="text-xs font-black text-primary underline underline-offset-4">توقيع {institution?.jobTitle || 'ملحق مخبري'}</p>
-                <div className="h-20" />
+            <div className="relative z-10 grid grid-cols-3 gap-8 mt-20 text-center print:mt-12">
+              <div className="space-y-12 print:space-y-8">
+                <p className="text-xs font-black text-primary underline underline-offset-4 print:text-black">توقيع {institution?.jobTitle || 'ملحق مخبري'}</p>
+                <div className="h-20 border border-dashed border-primary/10 rounded-2xl print:border-none" />
               </div>
-              <div className="space-y-12">
-                <p className="text-xs font-black text-primary underline underline-offset-4">توقيع الناظر</p>
-                <div className="h-20" />
+              <div className="space-y-12 print:space-y-8">
+                <p className="text-xs font-black text-primary underline underline-offset-4 print:text-black">توقيع الناظر</p>
+                <div className="h-20 border border-dashed border-primary/10 rounded-2xl print:border-none" />
               </div>
-              <div className="space-y-12">
-                <p className="text-xs font-black text-primary underline underline-offset-4">توقيع المدير</p>
-                <div className="h-20" />
+              <div className="space-y-12 print:space-y-8">
+                <p className="text-xs font-black text-primary underline underline-offset-4 print:text-black">توقيع المدير</p>
+                <div className="h-20 border border-dashed border-primary/10 rounded-2xl print:border-none" />
               </div>
             </div>
 
@@ -820,16 +991,62 @@ export default function DailyReport() {
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; }
+          body { 
+            background: white !important; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           .p-4, .p-8, .p-12, .p-16, .p-20 { padding: 0 !important; }
-          .max-w-5xl { max-width: none !important; margin: 0 !important; }
+          .max-w-5xl { max-width: none !important; margin: 0 !important; width: 100% !important; }
           .shadow-2xl, .shadow-xl, .shadow-lg, .shadow-sm { box-shadow: none !important; }
           .rounded-\\[40px\\], .rounded-3xl, .rounded-2xl, .rounded-xl { border-radius: 0 !important; }
           .border { border: none !important; }
           .min-h-screen { min-height: auto !important; padding: 0 !important; }
-          textarea { height: auto !important; min-height: 50px; border: none !important; }
-          input { border: none !important; }
+          textarea { 
+            height: auto !important; 
+            min-height: 50px; 
+            border: none !important; 
+            background: transparent !important;
+            padding: 0 !important;
+            font-size: 12pt !important;
+          }
+          input { 
+            border: none !important; 
+            background: transparent !important;
+            padding: 0 !important;
+            font-size: 11pt !important;
+          }
+          select {
+            border: none !important;
+            background: transparent !important;
+            appearance: none !important;
+            padding: 0 !important;
+            font-size: 11pt !important;
+          }
           .bg-surface-container-low\\/30, .bg-primary\\/5 { background: transparent !important; }
+          table { 
+            width: 100% !important; 
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+          }
+          th, td { 
+            border: 1px solid #000 !important; 
+            padding: 4px !important;
+            font-size: 10pt !important;
+            word-wrap: break-word !important;
+          }
+          .border-primary\\/20 { border-color: #000 !important; }
+          .text-primary\\/40 { color: #666 !important; }
+          .text-primary\\/60 { color: #333 !important; }
+          
+          /* Ensure headers and footers are positioned correctly */
+          .relative.z-10 { position: relative !important; z-index: 1 !important; }
+          .border-b-2.border-primary { border-bottom: 2px solid #000 !important; }
+          
+          /* Force page margins */
+          @page {
+            margin: 1.5cm !important;
+          }
         }
       `}</style>
     </div>

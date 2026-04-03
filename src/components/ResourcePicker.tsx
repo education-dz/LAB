@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Search, Boxes, Check, Filter, Package, FlaskConical, Plus, Trash2 } from 'lucide-react';
+import { X, Search, Boxes, Check, Filter, Package, FlaskConical, Plus, Trash2, Beaker } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useResources, ResourceItem } from '../hooks/useResources';
 
@@ -14,7 +14,7 @@ interface ResourcePickerProps {
 export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue }: ResourcePickerProps) {
   const { resources, isLoading } = useResources();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<'all' | 'equipment' | 'chemical'>('all');
+  const [selectedType, setSelectedType] = useState<'all' | 'equipment' | 'chemical' | 'glassware'>('all');
   const [selectedItems, setSelectedItems] = useState<ResourceItem[]>([]);
 
   useEffect(() => {
@@ -36,7 +36,14 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
   const filteredResources = useMemo(() => {
     return resources.filter(r => {
       const matchSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchType = selectedType === 'all' || r.type === selectedType;
+      let matchType = selectedType === 'all';
+      if (selectedType === 'equipment') {
+        matchType = r.type === 'equipment' && r.category !== 'glassware';
+      } else if (selectedType === 'chemical') {
+        matchType = r.type === 'chemical';
+      } else if (selectedType === 'glassware') {
+        matchType = r.type === 'equipment' && r.category === 'glassware';
+      }
       return matchSearch && matchType;
     });
   }, [resources, searchTerm, selectedType]);
@@ -115,7 +122,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   )}
                 >
                   <Package size={14} />
-                  أجهزة
+                  الأجهزة
                 </button>
                 <button
                   onClick={() => setSelectedType('chemical')}
@@ -125,7 +132,17 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   )}
                 >
                   <FlaskConical size={14} />
-                  مواد
+                  المواد الكيميائية
+                </button>
+                <button
+                  onClick={() => setSelectedType('glassware')}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2",
+                    selectedType === 'glassware' ? "bg-white text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
+                  )}
+                >
+                  <Beaker size={14} />
+                  الزجاجيات
                 </button>
               </div>
             </div>
@@ -160,9 +177,13 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "p-2 rounded-xl transition-colors",
-                            item.type === 'equipment' ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"
+                            item.type === 'equipment' 
+                              ? (item.category === 'glassware' ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600") 
+                              : "bg-purple-50 text-purple-600"
                           )}>
-                            {item.type === 'equipment' ? <Package size={18} /> : <FlaskConical size={18} />}
+                            {item.type === 'equipment' 
+                              ? (item.category === 'glassware' ? <Beaker size={18} /> : <Package size={18} />) 
+                              : <FlaskConical size={18} />}
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-on-surface text-sm">{item.name}</p>
@@ -207,7 +228,9 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           "w-2 h-2 rounded-full",
-                          item.type === 'equipment' ? "bg-blue-400" : "bg-purple-400"
+                          item.type === 'equipment' 
+                            ? (item.category === 'glassware' ? "bg-amber-400" : "bg-blue-400") 
+                            : "bg-purple-400"
                         )} />
                         <span className="text-sm font-bold text-on-surface/80">{item.name}</span>
                       </div>
