@@ -1,10 +1,10 @@
 {
-  "projectId": "ai-studio-applet-webapp-2bddc",
-  "appId": "1:429330571715:web:e65fd3bec1d74f27d69d76",
-  "apiKey": "AIzaSyD8sZ3657JqvRUisjtuR4AQEMLLhHJOnJ8",
-  "authDomain": "ai-studio-applet-webapp-2bddc.firebaseapp.com",
+  "projectId": "amatti-education-dz",
+  "appId": "1:798574435527:web:1e0543b7be10fc93ce72e2",
+  "apiKey": "AIzaSyDCUBeak07VjFdE21ccQz8B4mXBohK5h0U",
+  "authDomain": "amatti-education-dz.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-37818744-6c48-4226-9383-0422a18c40d1",
-  "storageBucket": "ai-studio-applet-webapp-2bddc.firebasestorage.app",
-  "messagingSenderId": "429330571715",
+  "storageBucket": "amatti-education-dz.firebasestorage.app",
+  "messagingSenderId": "798574435527",
   "measurementId": ""
 }

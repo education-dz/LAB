@@ -309,7 +309,7 @@ export default function SettingsPage() {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Account Linking State
-  const [linkingError, setLinkingError] = useState<string | null>(null);
+  const [linkingError, setLinkingError] = useState<React.ReactNode | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
@@ -501,7 +501,20 @@ export default function SettingsPage() {
         if (error.code === 'auth/credential-already-in-use') {
           setLinkingError('هذا الحساب مرتبط بالفعل بمستخدم آخر.');
         } else if (error.code === 'auth/operation-not-allowed') {
-          setLinkingError('تسجيل الدخول عبر فيسبوك غير مفعل في إعدادات Firebase.');
+          setLinkingError(
+            <span>
+              تسجيل الدخول عبر فيسبوك غير مفعل. يرجى تفعيله من{' '}
+              <a 
+                href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                Firebase Console
+              </a>
+              .
+            </span>
+          );
         } else {
           setLinkingError('حدث خطأ أثناء ربط الحساب. يرجى المحاولة مرة أخرى.');
         }
@@ -556,6 +569,35 @@ export default function SettingsPage() {
         setLinkingError('رقم الهاتف غير صحيح. يرجى التأكد من الصيغة الدولية.');
       } else if (error.code === 'auth/too-many-requests') {
         setLinkingError('تم إرسال الكثير من الطلبات. يرجى المحاولة لاحقاً.');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setLinkingError(
+          <span>
+            إرسال الرسائل النصية غير مفعل لهذه المنطقة. يرجى تفعيل "SMS Region Policy" من{' '}
+            <a 
+              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/settings`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline font-black"
+            >
+              إعدادات Firebase
+            </a>
+            .
+          </span>
+        );
+      } else if (error.code === 'auth/billing-not-enabled') {
+        setLinkingError(
+          <span>
+            مشكلة في الدفع: يرجى ترقية مشروع Firebase إلى خطة "Blaze" (Pay-as-you-go) لاستخدام ميزة التحقق عبر الهاتف في هذه المنطقة. 
+            <a 
+              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/billing/plan`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline block mt-1"
+            >
+              ترقية الخطة الآن
+            </a>
+          </span>
+        );
       } else {
         setLinkingError('حدث خطأ أثناء إرسال رمز التحقق.');
       }

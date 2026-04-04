@@ -334,33 +334,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Quick Actions Floating Bar */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[90] bg-white/80 backdrop-blur-2xl border border-outline/10 px-8 py-4 rounded-full shadow-2xl flex items-center gap-6 no-print">
-        <button 
-          onClick={() => navigate('/daily-report')}
-          className="flex flex-col items-center gap-1 text-primary hover:scale-110 transition-transform"
-        >
-          <div className="p-2 bg-primary/10 rounded-xl"><Plus size={20} /></div>
-          <span className="text-[10px] font-black">تقرير جديد</span>
-        </button>
-        <div className="w-px h-8 bg-outline/10" />
-        <button 
-          onClick={() => navigate('/chemicals')}
-          className="flex flex-col items-center gap-1 text-primary hover:scale-110 transition-transform"
-        >
-          <div className="p-2 bg-primary/10 rounded-xl"><FlaskConical size={20} /></div>
-          <span className="text-[10px] font-black">إضافة مادة</span>
-        </button>
-        <div className="w-px h-8 bg-outline/10" />
-        <button 
-          onClick={() => navigate('/equipment')}
-          className="flex flex-col items-center gap-1 text-primary hover:scale-110 transition-transform"
-        >
-          <div className="p-2 bg-primary/10 rounded-xl"><Package size={20} /></div>
-          <span className="text-[10px] font-black">إضافة جهاز</span>
-        </button>
-      </div>
-
       {/* Header */}
       <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-4">
         <div className="text-right space-y-3 relative z-10">
@@ -368,8 +341,8 @@ export default function Dashboard() {
             <LayoutDashboard size={14} />
             نظرة عامة على النظام
           </div>
-          <h1 className="text-6xl font-black text-primary tracking-tighter">لوحة التحكم</h1>
-          <p className="text-on-surface/60 text-xl font-bold">الأرضية الرقمية — <span className="text-primary italic">فضاء موظفوا المخابر</span></p>
+          <h1 className="text-4xl font-black text-primary tracking-tighter">لوحة التحكم</h1>
+          <p className="text-on-surface/60 text-lg font-bold">الأرضية الرقمية — <span className="text-primary italic">فضاء موظفوا المخابر</span></p>
         </div>
         
         <div className="flex items-center gap-4">
@@ -505,8 +478,8 @@ export default function Dashboard() {
       {recentReports.length > 0 && (
         <section>
           <div className="flex items-center gap-6 mb-10">
-            <div className="w-2 h-10 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
-            <h2 className="text-[30px] leading-[30px] font-black text-primary tracking-tight">آخر النشاطات</h2>
+            <div className="w-2 h-8 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
+            <h2 className="text-2xl font-black text-primary tracking-tight">آخر النشاطات</h2>
             <div className="flex-1 h-px bg-outline/10"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -544,8 +517,8 @@ export default function Dashboard() {
       {/* Modules Grid */}
       <section>
         <div className="flex items-center gap-6 mb-10">
-          <div className="w-2 h-10 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
-          <h2 className="text-[30px] leading-[30px] font-black text-primary tracking-tight">الأقسام والوحدات</h2>
+          <div className="w-2 h-8 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
+          <h2 className="text-2xl font-black text-primary tracking-tight">الأقسام والوحدات</h2>
           <div className="flex-1 h-px bg-outline/10"></div>
           <div className="flex items-center gap-2 text-primary/40">
             <Sparkles size={20} />

@@ -32,7 +32,7 @@ export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<React.ReactNode>('');
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
@@ -172,9 +172,34 @@ export default function Login() {
       } else if (err.code === 'auth/too-many-requests') {
         setError('تم إرسال الكثير من الطلبات. يرجى المحاولة لاحقاً.');
       } else if (err.code === 'auth/operation-not-allowed') {
-        setError('إرسال الرسائل النصية غير مفعل لهذه المنطقة. يرجى تفعيل "SMS Region Policy" في إعدادات Firebase Console.');
+        setError(
+          <span>
+            إرسال الرسائل النصية غير مفعل لهذه المنطقة. يرجى تفعيل "SMS Region Policy" من{' '}
+            <a 
+              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/settings`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline font-black"
+            >
+              إعدادات Firebase
+            </a>
+            .
+          </span>
+        );
       } else if (err.code === 'auth/billing-not-enabled') {
-        setError('مشكلة في الدفع: يرجى ترقية مشروع Firebase إلى خطة "Blaze" (Pay-as-you-go) لاستخدام ميزة التحقق عبر الهاتف في هذه المنطقة.');
+        setError(
+          <span>
+            مشكلة في الدفع: يرجى ترقية مشروع Firebase إلى خطة "Blaze" (Pay-as-you-go) لاستخدام ميزة التحقق عبر الهاتف في هذه المنطقة. 
+            <a 
+              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/billing/plan`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline block mt-1 font-black"
+            >
+              ترقية الخطة الآن
+            </a>
+          </span>
+        );
       } else if (err.message?.includes('-39') || err.code?.includes('-39')) {
         setError('خطأ داخلي في نظام التحقق (reCAPTCHA). يرجى تحديث الصفحة والمحاولة مرة أخرى، أو التأكد من أنك لا تستخدم متصفحاً في وضع التخفي (Incognito).');
       } else {
@@ -324,7 +349,19 @@ export default function Login() {
       }
     } catch (err: any) {
       if (err.code === 'auth/operation-not-allowed') {
-        setError('تسجيل الدخول عبر فيسبوك غير مفعل في إعدادات Firebase.');
+        setError(
+          <span className="flex items-center gap-1 justify-center">
+            تسجيل الدخول عبر فيسبوك غير مفعل. يرجى تفعيله من{' '}
+            <a 
+              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline font-black"
+            >
+              Firebase Console
+            </a>
+          </span>
+        );
       } else {
         setError('فشل تسجيل الدخول عبر فيسبوك.');
       }
@@ -463,7 +500,7 @@ export default function Login() {
               {error && (
                 <div className={cn(
                   "text-xs font-black p-4 rounded-2xl text-center border animate-shake",
-                  error.includes('تم إرسال') ? "bg-primary/10 text-primary border-primary/20" : "bg-error/10 text-error border-error/20"
+                  typeof error === 'string' && error.includes('تم إرسال') ? "bg-primary/10 text-primary border-primary/20" : "bg-error/10 text-error border-error/20"
                 )}>
                   {error}
                 </div>

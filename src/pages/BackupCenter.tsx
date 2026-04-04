@@ -20,7 +20,7 @@ export default function BackupCenter() {
             <Database size={14} />
             مركز النسخ الاحتياطي والبيانات
           </div>
-          <h1 className="text-6xl font-black text-primary tracking-tighter">مركز البيانات</h1>
+          <h1 className="text-3xl font-black text-primary tracking-tighter">مركز البيانات</h1>
           <p className="text-on-surface/60 text-xl font-bold">مراقبة حجم البيانات <span className="text-primary italic">وإدارة النسخ الاحتياطي</span> بصيغة JSON لضمان سلامة السجلات.</p>
         </div>
         

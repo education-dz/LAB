@@ -55,6 +55,10 @@ interface Equipment {
   notes?: string;
   foundationalInventory?: string;
   decennialReview?: string;
+  smartNameAr?: string;
+  smartDescriptionAr?: string;
+  imageKeyword?: string;
+  lastSmartUpdate?: any;
 }
 
 interface MaintenanceLog {
@@ -547,8 +551,14 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
 
   const filteredEquipment = equipment
     .filter(e => {
-      const matchesSearch = e.name?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'all' || e.type === filterType;
+      const matchesSearch = 
+        e.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.smartNameAr?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesType = filterType === 'all' || 
+                         (filterType === 'smart' ? !!e.smartNameAr : e.type === filterType);
+      
       const matchesStatus = filterStatus === 'all' || e.status === filterStatus;
       return matchesSearch && matchesType && matchesStatus;
     })
@@ -586,8 +596,8 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               <Package size={14} />
               إدارة المخزون والعتاد
             </div>
-            <h1 className="text-6xl font-black text-primary tracking-tighter">جرد الزجاجيات والعتاد</h1>
-            <p className="text-on-surface/60 text-xl font-bold">إدارة وتتبع <span className="text-primary italic">الأدوات الزجاجية</span> والأجهزة التكنولوجية</p>
+            <h1 className="text-4xl font-black text-primary tracking-tighter">جرد الزجاجيات والعتاد</h1>
+            <p className="text-on-surface/60 text-lg font-bold">إدارة وتتبع <span className="text-primary italic">الأدوات الزجاجية</span> والأجهزة التكنولوجية</p>
           </div>
           
           <div className="flex flex-wrap gap-4 relative z-10">
@@ -740,6 +750,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                 <option value="all">كل الأنواع</option>
                 <option value="glassware">زجاجيات</option>
                 <option value="tech">أجهزة تقنية</option>
+                <option value="smart">تحديث ذكي ✨</option>
                 <option value="other">أخرى</option>
               </select>
             </div>
@@ -835,10 +846,23 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                     </td>
                     <td className="px-10 py-8">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-inner">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-inner relative">
                           {e.type === 'tech' ? <Monitor size={24} /> : <Beaker size={24} />}
+                          {e.smartNameAr && (
+                            <div className="absolute -top-1 -right-1 bg-primary text-on-primary p-1 rounded-full shadow-lg">
+                              <Sparkles size={10} />
+                            </div>
+                          )}
                         </div>
-                        <p className="text-lg font-black text-primary font-serif">{e.name}</p>
+                        <div className="space-y-1">
+                          <p className="text-lg font-black text-primary font-serif">{e.smartNameAr || e.name}</p>
+                          {e.smartNameAr && e.name !== e.smartNameAr && (
+                            <p className="text-[10px] font-bold text-on-surface/30 italic">الأصل: {e.name}</p>
+                          )}
+                          {e.smartDescriptionAr && (
+                            <p className="text-xs font-bold text-on-surface/40 max-w-xs line-clamp-1">{e.smartDescriptionAr}</p>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-10 py-8 text-center">

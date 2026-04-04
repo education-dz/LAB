@@ -185,7 +185,7 @@ export default function Safety() {
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
         <div className="text-right space-y-1">
-          <h1 className="text-5xl font-black text-primary tracking-tighter">السلامة والأمان</h1>
+          <h1 className="text-3xl font-black text-primary tracking-tighter">السلامة والأمان</h1>
           <p className="text-secondary/80 text-lg font-medium">الرصد الدوري والوقاية المخبرية الذكية</p>
         </div>
         <div className="flex flex-wrap gap-3">

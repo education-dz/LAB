@@ -793,8 +793,8 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
       {!isNested && (
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
           <div className="text-right space-y-1">
-            <h1 className="text-5xl font-black text-primary tracking-tighter">المخزن الكيميائي</h1>
-            <p className="text-secondary/80 text-lg font-medium">إدارة وتتبع المحاليل والكواشف الكيميائية</p>
+            <h1 className="text-4xl font-black text-primary tracking-tighter">المخزن الكيميائي</h1>
+            <p className="text-secondary/80 text-base font-medium">إدارة وتتبع المحاليل والكواشف الكيميائية</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <input 

@@ -708,10 +708,10 @@ export default function DailyReport() {
             </div>
 
             <div className="text-center mb-16">
-              <h2 className="relative z-10 text-6xl font-black text-primary uppercase tracking-[0.1em] inline-block">
+              <h2 className="relative z-10 text-4xl font-black text-primary uppercase tracking-[0.1em] inline-block">
                 التقرير اليومي للمخبر
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-full h-2 bg-primary rounded-full opacity-20" />
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-3/4 h-2 bg-primary rounded-full" />
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-full h-1.5 bg-primary rounded-full opacity-20" />
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-1.5 bg-primary rounded-full" />
               </h2>
             </div>
 

@@ -1,5 +1,7 @@
 {
-  "name": "Remix: الأرضية الرقمية — فضاء موظفوا المخابر",
+  "name": " الأرضية الرقمية — فضاء موظفوا المخابر",
   "description": "نظام شامل لتسيير المخابر العلمية في للمتوسطات و الثانويات الجزائرية",
-  "requestFramePermissions": ["geolocation"]
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

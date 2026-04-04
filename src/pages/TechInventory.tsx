@@ -40,20 +40,35 @@ interface Equipment {
   smartNameAr?: string;
   smartDescriptionAr?: string;
   imageKeyword?: string;
+  isSensitive?: boolean;
+  specs?: {
+    model?: string;
+    resolution?: string;
+    processor?: string;
+    ram?: string;
+    storage?: string;
+    accuracy?: string;
+    range?: string;
+    power?: string;
+    [key: string]: string | undefined;
+  };
 }
 
 const getSmartImage = (name: string, keyword?: string) => {
   const searchKey = keyword || name;
   const n = searchKey.toLowerCase();
   
+  // High-quality, device-only images (product photography style)
   if (n.includes('microscope') || n.includes('مجهر')) return 'https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&q=80&w=800';
   if (n.includes('spectro') || n.includes('طيف')) return 'https://images.unsplash.com/photo-1532187875605-2fe358511423?auto=format&fit=crop&q=80&w=800';
+  if (n.includes('laptop') || n.includes('محمول')) return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=800';
+  if (n.includes('datashow') || n.includes('projector') || n.includes('عرض')) return 'https://images.unsplash.com/photo-1535016120720-40c646bebbfc?auto=format&fit=crop&q=80&w=800';
   if (n.includes('computer') || n.includes('حاسوب') || n.includes('station')) return 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800';
   if (n.includes('centrifuge') || n.includes('طرد')) return 'https://images.unsplash.com/photo-1579154235602-3c2c2aa59c1c?auto=format&fit=crop&q=80&w=800';
   if (n.includes('balance') || n.includes('ميزان')) return 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800';
   if (n.includes('oscilloscope') || n.includes('راسم')) return 'https://images.unsplash.com/photo-1581092335397-9583ee92d03b?auto=format&fit=crop&q=80&w=800';
   
-  return `https://picsum.photos/seed/${encodeURIComponent(searchKey)}/800/600`;
+  return `https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800&sig=${encodeURIComponent(searchKey)}`;
 };
 
 export default function TechInventory({ isNested = false }: { isNested?: boolean }) {
@@ -61,11 +76,24 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
   const [searchTerm, setSearchTerm] = useState('');
   const [devices, setDevices] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDevice, setSelectedDevice] = useState<Equipment | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'sensitive'>('all');
 
   useEffect(() => {
     const q = query(getUserCollection('equipment'), where('type', '==', 'tech'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Equipment));
+      const items = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Auto-detect sensitive devices if not explicitly marked
+        const sensitiveKeywords = ['مجهر', 'طيف', 'microscope', 'spectro', 'datashow', 'laptop', 'حاسوب', 'راسم', 'oscilloscope', 'عرض'];
+        const isSensitive = data.isSensitive || sensitiveKeywords.some(k => data.name.toLowerCase().includes(k));
+        
+        return { 
+          id: doc.id, 
+          ...data,
+          isSensitive 
+        } as Equipment;
+      });
       setDevices(items);
       setLoading(false);
     }, (error) => {
@@ -75,10 +103,12 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
     return () => unsubscribe();
   }, []);
 
-  const filteredDevices = devices.filter(d => 
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDevices = devices.filter(d => {
+    const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         d.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === 'all' || (filterType === 'sensitive' && d.isSensitive);
+    return matchesSearch && matchesFilter;
+  });
 
   const stats = [
     { 
@@ -121,14 +151,35 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
               <Monitor size={14} />
               جرد التجهيزات التكنولوجية
             </div>
-            <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">الأجهزة الحساسة</h1>
+            <h1 className="text-3xl font-black text-primary tracking-tighter font-serif">الأجهزة الحساسة</h1>
             <p className="text-on-surface/60 text-xl font-bold">مراقبة حالة <span className="text-primary italic">المعايرة والمواصفات</span> التقنية</p>
           </div>
           
           <div className="flex items-center gap-4 relative z-10">
+            <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-full border border-outline/10 shadow-lg">
+              <button 
+                onClick={() => setFilterType('all')}
+                className={cn(
+                  "px-6 py-2.5 rounded-full text-xs font-black transition-all",
+                  filterType === 'all' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface/40 hover:text-primary"
+                )}
+              >
+                الكل
+              </button>
+              <button 
+                onClick={() => setFilterType('sensitive')}
+                className={cn(
+                  "px-6 py-2.5 rounded-full text-xs font-black transition-all flex items-center gap-2",
+                  filterType === 'sensitive' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface/40 hover:text-primary"
+                )}
+              >
+                <Sparkles size={14} />
+                الأجهزة الحساسة
+              </button>
+            </div>
             <div className="relative group">
               <input 
-                className="w-80 bg-white border border-outline/10 rounded-full px-6 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-xl"
+                className="w-64 bg-white border border-outline/10 rounded-full px-6 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-xl"
                 placeholder="البحث عن جهاز..." 
                 type="text"
                 value={searchTerm}
@@ -136,9 +187,11 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
               />
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-outline" size={20} />
             </div>
-            <button className="bg-primary text-on-primary px-8 py-4 rounded-full font-black flex items-center gap-3 shadow-2xl shadow-primary/30 hover:bg-primary-container transition-all active:scale-95">
-              <Plus size={22} />
-              إضافة جهاز
+            <button 
+              onClick={() => navigate('/equipment')}
+              className="bg-primary text-on-primary w-14 h-14 rounded-full font-black flex items-center justify-center shadow-2xl shadow-primary/30 hover:bg-primary-container transition-all active:scale-95"
+            >
+              <Plus size={28} />
             </button>
           </div>
 
@@ -206,6 +259,12 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2000ms]"
                     referrerPolicy="no-referrer"
                   />
+                  {device.isSensitive && (
+                    <div className="absolute top-6 left-6 bg-primary/90 text-on-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
+                      <Sparkles size={12} />
+                      جهاز حساس
+                    </div>
+                  )}
                   <div className="absolute top-6 right-6 bg-[#4a7c59]/90 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                     {device.location || 'مخبر غير محدد'}
                   </div>
@@ -232,27 +291,37 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                       <span className="text-on-surface/40">الرقم التسلسلي:</span>
                       <span className="text-[#4a7c59] font-mono">{device.serialNumber || '---'}</span>
                     </div>
-                    <div className="flex justify-between text-sm font-bold">
-                      <span className="text-on-surface/40">آخر معايرة:</span>
-                      <span className="text-[#4a7c59]">{device.lastCalibration || 'غير مسجل'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm font-bold">
-                      <span className="text-on-surface/40">الموعد القادم:</span>
-                      <span className={cn(device.status === 'maintenance' ? "text-error" : "text-[#4a7c59]")}>
-                        {device.nextCalibration || 'غير محدد'}
-                      </span>
+                    <div className="flex justify-between text-sm font-bold items-center">
+                      <span className="text-on-surface/40">حالة المعايرة:</span>
+                      <div className="flex items-center gap-2">
+                        {device.nextCalibration && new Date(device.nextCalibration) < new Date() ? (
+                          <div className="flex items-center gap-1 text-error text-[10px] font-black animate-pulse">
+                            <AlertTriangle size={12} />
+                            منتهية
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-[#4a7c59] text-[10px] font-black">
+                            <CheckCircle2 size={12} />
+                            محدثة
+                          </div>
+                        )}
+                        <span className="text-[#4a7c59]">{device.nextCalibration || 'غير مسجل'}</span>
+                      </div>
                     </div>
                   </div>
 
                   <div className="pt-4 flex gap-3">
                     <button 
-                      onClick={() => navigate(`/equipment?id=${device.id}`)}
+                      onClick={() => setSelectedDevice(device)}
                       className="flex-1 bg-white border-2 border-[#4a7c59]/10 text-[#4a7c59] py-4 rounded-full font-black text-xs hover:bg-[#4a7c59] hover:text-white transition-all active:scale-95 shadow-sm"
                     >
                       المواصفات الكاملة
                     </button>
-                    <button className="w-14 h-14 flex items-center justify-center rounded-full bg-white border-2 border-[#4a7c59]/10 text-[#4a7c59] hover:bg-[#4a7c59] hover:text-white transition-all active:scale-95 shadow-sm">
-                      <History size={20} />
+                    <button 
+                      onClick={() => navigate(`/equipment?id=${device.id}`)}
+                      className="w-14 h-14 flex items-center justify-center rounded-full bg-white border-2 border-[#4a7c59]/10 text-[#4a7c59] hover:bg-[#4a7c59] hover:text-white transition-all active:scale-95 shadow-sm"
+                    >
+                      <Settings size={20} />
                     </button>
                   </div>
                 </div>
@@ -299,6 +368,124 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
           </button>
         </div>
       </footer>
+
+      {/* Device Details Modal */}
+      <AnimatePresence>
+        {selectedDevice && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm rtl"
+            onClick={() => setSelectedDevice(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Left: Image & Quick Info */}
+              <div className="w-full md:w-2/5 relative h-64 md:h-auto bg-surface-container-low">
+                <img 
+                  src={getSmartImage(selectedDevice.name, selectedDevice.imageKeyword)} 
+                  alt={selectedDevice.name} 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-8 right-8 text-white">
+                  <h3 className="text-3xl font-black font-serif leading-tight">{selectedDevice.smartNameAr || selectedDevice.name}</h3>
+                  <p className="text-white/70 font-bold">{selectedDevice.serialNumber}</p>
+                </div>
+                <button 
+                  onClick={() => setSelectedDevice(null)}
+                  className="absolute top-6 right-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition-all"
+                >
+                  <Plus className="rotate-45" size={24} />
+                </button>
+              </div>
+
+              {/* Right: Specs & Calibration */}
+              <div className="flex-1 p-10 overflow-y-auto space-y-8">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <h4 className="text-2xl font-black text-[#4a7c59]">المواصفات التقنية</h4>
+                    <p className="text-sm text-on-surface/40 font-bold">تفاصيل العتاد والأداء</p>
+                  </div>
+                  <div className={cn(
+                    "px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-sm",
+                    selectedDevice.status === 'functional' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  )}>
+                    {selectedDevice.status === 'functional' ? 'جاهز للعمل' : 'تحت الصيانة'}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { label: 'الموديل', value: selectedDevice.specs?.model || 'Standard Edition' },
+                    { label: 'الدقة / النطاق', value: selectedDevice.specs?.resolution || selectedDevice.specs?.range || 'عالي الدقة' },
+                    { label: 'المعالج / التحكم', value: selectedDevice.specs?.processor || 'Digital Control' },
+                    { label: 'الذاكرة / السعة', value: selectedDevice.specs?.ram || selectedDevice.specs?.storage || 'N/A' },
+                    { label: 'الطاقة', value: selectedDevice.specs?.power || '220V / 50Hz' },
+                    { label: 'المورد', value: selectedDevice.supplier || 'تجهيز مخبري معتمد' },
+                  ].map((spec, i) => (
+                    <div key={i} className="bg-surface-container-low/50 p-4 rounded-2xl border border-outline/5">
+                      <p className="text-[10px] text-on-surface/40 font-black uppercase tracking-widest mb-1">{spec.label}</p>
+                      <p className="text-sm font-bold text-[#4a7c59]">{spec.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-xl font-black text-[#4a7c59] flex items-center gap-3">
+                    <ShieldCheck size={24} />
+                    حالة المعايرة والضمان
+                  </h4>
+                  <div className="bg-[#4a7c59]/5 p-6 rounded-3xl border border-[#4a7c59]/10 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#4a7c59] shadow-sm">
+                          <Activity size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest">تاريخ آخر معايرة</p>
+                          <p className="font-bold text-[#4a7c59]">{selectedDevice.lastCalibration || 'غير مسجل'}</p>
+                        </div>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest">الموعد القادم</p>
+                        <p className={cn(
+                          "font-bold",
+                          selectedDevice.nextCalibration && new Date(selectedDevice.nextCalibration) < new Date() ? "text-error" : "text-[#4a7c59]"
+                        )}>
+                          {selectedDevice.nextCalibration || 'غير محدد'}
+                        </p>
+                      </div>
+                    </div>
+                    {selectedDevice.nextCalibration && new Date(selectedDevice.nextCalibration) < new Date() && (
+                      <div className="flex items-center gap-3 p-3 bg-error/10 text-error rounded-xl text-xs font-bold">
+                        <AlertTriangle size={16} />
+                        تنبيه: هذا الجهاز يحتاج إلى معايرة فورية لضمان دقة النتائج.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button className="flex-1 bg-primary text-on-primary py-4 rounded-full font-black text-sm shadow-xl shadow-primary/20 hover:bg-primary-container transition-all active:scale-95">
+                    تحميل شهادة المعايرة
+                  </button>
+                  <button className="flex-1 bg-surface-container-low text-primary py-4 rounded-full font-black text-sm hover:bg-surface-container-high transition-all active:scale-95">
+                    سجل الصيانة
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

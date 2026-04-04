@@ -2,11 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer, collection, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getAnalytics } from 'firebase/analytics';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Initialize Firebase SDK
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
+export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 
 // Enable Offline Persistence
 if (typeof window !== 'undefined') {
@@ -39,8 +41,11 @@ async function testConnection() {
     // Attempt to fetch a non-existent document from server to test connectivity
     await getDocFromServer(doc(db, '_connection_test_', 'ping'));
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("CRITICAL: Firestore configuration error or database not initialized. Please check your Firebase Console.");
+    if (error instanceof Error && (error.message.includes('the client is offline') || error.message.includes('Permission denied'))) {
+      const offlineMsg = "خطأ في الاتصال بقاعدة البيانات: يرجى التأكد من إنشاء قاعدة بيانات Firestore في Firebase Console (amatti-education-dz) وتفعيلها.";
+      console.error("CRITICAL: " + offlineMsg);
+      // We don't throw here to avoid crashing the whole app immediately if it's just a background check,
+      // but the handleFirestoreError will catch it during actual data fetching.
     }
   }
 }
@@ -78,14 +83,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   const errorMessage = error instanceof Error ? error.message : String(error);
   
   if (errorMessage.includes('the client is offline')) {
-    const offlineMsg = "فشل الاتصال بقاعدة البيانات. يرجى التأكد من إنشاء قاعدة بيانات Firestore في Firebase Console وتفعيلها في وضع الإنتاج.";
+    const offlineMsg = "فشل الاتصال بقاعدة البيانات. يرجى التأكد من إنشاء قاعدة بيانات Firestore في Firebase Console (amatti-education-dz) وتفعيلها في وضع الإنتاج.";
     console.error(offlineMsg);
-    // We can throw a more descriptive error for the UI to catch
     throw new Error(JSON.stringify({
       error: offlineMsg,
       isOffline: true,
       operationType,
-      path
+      path,
+      originalError: errorMessage
     }));
   }
 

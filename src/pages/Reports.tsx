@@ -91,7 +91,7 @@ export default function Reports() {
             <BarChart3 size={14} />
             التحليلات والتقارير
           </div>
-          <h2 className="text-5xl font-black text-primary tracking-tight">تقرير النشاط الشهري</h2>
+          <h2 className="text-3xl font-black text-primary tracking-tight">تقرير النشاط الشهري</h2>
           <p className="text-on-surface/60 font-bold text-lg">الفترة: <span className="text-primary">{currentMonth} {currentYear}</span></p>
           
           <div className="mt-8 grid grid-cols-2 gap-8 text-xs font-black text-on-surface/40 uppercase tracking-widest leading-loose">

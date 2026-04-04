@@ -38,6 +38,7 @@ import Sync from './pages/Sync';
 import ActivityRequest from './pages/ActivityRequest';
 import Layout from './components/Layout';
 import FirebaseSetup from './components/FirebaseSetup';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -63,45 +64,47 @@ export default function App() {
   }
 
   return (
-    <Router>
-      {user && <FirebaseSetup />}
-      <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/data-deletion" element={<DataDeletion />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route
-          path="/"
-          element={user ? <Layout /> : <Navigate to="/login" />}
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="inventory" element={<InventoryDashboard />} />
-          <Route path="pedagogical" element={<PedagogicalDashboard />} />
-          <Route path="maintenance" element={<Maintenance />} />
-          <Route path="chemicals" element={<Chemicals />} />
-          <Route path="equipment" element={<Equipment />} />
-          <Route path="tech-inventory" element={<TechInventory />} />
-          <Route path="glassware-breakage" element={<GlasswareBreakage />} />
-          <Route path="smart-forms" element={<SmartForms />} />
-          <Route path="chemical-waste" element={<ChemicalWaste />} />
-          <Route path="educational-map" element={<EducationalMap />} />
-          <Route path="consumables-sds" element={<ConsumablesSDS />} />
-          <Route path="backup" element={<BackupCenter />} />
-          <Route path="timetable" element={<Timetable />} />
-          <Route path="lab-schedule" element={<LabSchedule />} />
-          <Route path="pedagogical-tracking" element={<PedagogicalTracking />} />
-          <Route path="follow-up-registry" element={<FollowUpRegistry />} />
-          <Route path="sync" element={<Sync />} />
-          <Route path="activity-request" element={<ActivityRequest />} />
-          <Route path="safety" element={<Safety />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="archive" element={<Archive />} />
-          <Route path="teachers" element={<Teachers />} />
-          <Route path="daily-report" element={<DailyReport />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        {user && <FirebaseSetup />}
+        <Routes>
+          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/data-deletion" element={<DataDeletion />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route
+            path="/"
+            element={user ? <Layout /> : <Navigate to="/login" />}
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="inventory" element={<InventoryDashboard />} />
+            <Route path="pedagogical" element={<PedagogicalDashboard />} />
+            <Route path="maintenance" element={<Maintenance />} />
+            <Route path="chemicals" element={<Chemicals />} />
+            <Route path="equipment" element={<Equipment />} />
+            <Route path="tech-inventory" element={<TechInventory />} />
+            <Route path="glassware-breakage" element={<GlasswareBreakage />} />
+            <Route path="smart-forms" element={<SmartForms />} />
+            <Route path="chemical-waste" element={<ChemicalWaste />} />
+            <Route path="educational-map" element={<EducationalMap />} />
+            <Route path="consumables-sds" element={<ConsumablesSDS />} />
+            <Route path="backup" element={<BackupCenter />} />
+            <Route path="timetable" element={<Timetable />} />
+            <Route path="lab-schedule" element={<LabSchedule />} />
+            <Route path="pedagogical-tracking" element={<PedagogicalTracking />} />
+            <Route path="follow-up-registry" element={<FollowUpRegistry />} />
+            <Route path="sync" element={<Sync />} />
+            <Route path="activity-request" element={<ActivityRequest />} />
+            <Route path="safety" element={<Safety />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="archive" element={<Archive />} />
+            <Route path="teachers" element={<Teachers />} />
+            <Route path="daily-report" element={<DailyReport />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
