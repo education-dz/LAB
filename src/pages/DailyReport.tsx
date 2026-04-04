@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Printer, ChevronLeft, Save, History, FileText, Loader2, CheckCircle2, Clock, Boxes, FileDown, FileJson, ChevronUp, ChevronDown, User, Users, BookOpen } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Trash2, Plus, Printer, ChevronLeft, Save, History, FileText, Loader2, CheckCircle2, Clock, Boxes, FileDown, FileJson, ChevronUp, ChevronDown, User, Users, BookOpen, PenTool, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, query, where, getDocs, serverTimestamp, orderBy, onSnapshot, addDoc, limit, deleteDoc } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
@@ -76,6 +76,60 @@ export default function DailyReport() {
   const [institution, setInstitution] = useState<InstitutionSettings | null>(null);
   const [history, setHistory] = useState<SavedReport[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDrawing(true);
+    draw(e);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    const canvas = signatureCanvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx?.beginPath();
+    }
+  };
+
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawing) return;
+    const canvas = signatureCanvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2b3d22';
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
+
+  const clearSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (canvas && ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+
+  const saveSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    if (canvas) {
+      setSignature(canvas.toDataURL());
+      setIsSignatureModalOpen(false);
+    }
+  };
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -911,8 +965,18 @@ export default function DailyReport() {
             <div className="relative z-10 grid grid-cols-3 gap-8 mt-24 text-center print:mt-16">
               <div className="space-y-16 print:space-y-12">
                 <p className="text-sm font-black text-primary underline underline-offset-8 print:text-black">توقيع {institution?.jobTitle || 'ملحق مخبري'}</p>
-                <div className="h-24 border-2 border-dashed border-primary/10 rounded-3xl print:border-none flex items-center justify-center">
-                  <span className="text-primary/10 font-sans text-4xl opacity-20 print:hidden italic">Signature</span>
+                <div 
+                  onClick={() => setIsSignatureModalOpen(true)}
+                  className="h-24 border-2 border-dashed border-primary/10 rounded-3xl print:border-none flex items-center justify-center bg-surface-container-low/10 cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden"
+                >
+                  {signature ? (
+                    <img src={signature} alt="Signature" className="h-full object-contain" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-primary/20 group-hover:text-primary/40 transition-colors">
+                      <PenTool size={20} />
+                      <span className="text-[8px] font-bold">توقيع رقمي</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="space-y-16 print:space-y-12">
@@ -1056,6 +1120,67 @@ export default function DailyReport() {
           }
         }
       `}</style>
+      {/* Signature Modal */}
+      <AnimatePresence>
+        {isSignatureModalOpen && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 no-print">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSignatureModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-surface w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl border border-outline/10"
+            >
+              <div className="p-6 flex justify-between items-center border-b border-outline/5">
+                <h3 className="text-xl font-black text-primary flex items-center gap-2">
+                  <PenTool size={24} />
+                  التوقيع الرقمي
+                </h3>
+                <button onClick={() => setIsSignatureModalOpen(false)} className="p-2 hover:bg-surface-container-high rounded-full">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-8 space-y-6">
+                <div className="bg-white rounded-2xl border-2 border-outline/10 overflow-hidden touch-none">
+                  <canvas
+                    ref={signatureCanvasRef}
+                    width={400}
+                    height={200}
+                    onMouseDown={startDrawing}
+                    onMouseUp={stopDrawing}
+                    onMouseMove={draw}
+                    onMouseOut={stopDrawing}
+                    onTouchStart={startDrawing}
+                    onTouchEnd={stopDrawing}
+                    onTouchMove={draw}
+                    className="w-full cursor-crosshair"
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={clearSignature}
+                    className="flex-1 py-3 rounded-xl border border-outline/20 font-bold text-secondary hover:bg-surface-container-high transition-all"
+                  >
+                    مسح
+                  </button>
+                  <button 
+                    onClick={saveSignature}
+                    className="flex-[2] py-3 rounded-xl bg-primary text-on-primary font-bold hover:shadow-lg transition-all"
+                  >
+                    اعتماد التوقيع
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

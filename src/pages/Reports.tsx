@@ -91,7 +91,7 @@ export default function Reports() {
             <BarChart3 size={14} />
             التحليلات والتقارير
           </div>
-          <h2 className="text-5xl font-black text-primary tracking-tight font-serif">تقرير النشاط الشهري</h2>
+          <h2 className="text-5xl font-black text-primary tracking-tight">تقرير النشاط الشهري</h2>
           <p className="text-on-surface/60 font-bold text-lg">الفترة: <span className="text-primary">{currentMonth} {currentYear}</span></p>
           
           <div className="mt-8 grid grid-cols-2 gap-8 text-xs font-black text-on-surface/40 uppercase tracking-widest leading-loose">
@@ -154,7 +154,7 @@ export default function Reports() {
         <div className="bg-white p-10 rounded-[40px] flex flex-col gap-8 border border-outline/10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-br-[100px] -ml-10 -mt-10" />
           <div className="relative z-10 flex justify-between items-center">
-            <h3 className="text-2xl font-black text-primary font-serif tracking-tight">توزيع النشاطات حسب المادة</h3>
+            <h3 className="text-2xl font-black text-primary tracking-tight">توزيع النشاطات حسب المادة</h3>
             <TrendingUp size={24} className="text-primary/30" />
           </div>
           <div className="relative z-10 flex items-center justify-center h-72">
@@ -185,7 +185,7 @@ export default function Reports() {
         <div className="bg-white p-10 rounded-[40px] flex flex-col gap-8 border border-outline/10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -mr-10 -mt-10" />
           <div className="relative z-10 flex justify-between items-center">
-            <h3 className="text-2xl font-black text-primary font-serif tracking-tight">حجم التجارب الأسبوعي</h3>
+            <h3 className="text-2xl font-black text-primary tracking-tight">حجم التجارب الأسبوعي</h3>
             <Activity size={24} className="text-primary/30" />
           </div>
           <div className="relative z-10 flex items-end justify-between h-72 gap-6 px-4 pt-12">

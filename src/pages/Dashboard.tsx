@@ -27,7 +27,11 @@ import {
   Monitor,
   Beaker,
   RefreshCw,
-  Cpu
+  Cpu,
+  Plus,
+  Activity,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -54,9 +58,16 @@ export default function Dashboard() {
     }
   }, [notification]);
 
+  const [recentReports, setRecentReports] = useState<any[]>([]);
+
   useEffect(() => {
     const unsubReports = onSnapshot(getUserCollection('reports'), (snap) => {
       setCounts(prev => ({ ...prev, reports: snap.size }));
+      const reports = snap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 3);
+      setRecentReports(reports);
     }, (err) => handleFirestoreError(err, OperationType.LIST, 'reports'));
 
     const unsubEquip = onSnapshot(getUserCollection('equipment'), (snap) => {
@@ -323,6 +334,33 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Quick Actions Floating Bar */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[90] bg-white/80 backdrop-blur-2xl border border-outline/10 px-8 py-4 rounded-full shadow-2xl flex items-center gap-6 no-print">
+        <button 
+          onClick={() => navigate('/daily-report')}
+          className="flex flex-col items-center gap-1 text-primary hover:scale-110 transition-transform"
+        >
+          <div className="p-2 bg-primary/10 rounded-xl"><Plus size={20} /></div>
+          <span className="text-[10px] font-black">تقرير جديد</span>
+        </button>
+        <div className="w-px h-8 bg-outline/10" />
+        <button 
+          onClick={() => navigate('/chemicals')}
+          className="flex flex-col items-center gap-1 text-primary hover:scale-110 transition-transform"
+        >
+          <div className="p-2 bg-primary/10 rounded-xl"><FlaskConical size={20} /></div>
+          <span className="text-[10px] font-black">إضافة مادة</span>
+        </button>
+        <div className="w-px h-8 bg-outline/10" />
+        <button 
+          onClick={() => navigate('/equipment')}
+          className="flex flex-col items-center gap-1 text-primary hover:scale-110 transition-transform"
+        >
+          <div className="p-2 bg-primary/10 rounded-xl"><Package size={20} /></div>
+          <span className="text-[10px] font-black">إضافة جهاز</span>
+        </button>
+      </div>
+
       {/* Header */}
       <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-4">
         <div className="text-right space-y-3 relative z-10">
@@ -330,7 +368,7 @@ export default function Dashboard() {
             <LayoutDashboard size={14} />
             نظرة عامة على النظام
           </div>
-          <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">لوحة التحكم</h1>
+          <h1 className="text-6xl font-black text-primary tracking-tighter">لوحة التحكم</h1>
           <p className="text-on-surface/60 text-xl font-bold">الأرضية الرقمية — <span className="text-primary italic">فضاء موظفوا المخابر</span></p>
         </div>
         
@@ -463,11 +501,51 @@ export default function Dashboard() {
         })}
       </section>
 
+      {/* Recent Activity Feed */}
+      {recentReports.length > 0 && (
+        <section>
+          <div className="flex items-center gap-6 mb-10">
+            <div className="w-2 h-10 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
+            <h2 className="text-[30px] leading-[30px] font-black text-primary tracking-tight">آخر النشاطات</h2>
+            <div className="flex-1 h-px bg-outline/10"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {recentReports.map((report, i) => (
+              <motion.div
+                key={report.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                onClick={() => navigate('/daily-report')}
+                className="bg-white p-6 rounded-[32px] border border-outline/5 shadow-xl hover:shadow-2xl transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-primary/5 rounded-2xl text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h5 className="font-black text-primary">{report.className || 'قسم غير محدد'}</h5>
+                    <p className="text-[10px] text-on-surface/40 font-bold">{report.date}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-on-surface/60 line-clamp-2 font-medium mb-4">
+                  {report.observations || 'لا توجد ملاحظات مسجلة لهذا التقرير.'}
+                </p>
+                <div className="flex items-center justify-between text-[10px] font-black text-primary/40 uppercase tracking-widest">
+                  <span>{report.teacherName || 'أستاذ غير محدد'}</span>
+                  <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Modules Grid */}
       <section>
         <div className="flex items-center gap-6 mb-10">
           <div className="w-2 h-10 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
-          <h3 className="text-4xl font-black text-primary tracking-tight font-serif">الأقسام والوحدات</h3>
+          <h2 className="text-[30px] leading-[30px] font-black text-primary tracking-tight">الأقسام والوحدات</h2>
           <div className="flex-1 h-px bg-outline/10"></div>
           <div className="flex items-center gap-2 text-primary/40">
             <Sparkles size={20} />
@@ -500,7 +578,7 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="relative z-10">
-                  <h4 className="text-2xl font-black text-primary mb-3 group-hover:text-primary-container transition-colors font-serif">{mod.title}</h4>
+                  <h4 className="text-2xl font-black text-primary mb-3 group-hover:text-primary-container transition-colors">{mod.title}</h4>
                   <p className="text-base text-on-surface/60 mb-10 line-clamp-2 leading-relaxed font-medium">{mod.desc}</p>
                 </div>
 
@@ -525,7 +603,7 @@ export default function Dashboard() {
             <TrendingUp size={16} />
             تحليل البيانات الذكي
           </div>
-          <h3 className="text-5xl font-black text-primary tracking-tight font-serif leading-tight">نظرة عامة على النشاط <br/>البيداغوجي للمؤسسة</h3>
+          <h2 className="text-[30px] leading-[30px] font-black text-primary tracking-tight leading-tight">نظرة عامة على النشاط <br/>البيداغوجي للمؤسسة</h2>
           <p className="text-on-surface/60 max-w-xl leading-relaxed font-medium text-xl">يتم تحديث الإحصائيات تلقائياً بناءً على التقارير المدخلة من قبل المخبريين والأساتذة. يمكنك تصدير التقارير الشهرية والسنوية بنقرة واحدة لتحليل الأداء العام للمخبر.</p>
           <div className="flex flex-wrap gap-6 pt-8">
             <button 
@@ -550,21 +628,36 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="w-full lg:w-2/5 aspect-[4/3] rounded-[48px] bg-surface-container-low overflow-hidden shadow-2xl border border-outline/10 relative group">
-          <img 
-            className="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-[2000ms]" 
-            src="https://picsum.photos/seed/lab-chart/800/600" 
-            alt="Activity Chart" 
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent"></div>
+        <div className="w-full lg:w-2/5 aspect-[4/3] rounded-[48px] bg-surface-container-low overflow-hidden shadow-2xl border border-outline/10 relative group flex items-center justify-center p-8">
+          <div className="w-full h-full relative flex items-end justify-between gap-2">
+            {[40, 70, 45, 90, 65, 85, 75].map((height, i) => (
+              <motion.div
+                key={i}
+                initial={{ height: 0 }}
+                animate={{ height: `${height}%` }}
+                transition={{ delay: i * 0.1, duration: 1, ease: "easeOut" }}
+                className="flex-1 bg-primary/20 rounded-t-2xl relative group/bar"
+              >
+                <div className="absolute inset-0 bg-primary opacity-0 group-hover/bar:opacity-100 transition-opacity rounded-t-2xl" />
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-black text-primary opacity-0 group-hover/bar:opacity-100 transition-opacity">
+                  {height}%
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
           <div className="absolute bottom-8 right-8 left-8 bg-white/60 backdrop-blur-xl p-8 rounded-[32px] border border-white/30 shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-black text-primary uppercase tracking-[0.3em]">معدل الاستخدام الأسبوعي</span>
               <span className="text-xl font-black text-primary">84%</span>
             </div>
             <div className="w-full bg-primary/10 h-3 rounded-full overflow-hidden shadow-inner">
-              <div className="bg-primary h-full w-[84%] rounded-full shadow-lg"></div>
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: "84%" }}
+                transition={{ duration: 1.5, delay: 0.5, ease: "circOut" }}
+                className="bg-primary h-full rounded-full shadow-lg"
+              />
             </div>
           </div>
         </div>

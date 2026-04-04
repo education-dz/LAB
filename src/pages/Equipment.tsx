@@ -29,13 +29,15 @@ import {
   FileDown,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  QrCode
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ensureApiKey, getEquipmentIntelligence } from '../services/geminiService';
+import { logActivity, LogAction, LogModule } from '../services/loggingService';
 
 interface Equipment {
   id: string;
@@ -78,6 +80,8 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
   const [sortField, setSortField] = useState<keyof Equipment | 'none'>('none');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [qrCodeItem, setQrCodeItem] = useState<Equipment | null>(null);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   useEffect(() => {
     const targetId = searchParams.get('id');
@@ -140,16 +144,18 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
     e.preventDefault();
     try {
       if (editingEquipment) {
-        const { id, ...data } = editingEquipment;
+        const { id } = editingEquipment;
         await updateDoc(doc(getUserCollection('equipment'), id), {
           ...newEquipment,
           updatedAt: serverTimestamp()
         });
+        await logActivity(LogAction.UPDATE, LogModule.EQUIPMENT, `تعديل بيانات الجهاز: ${newEquipment.name}`, id);
       } else {
-        await addDoc(getUserCollection('equipment'), {
+        const docRef = await addDoc(getUserCollection('equipment'), {
           ...newEquipment,
           createdAt: serverTimestamp()
         });
+        await logActivity(LogAction.CREATE, LogModule.EQUIPMENT, `إضافة جهاز جديد: ${newEquipment.name}`, docRef.id);
       }
       setIsAddModalOpen(false);
       setEditingEquipment(null);
@@ -167,9 +173,10 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
     }
   };
 
-  const handleDeleteEquipment = async (id: string) => {
+  const handleDeleteEquipment = async (id: string, name: string) => {
     try {
       await deleteDoc(doc(getUserCollection('equipment'), id));
+      await logActivity(LogAction.DELETE, LogModule.EQUIPMENT, `حذف الجهاز: ${name}`, id);
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `equipment/${id}`);
     }
@@ -579,7 +586,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               <Package size={14} />
               إدارة المخزون والعتاد
             </div>
-            <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">جرد الزجاجيات والعتاد</h1>
+            <h1 className="text-6xl font-black text-primary tracking-tighter">جرد الزجاجيات والعتاد</h1>
             <p className="text-on-surface/60 text-xl font-bold">إدارة وتتبع <span className="text-primary italic">الأدوات الزجاجية</span> والأجهزة التكنولوجية</p>
           </div>
           
@@ -865,6 +872,16 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                       <div className="flex gap-3 justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
                         <button 
                           onClick={() => {
+                            setQrCodeItem(e);
+                            setIsQRModalOpen(true);
+                          }}
+                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-white"
+                          title="عرض رمز QR"
+                        >
+                          <QrCode size={20} />
+                        </button>
+                        <button 
+                          onClick={() => {
                             setEditingEquipment(e);
                             setNewEquipment({
                               name: e.name,
@@ -902,7 +919,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                           <History size={20} />
                         </button>
                         <button 
-                          onClick={() => handleDeleteEquipment(e.id)}
+                          onClick={() => handleDeleteEquipment(e.id, e.name)}
                           className="p-3 text-primary/40 hover:text-error transition-colors rounded-2xl hover:bg-error/10 shadow-sm border border-outline/5 bg-white"
                           title="حذف الصنف"
                         >
@@ -1247,6 +1264,55 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                     </motion.div>
                   ))
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* QR Code Modal */}
+      <AnimatePresence>
+        {isQRModalOpen && qrCodeItem && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsQRModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-surface w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl border border-outline/10 p-8 flex flex-col items-center gap-6"
+            >
+              <div className="text-center">
+                <h3 className="text-xl font-black text-primary">{qrCodeItem.name}</h3>
+                <p className="text-xs text-secondary font-bold">{qrCodeItem.serialNumber}</p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-3xl shadow-inner border border-outline/5">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ id: qrCodeItem.id, type: 'equipment', name: qrCodeItem.name }))}`}
+                  alt="QR Code"
+                  className="w-48 h-48"
+                />
+              </div>
+              
+              <div className="w-full space-y-3">
+                <button 
+                  onClick={() => window.print()}
+                  className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                >
+                  <Printer size={18} />
+                  طباعة الملصق
+                </button>
+                <button 
+                  onClick={() => setIsQRModalOpen(false)}
+                  className="w-full py-3 rounded-xl border border-outline/20 font-bold text-secondary hover:bg-surface-container-high transition-all"
+                >
+                  إغلاق
+                </button>
               </div>
             </motion.div>
           </div>

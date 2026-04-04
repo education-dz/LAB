@@ -21,7 +21,7 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
               <Beaker size={14} />
               جرد الزجاجيات والكسور
             </div>
-            <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">الزجاجيات والكسور</h1>
+            <h1 className="text-6xl font-black text-primary tracking-tighter">الزجاجيات والكسور</h1>
             <p className="text-on-surface/60 text-xl font-bold">سجل دقيق لمتابعة <span className="text-primary italic">الأدوات الزجاجية</span> وحساب القيمة المالية للفواقد.</p>
           </div>
           
@@ -71,7 +71,7 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
         <div className="p-10 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <div className="flex items-center gap-4">
             <div className="w-2 h-8 bg-primary rounded-full"></div>
-            <h3 className="text-2xl font-black text-primary font-serif">سجل الكسور الأخير</h3>
+            <h3 className="text-2xl font-black text-primary">سجل الكسور الأخير</h3>
           </div>
           <button className="text-primary font-black text-sm hover:underline">عرض السجل الكامل</button>
         </div>
@@ -80,7 +80,7 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
             <History size={48} />
           </div>
           <div className="space-y-2">
-            <h4 className="text-xl font-black text-primary font-serif">لا توجد سجلات حديثة</h4>
+            <h4 className="text-xl font-black text-primary">لا توجد سجلات حديثة</h4>
             <p className="text-on-surface/40 font-bold max-w-md mx-auto">سيتم عرض قائمة الأدوات الزجاجية المكسورة وتكلفتها المالية هنا بمجرد إدخال البيانات.</p>
           </div>
         </div>

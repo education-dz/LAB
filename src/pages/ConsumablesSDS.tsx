@@ -21,7 +21,7 @@ export default function ConsumablesSDS({ isNested = false }: { isNested?: boolea
               <Package size={14} />
               جرد المستهلكات والربط مع SDS
             </div>
-            <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">المستهلكات و SDS</h1>
+            <h1 className="text-6xl font-black text-primary tracking-tighter">المستهلكات و SDS</h1>
             <p className="text-on-surface/60 text-xl font-bold">ربط المواد <span className="text-primary italic">بملفات بيانات السلامة</span> مع تنبيهات ذكية لنقص المخزون.</p>
           </div>
           
@@ -71,7 +71,7 @@ export default function ConsumablesSDS({ isNested = false }: { isNested?: boolea
         <div className="p-10 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <div className="flex items-center gap-4">
             <div className="w-2 h-8 bg-primary rounded-full"></div>
-            <h3 className="text-2xl font-black text-primary font-serif">قائمة المستهلكات والربط مع SDS</h3>
+            <h3 className="text-2xl font-black text-primary">قائمة المستهلكات والربط مع SDS</h3>
           </div>
           <div className="flex gap-4">
             <button className="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-outline/10 text-primary hover:bg-primary/5 transition-all">
@@ -87,7 +87,7 @@ export default function ConsumablesSDS({ isNested = false }: { isNested?: boolea
             <Package size={48} />
           </div>
           <div className="space-y-2">
-            <h4 className="text-xl font-black text-primary font-serif">لا توجد مواد مسجلة</h4>
+            <h4 className="text-xl font-black text-primary">لا توجد مواد مسجلة</h4>
             <p className="text-on-surface/40 font-bold max-w-md mx-auto">سيتم عرض قائمة المواد المستهلكة (قفازات، ورق ترشيح، إلخ) مع روابط ملفات SDS الخاصة بها هنا.</p>
           </div>
         </div>

@@ -32,6 +32,7 @@ import { cn } from '../lib/utils';
 import { getChemicalIntelligence, ChemicalIntelligence, ensureApiKey } from '../services/geminiService';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { logActivity, LogAction, LogModule } from '../services/loggingService';
 
 interface Chemical {
   id: string;
@@ -124,16 +125,18 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
     e.preventDefault();
     try {
       if (editingChemical) {
-        const { id, ...data } = editingChemical;
+        const { id } = editingChemical;
         await updateDoc(doc(getUserCollection('chemicals'), id), {
           ...newChemical,
           updatedAt: serverTimestamp()
         });
+        await logActivity(LogAction.UPDATE, LogModule.CHEMICALS, `تعديل بيانات المادة: ${newChemical.nameAr}`, id);
       } else {
-        await addDoc(getUserCollection('chemicals'), {
+        const docRef = await addDoc(getUserCollection('chemicals'), {
           ...newChemical,
           createdAt: serverTimestamp()
         });
+        await logActivity(LogAction.CREATE, LogModule.CHEMICALS, `إضافة مادة جديدة: ${newChemical.nameAr}`, docRef.id);
       }
       setIsAddModalOpen(false);
       setEditingChemical(null);
@@ -321,9 +324,10 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
     alert(`اكتمل التحديث الذكي!\nتم تحديث: ${successCount} مادة بنجاح\nفشل: ${failCount} مادة`);
   };
 
-  const handleDeleteChemical = async (id: string) => {
+  const handleDeleteChemical = async (id: string, name: string) => {
     try {
       await deleteDoc(doc(getUserCollection('chemicals'), id));
+      await logActivity(LogAction.DELETE, LogModule.CHEMICALS, `حذف المادة: ${name}`, id);
       if (selectedChemical?.id === id) {
         setSelectedChemical(chemicals.find(c => c.id !== id) || null);
       }
@@ -1124,7 +1128,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteChemical(c.id);
+                                handleDeleteChemical(c.id, c.nameAr);
                               }}
                               className="p-1.5 text-outline/40 hover:text-error hover:bg-error/10 transition-all rounded-full active:scale-90"
                               title="حذف"

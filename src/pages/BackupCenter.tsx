@@ -20,7 +20,7 @@ export default function BackupCenter() {
             <Database size={14} />
             مركز النسخ الاحتياطي والبيانات
           </div>
-          <h1 className="text-6xl font-black text-primary tracking-tighter font-serif">مركز البيانات</h1>
+          <h1 className="text-6xl font-black text-primary tracking-tighter">مركز البيانات</h1>
           <p className="text-on-surface/60 text-xl font-bold">مراقبة حجم البيانات <span className="text-primary italic">وإدارة النسخ الاحتياطي</span> بصيغة JSON لضمان سلامة السجلات.</p>
         </div>
         
@@ -71,7 +71,7 @@ export default function BackupCenter() {
         <div className="p-10 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <div className="flex items-center gap-4">
             <div className="w-2 h-8 bg-primary rounded-full"></div>
-            <h3 className="text-2xl font-black text-primary font-serif">سجل النسخ الاحتياطي</h3>
+            <h3 className="text-2xl font-black text-primary">سجل النسخ الاحتياطي</h3>
           </div>
           <button className="text-primary font-black text-sm hover:underline">عرض السجل الكامل</button>
         </div>
@@ -80,7 +80,7 @@ export default function BackupCenter() {
             <Activity size={48} />
           </div>
           <div className="space-y-2">
-            <h4 className="text-xl font-black text-primary font-serif">لا توجد عمليات نسخ حديثة</h4>
+            <h4 className="text-xl font-black text-primary">لا توجد عمليات نسخ حديثة</h4>
             <p className="text-on-surface/40 font-bold max-w-md mx-auto">سيتم عرض قائمة بجميع النسخ الاحتياطية التي تم إنشاؤها أو استعادتها هنا، مع تفاصيل الحجم والتاريخ.</p>
           </div>
         </div>
