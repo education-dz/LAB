@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   sendPasswordResetEmail,
   GoogleAuthProvider, 
   FacebookAuthProvider,
@@ -19,6 +21,7 @@ import { cn } from '../lib/utils';
 declare global {
   interface Window {
     recaptchaVerifier: RecaptchaVerifier | undefined;
+    grecaptcha: any;
   }
 }
 
@@ -36,6 +39,50 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
+
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (!userDoc.exists()) {
+            await setDoc(doc(db, 'users', user.uid), {
+              uid: user.uid,
+              email: user.email,
+              role: 'user',
+              displayName: user.displayName || user.email?.split('@')[0] || 'مستخدم جديد',
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
+      } catch (err: any) {
+        console.error('Redirect result error:', err);
+        if (err.code === 'auth/missing-initial-state') {
+          setError(
+            <div className="text-right">
+              <p>فشل تسجيل الدخول بسبب قيود المتصفح على ملفات تعريف الارتباط (Cookies).</p>
+              <p className="mt-2">يرجى تجربة أحد الحلول التالية:</p>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>استخدام متصفح Chrome أو Firefox بدلاً من متصفح فيسبوك المدمج.</li>
+                <li>إيقاف "منع التتبع بين المواقع" في إعدادات Safari.</li>
+                <li>
+                  استخدام الرابط المباشر: {' '}
+                  <a href="https://amatti-education-dz.firebaseapp.com/LAB" className="underline font-black">
+                    amatti-education-dz.firebaseapp.com/LAB
+                  </a>
+                </li>
+              </ul>
+            </div>
+          );
+        } else {
+          setError('حدث خطأ أثناء معالجة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+        }
+      }
+    };
+    checkRedirect();
+  }, []);
 
   useEffect(() => {
     let interval: any;
@@ -133,6 +180,22 @@ export default function Login() {
     setPhoneNumber(formattedPhone);
 
     try {
+      // Execute reCAPTCHA Enterprise
+      if (window.grecaptcha && window.grecaptcha.enterprise) {
+        await new Promise<void>((resolve) => {
+          window.grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await window.grecaptcha.enterprise.execute('6Lc46KYsAAAAAN6xmdkLGitfTCx_wyEHQ_sE7i1K', { action: 'PHONE_AUTH' });
+              console.log('reCAPTCHA Enterprise token (Phone):', token);
+              resolve();
+            } catch (err) {
+              console.error('reCAPTCHA execution error (Phone):', err);
+              resolve();
+            }
+          });
+        });
+      }
+
       if (!confirmationResult) {
         await setupRecaptcha();
         if (!window.recaptchaVerifier) {
@@ -267,6 +330,22 @@ export default function Login() {
     }
 
     try {
+      // Execute reCAPTCHA Enterprise
+      if (window.grecaptcha && window.grecaptcha.enterprise) {
+        await new Promise<void>((resolve) => {
+          window.grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await window.grecaptcha.enterprise.execute('6Lc46KYsAAAAAN6xmdkLGitfTCx_wyEHQ_sE7i1K', { action: 'LOGIN' });
+              console.log('reCAPTCHA Enterprise token:', token);
+              resolve();
+            } catch (err) {
+              console.error('reCAPTCHA execution error:', err);
+              resolve(); // Continue anyway to not block login if reCAPTCHA fails
+            }
+          });
+        });
+      }
+
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
@@ -308,47 +387,129 @@ export default function Login() {
     }
   };
 
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Check if user document exists, if not create it
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          email: user.email,
-          role: 'user',
-          displayName: user.displayName || user.email?.split('@')[0] || 'مستخدم جديد',
-          createdAt: new Date().toISOString()
+      // Execute reCAPTCHA Enterprise
+      if (window.grecaptcha && window.grecaptcha.enterprise) {
+        await new Promise<void>((resolve) => {
+          window.grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await window.grecaptcha.enterprise.execute('6Lc46KYsAAAAAN6xmdkLGitfTCx_wyEHQ_sE7i1K', { action: 'GOOGLE_LOGIN' });
+              console.log('reCAPTCHA Enterprise token (Google):', token);
+              resolve();
+            } catch (err) {
+              console.error('reCAPTCHA execution error (Google):', err);
+              resolve();
+            }
+          });
         });
       }
+
+      if (isMobile()) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        
+        // Check if user document exists, if not create it
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) {
+          await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            email: user.email,
+            role: 'user',
+            displayName: user.displayName || user.email?.split('@')[0] || 'مستخدم جديد',
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
     } catch (err: any) {
-      setError('فشل تسجيل الدخول عبر جوجل.');
+      console.error('Google login error:', err);
+      if (err.code === 'auth/missing-initial-state') {
+        setError(
+          <div className="text-right">
+            <p>فشل تسجيل الدخول بسبب قيود المتصفح على ملفات تعريف الارتباط (Cookies).</p>
+            <p className="mt-2">يرجى تجربة أحد الحلول التالية:</p>
+            <ul className="list-disc list-inside mt-1 space-y-1">
+              <li>استخدام متصفح Chrome أو Firefox بدلاً من متصفح فيسبوك المدمج.</li>
+              <li>إيقاف "منع التتبع بين المواقع" في إعدادات Safari.</li>
+              <li>
+                استخدام الرابط المباشر: {' '}
+                <a href="https://amatti-education-dz.firebaseapp.com/LAB" className="underline font-black">
+                  amatti-education-dz.firebaseapp.com/LAB
+                </a>
+              </li>
+            </ul>
+          </div>
+        );
+      } else {
+        setError('فشل تسجيل الدخول عبر جوجل.');
+      }
     }
   };
 
   const handleFacebookLogin = async () => {
     const provider = new FacebookAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Check if user document exists, if not create it
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          email: user.email,
-          role: 'user',
-          displayName: user.displayName || user.email?.split('@')[0] || 'مستخدم جديد',
-          createdAt: new Date().toISOString()
+      // Execute reCAPTCHA Enterprise
+      if (window.grecaptcha && window.grecaptcha.enterprise) {
+        await new Promise<void>((resolve) => {
+          window.grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await window.grecaptcha.enterprise.execute('6Lc46KYsAAAAAN6xmdkLGitfTCx_wyEHQ_sE7i1K', { action: 'FACEBOOK_LOGIN' });
+              console.log('reCAPTCHA Enterprise token (Facebook):', token);
+              resolve();
+            } catch (err) {
+              console.error('reCAPTCHA execution error (Facebook):', err);
+              resolve();
+            }
+          });
         });
       }
+
+      if (isMobile()) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        
+        // Check if user document exists, if not create it
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) {
+          await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            email: user.email,
+            role: 'user',
+            displayName: user.displayName || user.email?.split('@')[0] || 'مستخدم جديد',
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
     } catch (err: any) {
-      if (err.code === 'auth/operation-not-allowed') {
+      console.error('Facebook login error:', err);
+      if (err.code === 'auth/missing-initial-state') {
+        setError(
+          <div className="text-right">
+            <p>فشل تسجيل الدخول بسبب قيود المتصفح على ملفات تعريف الارتباط (Cookies).</p>
+            <p className="mt-2">يرجى تجربة أحد الحلول التالية:</p>
+            <ul className="list-disc list-inside mt-1 space-y-1">
+              <li>استخدام متصفح Chrome أو Firefox بدلاً من متصفح فيسبوك المدمج.</li>
+              <li>إيقاف "منع التتبع بين المواقع" في إعدادات Safari.</li>
+              <li>
+                استخدام الرابط المباشر: {' '}
+                <a href="https://amatti-education-dz.firebaseapp.com/LAB" className="underline font-black">
+                  amatti-education-dz.firebaseapp.com/LAB
+                </a>
+              </li>
+            </ul>
+          </div>
+        );
+      } else if (err.code === 'auth/operation-not-allowed') {
         setError(
           <span className="flex items-center gap-1 justify-center">
             تسجيل الدخول عبر فيسبوك غير مفعل. يرجى تفعيله من{' '}
