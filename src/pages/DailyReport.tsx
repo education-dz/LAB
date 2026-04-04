@@ -737,13 +737,13 @@ export default function DailyReport() {
           <table className="w-full border-collapse border-2 border-primary/20">
                 <thead className="bg-primary/5 print:bg-transparent">
                   <tr className="text-primary text-sm font-black uppercase tracking-widest print:text-black">
+                    <th className="border-2 border-primary/20 p-4 w-16 no-print">ترتيب</th>
                     <th className="border-2 border-primary/20 p-4 w-12">رقم</th>
                     <th className="border-2 border-primary/20 p-4 w-1/5">الأستاذ(ة)</th>
                     <th className="border-2 border-primary/20 p-4 w-32">التوقيت</th>
                     <th className="border-2 border-primary/20 p-4 w-32">القسم</th>
                     <th className="border-2 border-primary/20 p-4">النشاط التطبيقي</th>
                     <th className="border-2 border-primary/20 p-4 w-1/5">الأجهزة المستعملة</th>
-                    <th className="border-2 border-primary/20 p-4 w-16 no-print">ترتيب</th>
                     <th className="border-2 border-primary/20 p-4 w-32">ملاحظات</th>
                     <th className="border-2 border-primary/20 p-4 w-12 no-print"></th>
                   </tr>
@@ -751,6 +751,26 @@ export default function DailyReport() {
                 <tbody className="divide-y-2 divide-primary/10">
                   {rows.map((row, index) => (
                     <tr key={row.id} className="hover:bg-primary/5 transition-colors group">
+                      <td className="border-2 border-primary/20 p-2 text-center no-print">
+                        <div className="flex flex-col items-center -space-y-1">
+                          <button 
+                            onClick={() => moveRow(row.id, 'up')}
+                            disabled={index === 0}
+                            className="p-1 text-primary/40 hover:text-primary disabled:opacity-10 transition-all"
+                            title="تحريك للأعلى"
+                          >
+                            <ChevronUp size={18} />
+                          </button>
+                          <button 
+                            onClick={() => moveRow(row.id, 'down')}
+                            disabled={index === rows.length - 1}
+                            className="p-1 text-primary/40 hover:text-primary disabled:opacity-10 transition-all"
+                            title="تحريك للأسفل"
+                          >
+                            <ChevronDown size={18} />
+                          </button>
+                        </div>
+                      </td>
                       <td className="border-2 border-primary/20 p-4 text-center text-sm font-black text-primary/60">{index + 1}</td>
                       <td className="border-2 border-primary/20 p-2 relative group/teacher">
                         <div className="flex flex-col items-center gap-1">
@@ -880,26 +900,6 @@ export default function DailyReport() {
                           </button>
                         </div>
                       </td>
-                      <td className="border-2 border-primary/20 p-2 text-center no-print">
-                        <div className="flex flex-col items-center -space-y-1">
-                          <button 
-                            onClick={() => moveRow(row.id, 'up')}
-                            disabled={index === 0}
-                            className="p-1 text-primary/40 hover:text-primary disabled:opacity-10 transition-all"
-                            title="تحريك للأعلى"
-                          >
-                            <ChevronUp size={18} />
-                          </button>
-                          <button 
-                            onClick={() => moveRow(row.id, 'down')}
-                            disabled={index === rows.length - 1}
-                            className="p-1 text-primary/40 hover:text-primary disabled:opacity-10 transition-all"
-                            title="تحريك للأسفل"
-                          >
-                            <ChevronDown size={18} />
-                          </button>
-                        </div>
-                      </td>
                       <td className="border-2 border-primary/20 p-2">
                         <input 
                           className="w-full border-none bg-transparent text-center text-sm font-bold outline-none focus:bg-surface-container-low/50 rounded-lg py-2 transition-all" 
@@ -930,35 +930,48 @@ export default function DailyReport() {
               إضافة سطر جديد للجدول
             </button>
 
-            {/* Observations */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 mt-16 print:mt-8 print:gap-4">
-              <div className="space-y-4 print:space-y-2">
-                <label className="block text-xs font-black text-primary/40 uppercase tracking-widest print:text-black">ملاحظات {institution?.jobTitle || 'ملحق مخبري'}:</label>
-                <textarea 
-                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-xl font-bold outline-none focus:border-primary/20 transition-all min-h-[180px] resize-none print:bg-transparent print:border-b print:border-black print:rounded-none print:p-2 print:min-h-[100px] leading-relaxed"
-                  placeholder="اكتب ملاحظاتك هنا..."
-                  value={labNotes}
-                  onChange={(e) => setLabNotes(e.target.value)}
-                />
-              </div>
-              <div className="space-y-4 print:space-y-2">
-                <label className="block text-xs font-black text-primary/40 uppercase tracking-widest print:text-black">ملاحظات الناظر:</label>
-                <textarea 
-                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-xl font-bold outline-none focus:border-primary/20 transition-all min-h-[180px] resize-none print:bg-transparent print:border-b print:border-black print:rounded-none print:p-2 print:min-h-[100px] leading-relaxed"
-                  placeholder="ملاحظات الناظر..."
-                  value={supervisorNotes}
-                  onChange={(e) => setSupervisorNotes(e.target.value)}
-                />
-              </div>
-              <div className="space-y-4 print:space-y-2">
-                <label className="block text-xs font-black text-primary/40 uppercase tracking-widest print:text-black">ملاحظات مدير المؤسسة:</label>
-                <textarea 
-                  className="w-full bg-surface-container-low/30 border-2 border-outline/5 rounded-[24px] p-6 text-xl font-bold outline-none focus:border-primary/20 transition-all min-h-[180px] resize-none print:bg-transparent print:border-b print:border-black print:rounded-none print:p-2 print:min-h-[100px] leading-relaxed"
-                  placeholder="ملاحظات المدير..."
-                  value={directorNotes}
-                  onChange={(e) => setDirectorNotes(e.target.value)}
-                />
-              </div>
+            {/* Observations Table */}
+            <div className="relative z-10 mt-16 print:mt-8">
+              <table className="w-full border-collapse border-2 border-primary/20 rounded-[24px] overflow-hidden shadow-sm">
+                <thead className="bg-primary/5 print:bg-transparent">
+                  <tr className="text-primary text-sm font-black uppercase tracking-widest print:text-black">
+                    <th className="border-2 border-primary/20 p-4 w-1/3">ملاحظات {institution?.jobTitle || 'مسؤول المخبر'}</th>
+                    <th className="border-2 border-primary/20 p-4 w-1/3">ملاحظات الناظر</th>
+                    <th className="border-2 border-primary/20 p-4 w-1/3">ملاحظات المدير</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border-2 border-primary/20 p-0">
+                      <textarea 
+                        id="note-lab"
+                        className="w-full bg-transparent p-6 text-lg font-bold outline-none focus:bg-primary/5 transition-all min-h-[200px] resize-none print:p-2 print:min-h-[120px] leading-relaxed border-none"
+                        placeholder="اكتب ملاحظاتك هنا..."
+                        value={labNotes}
+                        onChange={(e) => setLabNotes(e.target.value)}
+                      />
+                    </td>
+                    <td className="border-2 border-primary/20 p-0">
+                      <textarea 
+                        id="note-nazer"
+                        className="w-full bg-transparent p-6 text-lg font-bold outline-none focus:bg-primary/5 transition-all min-h-[200px] resize-none print:p-2 print:min-h-[120px] leading-relaxed border-none"
+                        placeholder="ملاحظات الناظر..."
+                        value={supervisorNotes}
+                        onChange={(e) => setSupervisorNotes(e.target.value)}
+                      />
+                    </td>
+                    <td className="border-2 border-primary/20 p-0">
+                      <textarea 
+                        id="note-director"
+                        className="w-full bg-transparent p-6 text-lg font-bold outline-none focus:bg-primary/5 transition-all min-h-[200px] resize-none print:p-2 print:min-h-[120px] leading-relaxed border-none"
+                        placeholder="ملاحظات المدير..."
+                        value={directorNotes}
+                        onChange={(e) => setDirectorNotes(e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             {/* Footer Signatures */}

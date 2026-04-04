@@ -15,7 +15,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Beaker, Lock as LockIcon, User, Eye, ArrowLeft, ShieldCheck, Globe, UserPlus, Facebook, Phone, MessageSquare } from 'lucide-react';
+import { Beaker, Lock as LockIcon, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Globe, UserPlus, Facebook, Phone, MessageSquare } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 declare global {
@@ -32,6 +32,8 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
@@ -244,6 +246,8 @@ export default function Login() {
         setError(`خطأ في التحقق: يجب إضافة النطاق (${window.location.hostname}) إلى قائمة "Authorized domains" في إعدادات Firebase Authentication.`);
       } else if (err.code === 'auth/too-many-requests') {
         setError('تم إرسال الكثير من الطلبات. يرجى المحاولة لاحقاً.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('بيانات الاعتماد غير صالحة. يرجى التأكد من صحة رقم الهاتف ورمز التحقق.');
       } else if (err.code === 'auth/operation-not-allowed') {
         setError(
           <span>
@@ -457,8 +461,14 @@ export default function Login() {
             </ul>
           </div>
         );
+      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        setError('تم إغلاق نافذة تسجيل الدخول قبل اكتمال العملية. يرجى المحاولة مرة أخرى.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('بيانات الاعتماد غير صالحة. قد يكون هناك مشكلة في إعدادات Google Cloud أو انتهت صلاحية الجلسة.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('تسجيل الدخول عبر جوجل غير مفعل في إعدادات Firebase.');
       } else {
-        setError('فشل تسجيل الدخول عبر جوجل.');
+        setError('فشل تسجيل الدخول عبر جوجل. يرجى المحاولة مرة أخرى.');
       }
     }
   };
@@ -519,6 +529,22 @@ export default function Login() {
             </ul>
           </div>
         );
+      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        setError('تم إغلاق نافذة تسجيل الدخول قبل اكتمال العملية. يرجى المحاولة مرة أخرى.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError(
+          <span className="flex flex-col items-center gap-1 justify-center text-center">
+            <span>بيانات الاعتماد غير صالحة. يرجى التأكد من صحة "App Secret" في إعدادات فيسبوك بـ Firebase.</span>
+            <a 
+              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline font-black text-[10px]"
+            >
+              تحقق من الإعدادات هنا
+            </a>
+          </span>
+        );
       } else if (err.code === 'auth/operation-not-allowed') {
         setError(
           <span className="flex items-center gap-1 justify-center">
@@ -534,7 +560,7 @@ export default function Login() {
           </span>
         );
       } else {
-        setError('فشل تسجيل الدخول عبر فيسبوك.');
+        setError('فشل تسجيل الدخول عبر فيسبوك. يرجى المحاولة مرة أخرى.');
       }
     }
   };
@@ -750,15 +776,19 @@ export default function Login() {
                   <input 
                     className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-12 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
                     id="password" 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 cursor-pointer text-on-surface/30 hover:text-primary transition-colors">
-                    <Eye size={20} />
-                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 left-0 flex items-center pl-4 cursor-pointer text-on-surface/30 hover:text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
               </div>
 
@@ -772,12 +802,19 @@ export default function Login() {
                     <input 
                       className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-12 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
                       id="confirmPassword" 
-                      type="password" 
+                      type={showConfirmPassword ? "text" : "password"} 
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                     />
+                    <button 
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 left-0 flex items-center pl-4 cursor-pointer text-on-surface/30 hover:text-primary transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
                   </div>
                 </div>
               )}
