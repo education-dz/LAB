@@ -40,7 +40,16 @@ export default function Login() {
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
 
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+
   useEffect(() => {
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const isFB = ua.indexOf("FBAN") > -1 || ua.indexOf("FBAV") > -1;
+    const isIG = ua.indexOf("Instagram") > -1;
+    if (isFB || isIG) {
+      setIsInAppBrowser(true);
+    }
+
     const checkRedirect = async () => {
       try {
         const result = await getRedirectResult(auth);
@@ -59,21 +68,22 @@ export default function Login() {
         }
       } catch (err: any) {
         console.error('Redirect result error:', err);
-        if (err.code === 'auth/missing-initial-state') {
+        if (err.code === 'auth/missing-initial-state' || err.code === 'auth/internal-error') {
           setError(
-            <div className="text-right">
-              <p>فشل تسجيل الدخول بسبب قيود المتصفح على ملفات تعريف الارتباط (Cookies).</p>
-              <p className="mt-2">يرجى تجربة أحد الحلول التالية:</p>
-              <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>استخدام متصفح Chrome أو Firefox بدلاً من متصفح فيسبوك المدمج.</li>
-                <li>إيقاف "منع التتبع بين المواقع" في إعدادات Safari.</li>
-                <li>
-                  استخدام الرابط المباشر: {' '}
-                  <a href="https://amatti-education-dz.firebaseapp.com/LAB" className="underline font-black">
-                    amatti-education-dz.firebaseapp.com/LAB
-                  </a>
-                </li>
-              </ul>
+            <div className="text-right p-4 bg-error/5 rounded-2xl border border-error/20">
+              <p className="font-black text-error mb-2">فشل تسجيل الدخول بسبب قيود المتصفح.</p>
+              <p className="text-xs text-on-surface/70 leading-relaxed">
+                يبدو أنك تستخدم متصفحاً مدمجاً (مثل متصفح فيسبوك) يمنع حفظ بيانات الدخول.
+              </p>
+              <div className="mt-4 space-y-3">
+                <button 
+                  onClick={() => window.location.href = "https://amatti-education-dz.firebaseapp.com/LAB"}
+                  className="w-full bg-primary text-on-primary py-3 rounded-xl text-xs font-black shadow-lg"
+                >
+                  استخدام الرابط المباشر (موصى به)
+                </button>
+                <p className="text-[10px] text-center text-on-surface/40">أو قم بفتح هذا الرابط في متصفح Chrome أو Safari</p>
+              </div>
             </div>
           );
         } else {
@@ -594,6 +604,22 @@ export default function Login() {
         
         <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-12">
+            {isInAppBrowser && (
+              <div className="mb-6 p-4 bg-primary/10 rounded-2xl border border-primary/20 text-right">
+                <p className="text-xs font-black text-primary mb-2 flex items-center gap-2">
+                  <Globe size={14} /> تنبيه لمستخدمي فيسبوك/إنستغرام
+                </p>
+                <p className="text-[10px] text-on-surface/70 leading-relaxed mb-3">
+                  لتجنب مشاكل تسجيل الدخول، يفضل فتح الموقع في متصفح خارجي أو استخدام الرابط المباشر.
+                </p>
+                <button 
+                  onClick={() => window.location.href = "https://amatti-education-dz.firebaseapp.com/LAB"}
+                  className="w-full bg-primary text-on-primary py-2 rounded-lg text-[10px] font-black"
+                >
+                  فتح الرابط المباشر المستقر
+                </button>
+              </div>
+            )}
             <div className="inline-block p-2 bg-white rounded-[40px] mb-8 shadow-xl border border-outline/10">
               <img 
                 className="w-28 h-28 rounded-[32px] object-contain p-2" 

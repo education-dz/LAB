@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer, collection, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
@@ -22,6 +22,14 @@ if (typeof window !== 'undefined') {
 }
 
 export const auth = getAuth(app);
+
+// Set persistence to LOCAL to handle mobile redirects better
+if (typeof window !== 'undefined') {
+  setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.error("Error setting persistence:", err);
+  });
+}
+
 export const storage = getStorage(app);
 
 /**
