@@ -647,8 +647,23 @@ export default function Login() {
               </div>
             )}
             <div className="inline-block p-1.5 bg-white rounded-[32px] mb-4 md:mb-6 shadow-xl border border-outline/10">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] bg-primary flex items-center justify-center text-on-primary shadow-inner">
-                <Beaker size={40} className="md:size-12" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] bg-primary flex items-center justify-center text-on-primary shadow-inner overflow-hidden">
+                <img 
+                  src="/logo.png" 
+                  alt="Logo" 
+                  className="w-full h-full object-contain p-1.5"
+                  onError={(e) => {
+                    // Fallback to Beaker icon if logo.png is not found
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const icon = document.createElement('div');
+                      icon.className = "flex items-center justify-center w-full h-full";
+                      icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-beaker md:size-12"><path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M6 14h12"/></svg>';
+                      parent.appendChild(icon);
+                    }
+                  }}
+                />
               </div>
             </div>
             <h3 className="text-xl md:text-2xl font-black text-primary mb-1 font-serif tracking-tight">الأرضية الرقمية — فضاء موظفوا المخابر</h3>
