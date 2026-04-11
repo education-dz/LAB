@@ -22,7 +22,6 @@ import {
   Pencil,
   Loader2,
   Mail,
-  Smartphone,
   Facebook,
   Chrome,
   AlertCircle,
@@ -39,13 +38,8 @@ import {
   linkWithPopup, 
   GoogleAuthProvider, 
   FacebookAuthProvider, 
-  RecaptchaVerifier, 
-  linkWithPhoneNumber, 
   sendPasswordResetEmail, 
-  unlink,
-  PhoneAuthProvider,
-  PhoneMultiFactorGenerator,
-  ConfirmationResult
+  unlink
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, writeBatch, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -312,11 +306,6 @@ export default function SettingsPage() {
 
   // Account Linking State
   const [linkingError, setLinkingError] = useState<React.ReactNode | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
-  const [showPhoneInput, setShowPhoneInput] = useState(false);
 
   const CYCLE_TEMPLATES: Record<string, any[]> = {
     'متوسط': [
@@ -537,93 +526,6 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error unlinking account:', error);
       alert('حدث خطأ أثناء إلغاء ربط الحساب.');
-    }
-  };
-
-  const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {}
-      });
-    }
-  };
-
-  const handlePhoneLink = async () => {
-    if (!auth.currentUser || !phoneNumber) return;
-    
-    // Basic validation for international format
-    if (!phoneNumber.startsWith('+') || phoneNumber.length < 10) {
-      setLinkingError('يرجى إدخال رقم الهاتف بالصيغة الدولية الصحيحة (مثال: +213xxxxxxxxx)');
-      return;
-    }
-
-    setIsVerifyingPhone(true);
-    setLinkingError(null);
-    try {
-      setupRecaptcha();
-      const appVerifier = (window as any).recaptchaVerifier;
-      const result = await linkWithPhoneNumber(auth.currentUser, phoneNumber, appVerifier);
-      setConfirmationResult(result);
-    } catch (error: any) {
-      console.error('Error linking phone:', error);
-      if (error.code === 'auth/invalid-phone-number') {
-        setLinkingError('رقم الهاتف غير صحيح. يرجى التأكد من الصيغة الدولية.');
-      } else if (error.code === 'auth/too-many-requests') {
-        setLinkingError('تم إرسال الكثير من الطلبات. يرجى المحاولة لاحقاً.');
-      } else if (error.code === 'auth/operation-not-allowed') {
-        setLinkingError(
-          <span>
-            إرسال الرسائل النصية غير مفعل لهذه المنطقة. يرجى تفعيل "SMS Region Policy" من{' '}
-            <a 
-              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/settings`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline font-black"
-            >
-              إعدادات Firebase
-            </a>
-            .
-          </span>
-        );
-      } else if (error.code === 'auth/billing-not-enabled') {
-        setLinkingError(
-          <span>
-            مشكلة في الدفع: يرجى ترقية مشروع Firebase إلى خطة "Blaze" (Pay-as-you-go) لاستخدام ميزة التحقق عبر الهاتف في هذه المنطقة. 
-            <a 
-              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/billing/plan`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline block mt-1"
-            >
-              ترقية الخطة الآن
-            </a>
-          </span>
-        );
-      } else {
-        setLinkingError('حدث خطأ أثناء إرسال رمز التحقق.');
-      }
-    } finally {
-      setIsVerifyingPhone(false);
-    }
-  };
-
-  const verifyPhoneCode = async () => {
-    if (!confirmationResult || !verificationCode) return;
-    setIsVerifyingPhone(true);
-    try {
-      await confirmationResult.confirm(verificationCode);
-      setShowPhoneInput(false);
-      setConfirmationResult(null);
-      setVerificationCode('');
-      setPhoneNumber('');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error: any) {
-      console.error('Error verifying code:', error);
-      setLinkingError('رمز التحقق غير صحيح.');
-    } finally {
-      setIsVerifyingPhone(false);
     }
   };
 
@@ -917,20 +819,6 @@ export default function SettingsPage() {
                     >
                       <Facebook size={18} className={auth.currentUser?.providerData.some(p => p.providerId === 'facebook.com') ? "text-blue-600" : "text-[#1877F2]"} />
                       {auth.currentUser?.providerData.some(p => p.providerId === 'facebook.com') ? 'تم ربط Facebook' : 'ربط Facebook'}
-                    </button>
-
-                    <button 
-                      onClick={() => setShowPhoneInput(true)}
-                      disabled={auth.currentUser?.providerData.some(p => p.providerId === 'phone')}
-                      className={cn(
-                        "flex items-center gap-3 px-6 py-3 rounded-2xl font-bold transition-all border-2",
-                        auth.currentUser?.providerData.some(p => p.providerId === 'phone')
-                          ? "bg-gray-50 border-gray-100 text-gray-700 cursor-default"
-                          : "bg-white border-[#c4c8bd]/30 text-[#2b3d22] hover:border-[#2b3d22]/30"
-                      )}
-                    >
-                      <Smartphone size={18} className={auth.currentUser?.providerData.some(p => p.providerId === 'phone') ? "text-gray-600" : "text-[#2b3d22]"} />
-                      {auth.currentUser?.providerData.some(p => p.providerId === 'phone') ? auth.currentUser.phoneNumber : 'ربط الهاتف'}
                     </button>
                   </div>
                   {linkingError && (
@@ -1406,36 +1294,6 @@ export default function SettingsPage() {
                         </button>
                       )}
                     </div>
-
-                    {/* Phone */}
-                    <div className="bg-[#fcf9f3] p-6 rounded-3xl border border-[#c4c8bd]/30 flex flex-col items-center text-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                        <Smartphone className="text-[#2b3d22]" size={24} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-[#2b3d22]">رقم الهاتف</h4>
-                        <p className="text-xs text-[#5c6146] mt-1">
-                          {auth.currentUser?.providerData.some(p => p.providerId === 'phone') 
-                            ? auth.currentUser.phoneNumber 
-                            : 'غير مرتبط'}
-                        </p>
-                      </div>
-                      {auth.currentUser?.providerData.some(p => p.providerId === 'phone') ? (
-                        <button 
-                          onClick={() => unlinkAccount('phone')}
-                          className="w-full py-2 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-all"
-                        >
-                          إلغاء الربط
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => setShowPhoneInput(true)}
-                          className="w-full py-2 bg-[#2b3d22] text-white rounded-xl text-sm font-bold hover:bg-[#1c2816] transition-all"
-                        >
-                          ربط الهاتف
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </section>
 
@@ -1578,70 +1436,7 @@ export default function SettingsPage() {
           </motion.div>
 
           <AnimatePresence>
-            {showPhoneInput && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="mt-8 p-8 bg-white border-2 border-[#2b3d22]/10 rounded-[32px] space-y-6 shadow-xl"
-              >
-                {!confirmationResult ? (
-                  <div className="space-y-4">
-                    <h4 className="font-black text-[#2b3d22]">أدخل رقم الهاتف لربط الحساب</h4>
-                    <p className="text-sm text-[#5c6146]">يرجى إدخال رقم الهاتف مع رمز الدولة (مثال: +213xxxxxxxxx)</p>
-                    <div className="flex gap-3">
-                      <input 
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="+213"
-                        dir="ltr"
-                        className="flex-grow bg-[#fcf9f3] border-2 border-transparent rounded-2xl px-6 py-4 focus:ring-0 focus:border-[#2b3d22] transition-all font-bold"
-                      />
-                      <button 
-                        onClick={handlePhoneLink}
-                        disabled={isVerifyingPhone || !phoneNumber}
-                        className="px-8 bg-[#2b3d22] text-white rounded-2xl font-bold disabled:opacity-50 min-w-[120px]"
-                      >
-                        {isVerifyingPhone ? <Loader2 className="animate-spin mx-auto" /> : 'إرسال الرمز'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <h4 className="font-black text-[#2b3d22]">أدخل رمز التحقق</h4>
-                    <p className="text-sm text-[#5c6146]">تم إرسال رمز التحقق إلى {phoneNumber}</p>
-                    <div className="flex gap-3">
-                      <input 
-                        type="text"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        placeholder="000000"
-                        className="flex-grow bg-[#fcf9f3] border-2 border-transparent rounded-2xl px-6 py-4 focus:ring-0 focus:border-[#2b3d22] transition-all font-bold text-center tracking-[1em]"
-                      />
-                      <button 
-                        onClick={verifyPhoneCode}
-                        disabled={isVerifyingPhone || !verificationCode}
-                        className="px-8 bg-[#2b3d22] text-white rounded-2xl font-bold disabled:opacity-50 min-w-[120px]"
-                      >
-                        {isVerifyingPhone ? <Loader2 className="animate-spin mx-auto" /> : 'تأكيد الرمز'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <div id="recaptcha-container"></div>
-                <button 
-                  onClick={() => {
-                    setShowPhoneInput(false);
-                    setConfirmationResult(null);
-                    setLinkingError(null);
-                  }}
-                  className="text-sm font-bold text-red-500 hover:underline"
-                >
-                  إلغاء العملية
-                </button>
-              </motion.div>
-            )}
+            {/* Phone linking UI removed */}
           </AnimatePresence>
         </main>
       </div>

@@ -8,19 +8,15 @@ import {
   getRedirectResult,
   sendPasswordResetEmail,
   GoogleAuthProvider, 
-  FacebookAuthProvider,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  ConfirmationResult
+  FacebookAuthProvider
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Beaker, Lock as LockIcon, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Globe, UserPlus, Facebook, Phone, MessageSquare } from 'lucide-react';
+import { Beaker, Lock as LockIcon, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Globe, UserPlus, Facebook } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 declare global {
   interface Window {
-    recaptchaVerifier: RecaptchaVerifier | undefined;
     grecaptcha: any;
   }
 }
@@ -28,19 +24,13 @@ declare global {
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [error, setError] = useState<React.ReactNode>('');
   const [loading, setLoading] = useState(false);
-  const [resendTimer, setResendTimer] = useState(0);
-  const [canResend, setCanResend] = useState(true);
 
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
@@ -95,218 +85,6 @@ export default function Login() {
     };
     checkRedirect();
   }, []);
-
-  useEffect(() => {
-    let interval: any;
-    if (resendTimer > 0) {
-      interval = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
-    } else {
-      setCanResend(true);
-    }
-    return () => clearInterval(interval);
-  }, [resendTimer]);
-
-  useEffect(() => {
-    return () => {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-      }
-    };
-  }, []);
-
-  const setupRecaptcha = async () => {
-    try {
-      // If it's already initialized, don't do it again
-      if (window.recaptchaVerifier) {
-        return;
-      }
-      
-      const container = document.getElementById('recaptcha-container');
-      if (!container) return;
-      
-      // Clear the container just in case there's leftover HTML
-      container.innerHTML = '';
-
-      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {
-          // reCAPTCHA solved
-        },
-        'expired-callback': () => {
-          if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            window.recaptchaVerifier = undefined;
-          }
-        }
-      });
-
-      // Explicitly render the reCAPTCHA to catch errors early
-      await verifier.render();
-      window.recaptchaVerifier = verifier;
-      
-    } catch (err: any) {
-      console.error('Recaptcha setup error:', err);
-      // If it fails, ensure we reset the state
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear(); } catch(e) {}
-        window.recaptchaVerifier = undefined;
-      }
-      
-      if (err.message?.includes('-39') || err.code?.includes('-39')) {
-        setError('خطأ في تحميل نظام التحقق (reCAPTCHA). يرجى التأكد من عدم وجود إضافات تمنع الإعلانات (Ad-blockers) وتحديث الصفحة.');
-      }
-    }
-  };
-
-  const handlePhoneAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    // Robust phone number formatting
-    let formattedPhone = phoneNumber.trim().replace(/\s+/g, ''); // Remove spaces
-    
-    // If it starts with 00, replace with +
-    if (formattedPhone.startsWith('00')) {
-      formattedPhone = '+' + formattedPhone.substring(2);
-    } 
-    // If it starts with 0 and not 00, and doesn't have a +, assume Algerian local number
-    else if (formattedPhone.startsWith('0') && !formattedPhone.startsWith('+')) {
-      formattedPhone = '+213' + formattedPhone.substring(1);
-    }
-    // If it doesn't start with + at all, add it
-    else if (!formattedPhone.startsWith('+')) {
-      formattedPhone = '+' + formattedPhone;
-    }
-
-    // Basic E.164 validation regex: + followed by 7 to 15 digits
-    const phoneRegex = /^\+[1-9]\d{6,14}$/;
-    if (!phoneRegex.test(formattedPhone)) {
-      setError('صيغة رقم الهاتف غير صالحة. يرجى إدخال الرقم بصيغة دولية صحيحة (مثلاً: +213661234567).');
-      setLoading(false);
-      return;
-    }
-
-    setPhoneNumber(formattedPhone);
-
-    try {
-      // Execute reCAPTCHA Enterprise
-      if (window.grecaptcha && window.grecaptcha.enterprise) {
-        await new Promise<void>((resolve) => {
-          window.grecaptcha.enterprise.ready(async () => {
-            try {
-              const token = await window.grecaptcha.enterprise.execute('6Lc46KYsAAAAAN6xmdkLGitfTCx_wyEHQ_sE7i1K', { action: 'PHONE_AUTH' });
-              console.log('reCAPTCHA Enterprise token (Phone):', token);
-              resolve();
-            } catch (err) {
-              console.error('reCAPTCHA execution error (Phone):', err);
-              resolve();
-            }
-          });
-        });
-      }
-
-      if (!confirmationResult) {
-        await setupRecaptcha();
-        if (!window.recaptchaVerifier) {
-          throw new Error('فشل تهيئة نظام التحقق (reCAPTCHA).');
-        }
-        const appVerifier = window.recaptchaVerifier;
-        const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-        setConfirmationResult(result);
-        setResendTimer(60); // 60 seconds countdown
-        setCanResend(false);
-      } else {
-        const result = await confirmationResult.confirm(verificationCode);
-        const user = result.user;
-        
-        // Check if user document exists, if not create it
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (!userDoc.exists()) {
-          await setDoc(doc(db, 'users', user.uid), {
-            uid: user.uid,
-            phoneNumber: user.phoneNumber,
-            role: 'user',
-            displayName: user.phoneNumber || 'مستخدم هاتف',
-            createdAt: new Date().toISOString()
-          });
-        }
-      }
-    } catch (err: any) {
-      console.error('Phone auth error:', err);
-      if (err.code === 'auth/invalid-phone-number') {
-        setError('رقم الهاتف غير صحيح. يرجى إدخال الرقم بصيغة دولية صحيحة (مثلاً: +213661234567).');
-      } else if (err.code === 'auth/code-expired') {
-        setError('انتهت صلاحية رمز التحقق. يرجى المحاولة مرة أخرى.');
-      } else if (err.code === 'auth/invalid-verification-code') {
-        setError('رمز التحقق غير صحيح.');
-      } else if (err.code === 'auth/captcha-check-failed' || err.message?.includes('Hostname match not found')) {
-        setError(`خطأ في التحقق: يجب إضافة النطاق (${window.location.hostname}) إلى قائمة "Authorized domains" في إعدادات Firebase Authentication.`);
-      } else if (err.code === 'auth/too-many-requests') {
-        setError('تم إرسال الكثير من الطلبات. يرجى المحاولة لاحقاً.');
-      } else if (err.code === 'auth/invalid-credential') {
-        setError('بيانات الاعتماد غير صالحة. يرجى التأكد من صحة رقم الهاتف ورمز التحقق.');
-      } else if (err.code === 'auth/operation-not-allowed') {
-        setError(
-          <span>
-            إرسال الرسائل النصية غير مفعل لهذه المنطقة. يرجى تفعيل "SMS Region Policy" من{' '}
-            <a 
-              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/settings`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline font-black"
-            >
-              إعدادات Firebase
-            </a>
-            .
-          </span>
-        );
-      } else if (err.code === 'auth/billing-not-enabled') {
-        setError(
-          <span>
-            مشكلة في الدفع: يرجى ترقية مشروع Firebase إلى خطة "Blaze" (Pay-as-you-go) لاستخدام ميزة التحقق عبر الهاتف في هذه المنطقة. 
-            <a 
-              href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/billing/plan`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline block mt-1 font-black"
-            >
-              ترقية الخطة الآن
-            </a>
-          </span>
-        );
-      } else if (err.message?.includes('-39') || err.code?.includes('-39')) {
-        setError('خطأ داخلي في نظام التحقق (reCAPTCHA). يرجى تحديث الصفحة والمحاولة مرة أخرى، أو التأكد من أنك لا تستخدم متصفحاً في وضع التخفي (Incognito).');
-      } else {
-        setError('حدث خطأ أثناء التحقق من رقم الهاتف. يرجى التأكد من الصيغة الدولية.');
-      }
-      
-      // Reset reCAPTCHA on fatal errors or session expiry
-      // Don't reset on invalid-verification-code to allow retries without re-solving reCAPTCHA
-      if (err.code === 'auth/too-many-requests' || err.code === 'auth/code-expired' || err.message?.includes('-39') || !confirmationResult) {
-        if (window.recaptchaVerifier) {
-          try { window.recaptchaVerifier.clear(); } catch(e) {}
-          window.recaptchaVerifier = undefined;
-        }
-        if (err.code === 'auth/code-expired') {
-          setConfirmationResult(null);
-        }
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    if (!canResend) return;
-    setConfirmationResult(null);
-    setVerificationCode('');
-    // Trigger the same logic by calling handlePhoneAuth with a dummy event
-    const dummyEvent = { preventDefault: () => {} } as React.FormEvent;
-    handlePhoneAuth(dummyEvent);
-  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -672,33 +450,12 @@ export default function Login() {
               <p className="font-black text-primary mb-1">عن المنصة:</p>
               نظام رقمي متكامل مصمم خصيصاً لتسيير المخابر العلمية في المؤسسات التربوية الجزائرية (متوسط وثانوي). يهدف النظام إلى رقمنة السجلات، متابعة الجرد، وتسهيل العمل البيداغوجي لموظفي المخابر.
             </div>
-            <div className="mt-3 inline-flex items-center px-4 py-1.5 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-widest">
-              {isLogin ? <LockIcon size={12} className="ml-1.5" /> : <UserPlus size={12} className="ml-1.5" />}
-              {isLogin ? 'دخول الموظفين فقط' : 'إنشاء حساب جديد'}
-            </div>
-          </div>
-
-          <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-2xl mb-6 border border-outline/10">
-            <button
-              onClick={() => { setAuthMethod('email'); setConfirmationResult(null); setError(''); }}
-              className={cn(
-                "flex-1 py-3 px-4 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2",
-                authMethod === 'email' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface/60 hover:bg-primary/5"
-              )}
-            >
-              <User size={18} />
-              البريد الإلكتروني
-            </button>
-            <button
-              onClick={() => { setAuthMethod('phone'); setError(''); }}
-              className={cn(
-                "flex-1 py-3 px-4 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2",
-                authMethod === 'phone' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface/60 hover:bg-primary/5"
-              )}
-            >
-              <Phone size={18} />
-              رقم الهاتف
-            </button>
+            {!isLogin && (
+              <div className="mt-3 inline-flex items-center px-4 py-1.5 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-widest">
+                <UserPlus size={12} className="ml-1.5" />
+                إنشاء حساب جديد
+              </div>
+            )}
           </div>
 
           {isResetting ? (
@@ -752,7 +509,7 @@ export default function Login() {
                 </button>
               </div>
             </form>
-          ) : authMethod === 'email' ? (
+          ) : (
             <form onSubmit={handleAuth} className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-[10px] font-black text-on-surface/40 uppercase tracking-widest mr-2" htmlFor="email">البريد الإلكتروني</label>
@@ -847,89 +604,6 @@ export default function Login() {
                 type="submit"
               >
                 <span>{loading ? 'جاري التحميل...' : (isLogin ? 'دخول إلى النظام' : 'إنشاء الحساب')}</span>
-                <ArrowLeft className="group-hover:-translate-x-2 transition-transform" size={20} />
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handlePhoneAuth} className="space-y-4">
-              <div id="recaptcha-container"></div>
-              
-              {!confirmationResult ? (
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-on-surface/40 uppercase tracking-widest mr-2" htmlFor="phone">رقم الهاتف</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-on-surface/30 group-focus-within:text-primary transition-colors">
-                      <Phone size={20} />
-                    </div>
-                    <input 
-                      className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-5 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
-                      id="phone" 
-                      type="tel" 
-                      placeholder="0661234567"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <p className="text-[9px] text-on-surface/40 mr-2 font-bold italic">يمكنك إدخال الرقم بصيغة 0661234567 أو الصيغة الدولية +213661234567</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-on-surface/40 uppercase tracking-widest mr-2" htmlFor="code">رمز التحقق</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-on-surface/30 group-focus-within:text-primary transition-colors">
-                      <MessageSquare size={20} />
-                    </div>
-                    <input 
-                      className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-5 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
-                      id="code" 
-                      type="text" 
-                      placeholder="123456"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 px-2">
-                    <div className="flex justify-between items-center">
-                      <p className="text-[9px] text-on-surface/40 font-bold">تم إرسال الرمز إلى {phoneNumber}</p>
-                      <button 
-                        type="button" 
-                        onClick={() => { setConfirmationResult(null); setResendTimer(0); setCanResend(true); }}
-                        className="text-[9px] text-primary font-black hover:underline"
-                      >
-                        تغيير الرقم؟
-                      </button>
-                    </div>
-                    <div className="flex justify-center mt-1">
-                      <button
-                        type="button"
-                        disabled={!canResend || loading}
-                        onClick={handleResendCode}
-                        className={cn(
-                          "text-[10px] font-black transition-all",
-                          canResend ? "text-primary hover:underline" : "text-on-surface/30 cursor-not-allowed"
-                        )}
-                      >
-                        {resendTimer > 0 ? `إعادة إرسال الرمز خلال ${resendTimer} ثانية` : "لم يصلك الرمز؟ إعادة الإرسال"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-error/10 text-error text-[10px] font-black p-3 rounded-2xl text-center border border-error/20 animate-shake">
-                  {error}
-                </div>
-              )}
-
-              <button 
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary-container text-on-primary font-black py-4 rounded-full shadow-2xl shadow-primary/20 transform active:scale-95 transition-all flex items-center justify-center gap-3 group text-base disabled:opacity-50 disabled:active:scale-100" 
-                type="submit"
-              >
-                <span>{loading ? 'جاري التحميل...' : (!confirmationResult ? 'إرسال رمز التحقق' : 'تأكيد الرمز والدخول')}</span>
                 <ArrowLeft className="group-hover:-translate-x-2 transition-transform" size={20} />
               </button>
             </form>

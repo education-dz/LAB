@@ -1,61 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: users
-    // Fields: uid, email (optional), phoneNumber (optional), role, displayName
-    // Required: uid, role
-    // Collection: chemicals
-    // Fields: name, formula, quantity, unit, location, expiryDate, hazardClass
-    //
-    // Collection: equipment
-    // Fields: name, category, status, quantity, location, lastMaintenance
-    //
-    // Collection: teachers
-    // Fields: name, subject, email, phone, classes
-    //
-    // Collection: safety_equipment
-    // Fields: name, status, lastCheck, location, type
-    //
-    // Collection: incident_logs
-    // Fields: title, date, severity, description, reporter
-    //
-    // Collection: reports
-    // Fields: title, generatedAt, stats, type
-    //
-    // ===============================================================
-
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
+
     function isAdmin() {
       return isAuthenticated() && 
-        ((request.auth.token.email == "faycalassoul@gmail.com" && request.auth.token.email_verified == true) ||
+        (request.auth.token.email == "faycalassoul@gmail.com" ||
          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
-    function hasRequiredFields(fields) {
-      return request.resource.data.keys().hasAll(fields);
-    }
-    function isValidString(field, min, max) {
-      return request.resource.data[field] is string && 
-             request.resource.data[field].size() >= min && 
-             request.resource.data[field].size() <= max;
-    }
 
-    // ===============================================================
-    // Rules
-    // ===============================================================
-
+    // User-scoped data (profiles and subcollections)
     match /users/{userId} {
       allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       
@@ -64,12 +22,19 @@ service cloud.firestore {
       }
     }
 
+    // Settings (top-level or user-scoped)
     match /settings/{userId} {
       allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
     }
 
+    // Connection test
     match /_connection_test_/{docId} {
       allow read: if isAuthenticated();
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
