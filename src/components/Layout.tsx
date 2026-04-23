@@ -136,7 +136,7 @@ export default function Layout() {
         <div className="p-6 flex flex-col items-center gap-2">
           <img 
             className={cn("object-contain transition-all", isSidebarOpen ? "w-16 h-16" : "w-10 h-10")}
-            src={`${import.meta.env.BASE_URL}ministry-logo.png`}
+            src="ministry-logo.png"
             alt="Logo" 
           />
           {isSidebarOpen && (
