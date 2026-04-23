@@ -20,7 +20,11 @@ import {
   History,
   TrendingUp,
   FileText as FileAlt,
-  Users
+  Users,
+  Upload,
+  Eye,
+  X,
+  FileCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -46,18 +50,25 @@ interface CommitteeMember {
   observations: string;
 }
 
-type Tab = 'list' | 'pv' | 'proposal';
+interface AttachmentDoc {
+  name: string;
+  data: string | null; // base64
+  type: string;
+}
+
+type Tab = 'list' | 'pv' | 'proposal' | 'attachments';
 
 export default function EquipmentScrapping() {
   const [activeTab, setActiveTab] = useState<Tab>('list');
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<AttachmentDoc | null>(null);
 
   // Lists for autocomplete
   const [equipmentList, setEquipmentList] = useState<any[]>([]);
   const [teachersList, setTeachersList] = useState<any[]>([]);
 
-  // State for the 3 components
+  // State for the components
   const [scrapItems, setScrapItems] = useState<ScrapItem[]>([
     { id: '1', inventoryNum: '', name: '', acquisitionDate: '', quantity: 1, reason: 'تلف كامل', state: 'عاطلة', acquisitionValue: '', estimatedValue: '', notes: '' }
   ]);
@@ -80,6 +91,13 @@ export default function EquipmentScrapping() {
     subject: 'اقتراح إسقاط تجهيزات مخبر الوسائل التعليمية',
     to: 'مدير ثانوية بوحازم عبد المجيد',
     justification: ''
+  });
+
+  const [attachments, setAttachments] = useState<{ [key: string]: AttachmentDoc }>({
+    withdrawal_license: { name: 'رخصة السحب', data: null, type: '' },
+    steering_minutes: { name: 'محضر مجلس التوجيه و التسيير', data: null, type: '' },
+    scrapping_request: { name: 'طلب الإسقاط', data: null, type: '' },
+    handover_minutes: { name: 'محضر التسليم', data: null, type: '' }
   });
 
   useEffect(() => {
@@ -139,16 +157,48 @@ export default function EquipmentScrapping() {
         scrapItems,
         pvData,
         proposalData,
+        attachments,
         createdAt: serverTimestamp()
       });
-      await logActivity(LogAction.CREATE, LogModule.EQUIPMENT, `سجل إسقاط جديد رقم: ${proposalData.num}`, docRef.id);
-      setNotification({ message: 'تم حفظ السجل بنجاح!', type: 'success' });
+      await logActivity(LogAction.CREATE, LogModule.EQUIPMENT, `سجل إسقاط بملفات مرفقة رقم: ${proposalData.num}`, docRef.id);
+      setNotification({ message: 'تم حفظ السجل والملفات بنجاح!', type: 'success' });
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, 'scrapping_records');
       setNotification({ message: 'خطأ في الحفظ.', type: 'error' });
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleFileUpload = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 800000) {
+      setNotification({ message: 'حجم الملف كبير جداً (الأقصى 800KB لضمان الأمان).', type: 'error' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachments({
+        ...attachments,
+        [key]: {
+          ...attachments[key],
+          data: reader.result as string,
+          type: file.type
+        }
+      });
+      setNotification({ message: 'تم تحميل المستند بنجاح.', type: 'success' });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAttachment = (key: string) => {
+    setAttachments({
+      ...attachments,
+      [key]: { ...attachments[key], data: null, type: '' }
+    });
   };
 
   const printDocument = (mode: Tab) => {
@@ -247,6 +297,7 @@ export default function EquipmentScrapping() {
           <TabButton active={activeTab === 'list'} onClick={() => setActiveTab('list')} icon={<FileText size={18}/>} label="قائمة مقترحات الإسقاط" color="error" />
           <TabButton active={activeTab === 'pv'} onClick={() => setActiveTab('pv')} icon={<FileSignature size={18}/>} label="محضر المعاينة التقنية" color="primary" />
           <TabButton active={activeTab === 'proposal'} onClick={() => setActiveTab('proposal')} icon={<FileAlt size={18}/>} label="نموذج الاقتراح الرسمي" color="secondary" />
+          <TabButton active={activeTab === 'attachments'} onClick={() => setActiveTab('attachments')} icon={<Upload size={18}/>} label="المستندات المرفقة" color="primary" />
         </div>
 
         {/* Dynamic Paper Content */}
@@ -254,10 +305,10 @@ export default function EquipmentScrapping() {
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[48px] shadow-2xl border border-outline/5 overflow-hidden"
+          className="bg-white rounded-[48px] shadow-2xl border border-outline/5 overflow-hidden min-h-[600px] flex flex-col"
         >
           {/* Paper Header */}
-          <div className="p-12 border-b-2 border-primary/10 bg-surface-container-low/30 relative">
+          <div className="p-12 border-b-2 border-primary/10 bg-surface-container-low/30 relative shrink-0">
              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
              <div className="flex flex-col md:flex-row justify-between gap-8 text-center md:text-right relative z-10">
                 <div className="space-y-1">
@@ -278,11 +329,12 @@ export default function EquipmentScrapping() {
                   {activeTab === 'list' && "قائمة التجهيزات المقترح إسقاطها"}
                   {activeTab === 'pv' && "محضر المعاينة التقنية للوسائل"}
                   {activeTab === 'proposal' && "نموذج اقتراح إسقاط التجهيزات"}
+                  {activeTab === 'attachments' && "الأرشيف الرقمي للمستندات"}
                 </h2>
              </div>
           </div>
 
-          <div className="p-12 space-y-12">
+          <div className="p-12 space-y-12 flex-grow">
             {/* List Tab */}
             {activeTab === 'list' && (
               <div className="space-y-8">
@@ -400,6 +452,61 @@ export default function EquipmentScrapping() {
               </div>
             )}
 
+            {/* Attachments Tab */}
+            {activeTab === 'attachments' && (
+              <div className="space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {Object.entries(attachments).map(([key, doc]) => (
+                    <div key={key} className={cn(
+                      "p-8 rounded-[40px] border-2 transition-all flex flex-col gap-6",
+                      doc.data ? "bg-primary/5 border-primary/20" : "bg-surface-container-low border-dashed border-outline/20 hover:border-primary/40"
+                    )}>
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-4">
+                            <div className={cn("p-4 rounded-2xl", doc.data ? "bg-primary text-on-primary" : "bg-outline/10 text-on-surface/40")}>
+                               {doc.data ? <FileCheck size={24}/> : <Upload size={24}/>}
+                            </div>
+                            <div>
+                               <h3 className="font-black text-primary">{doc.name}</h3>
+                               <p className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">
+                                 {doc.data ? "مستند جاهز للعرض" : "بانتظار التحميل..."}
+                               </p>
+                            </div>
+                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                         {!doc.data ? (
+                           <label className="flex-1 cursor-pointer">
+                              <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(key, e)} />
+                              <div className="w-full py-4 bg-white border border-outline/10 rounded-2xl font-black text-primary text-center hover:bg-primary/5 transition-all">تحميل الملف</div>
+                           </label>
+                         ) : (
+                           <>
+                              <button onClick={() => setPreviewDoc(doc)} className="flex-1 py-4 bg-primary text-on-primary rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+                                 <Eye size={18}/> عرض
+                              </button>
+                              <button onClick={() => removeAttachment(key)} className="p-4 bg-error/10 text-error rounded-2xl hover:bg-error/20 transition-all">
+                                 <Trash2 size={18}/>
+                              </button>
+                           </>
+                         )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-8 bg-warning/5 border-2 border-warning/20 rounded-[40px] flex items-center gap-6">
+                   <div className="p-4 bg-warning text-on-warning rounded-2xl">
+                      <AlertTriangle size={24}/>
+                   </div>
+                   <p className="text-sm font-bold text-on-surface/60 leading-relaxed">
+                     ملاحظة أمنية: يرجى التأكد من أن الملفات المرفقة واضحة ولا يتجاوز حجم الواحد منها 800 كيلوبايت. يفضل استخدام صيغ (JPG, PNG) للصور أو ملفات (PDF) المصغرة.
+                   </p>
+                </div>
+              </div>
+            )}
+
             {/* Final Signature Section */}
             <div className="pt-16 border-t-2 border-outline/5 flex flex-col md:flex-row justify-between items-end gap-12">
                <div className="space-y-4">
@@ -422,6 +529,32 @@ export default function EquipmentScrapping() {
       </div>
 
       <AnimatePresence>
+        {previewDoc && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-on-surface/60 backdrop-blur-xl flex items-center justify-center p-8">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white w-full max-w-5xl h-[85vh] rounded-[48px] shadow-2xl flex flex-col relative overflow-hidden">
+               <div className="p-8 border-b-2 border-primary/10 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                     <div className="p-4 bg-primary/10 text-primary rounded-2xl"><FileCheck size={24}/></div>
+                     <h2 className="text-2xl font-black text-primary">{previewDoc.name}</h2>
+                  </div>
+                  <button onClick={() => setPreviewDoc(null)} className="p-4 bg-surface-container-high rounded-full hover:bg-error/10 hover:text-error transition-all"><X size={24}/></button>
+               </div>
+               
+               <div className="flex-grow p-4 bg-surface-container-low/30 overflow-auto flex items-center justify-center">
+                  {previewDoc.type.includes('pdf') ? (
+                    <iframe src={previewDoc.data!} className="w-full h-full rounded-2xl" title="document-preview" />
+                  ) : (
+                    <img src={previewDoc.data!} alt="document-preview" className="max-w-full max-h-full object-contain rounded-2xl shadow-xl" />
+                  )}
+               </div>
+               
+               <div className="p-8 border-t-2 border-primary/10 bg-surface-container-low/30 text-center">
+                  <p className="text-sm font-black text-on-surface/40 uppercase tracking-widest leading-none">معاينة نظامية — الأرشيف الرقمي للمخبر</p>
+               </div>
+            </motion.div>
+          </motion.div>
+        )}
+
         {notification && (
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className={cn("fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-10 py-5 rounded-[32px] shadow-2xl flex items-center gap-4 font-black transition-all", notification.type === 'success' ? "bg-primary text-on-primary" : "bg-error text-white")}>
             {notification.type === 'success' ? <RefreshCw className="animate-spin" size={24} /> : <AlertTriangle size={24} />}
