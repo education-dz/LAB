@@ -450,7 +450,7 @@ export default function Login() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center p-2 shadow-lg">
               <img 
-                src="ministry-logo.png"
+                src="/LAB/ministry-logo.png"
                 alt="Ministry Logo" 
                 className="w-full h-full object-contain"
                 referrerPolicy="no-referrer"
@@ -503,7 +503,7 @@ export default function Login() {
               </div>
             )}
             <img 
-              src="ministry-logo.png"
+              src="/LAB/ministry-logo.png"
               alt="Logo" 
               className="w-32 h-32 md:w-40 md:h-40 object-contain mx-auto mb-6"
               referrerPolicy="no-referrer"
