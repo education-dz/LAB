@@ -110,103 +110,117 @@ export default function Dashboard() {
       try {
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary', cellDates: true });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws) as any[];
+        
+        let totalImported = 0;
 
-        const formatDate = (val: any) => {
-          if (!val) return '';
-          if (val instanceof Date) {
-            return val.toISOString().split('T')[0];
-          }
-          const d = new Date(val);
-          if (!isNaN(d.getTime())) {
-            return d.toISOString().split('T')[0];
-          }
-          return String(val).trim();
-        };
+        for (const sheetName of wb.SheetNames) {
+          const ws = wb.Sheets[sheetName];
+          const data = XLSX.utils.sheet_to_json(ws) as any[];
+          
+          if (data.length === 0) continue;
 
-        // Firestore batch limit is 500 operations
-        const CHUNK_SIZE = 450;
-        const chunks = [];
-        for (let i = 0; i < data.length; i += CHUNK_SIZE) {
-          chunks.push(data.slice(i, i + CHUNK_SIZE));
-        }
-
-        for (const chunk of chunks) {
-          const batch = writeBatch(db);
-          chunk.forEach((item) => {
-            // Determine collection based on headers or a specific field
-            let collectionName = 'chemicals';
-            if (item['المادة'] || item['Subject']) collectionName = 'teachers';
-            else if (item['النوع'] || item['Type'] || item['تعيين الجهاز']) collectionName = 'equipment';
-
-            const docRef = doc(getUserCollection(collectionName));
-            
-            if (collectionName === 'chemicals') {
-              const name = item['الاسم'] || item['Name'] || 'مادة غير مسمى';
-              const quantity = Number(item['الكمية'] || item['Quantity']);
-              batch.set(docRef, {
-                nameEn: item['Name'] || item['الاسم'] || 'Unnamed Chemical',
-                nameAr: item['الاسم'] || item['Name'] || 'مادة غير مسمى',
-                formula: item['الصيغة'] || item['Formula'] || '',
-                casNumber: item['CAS'] || item['casNumber'] || '',
-                storageTemp: item['درجة التخزين'] || item['Storage'] || '',
-                expiryDate: formatDate(item['تاريخ الانتهاء'] || item['Expiry']),
-                quantity: isNaN(quantity) ? 0 : quantity,
-                unit: item['الوحدة'] || item['Unit'] || 'ml',
-                state: item['الحالة'] || 'solid',
-                hazardClass: (item['الخطورة'] || item['Hazard'] || 'safe').toLowerCase() === 'danger' ? 'danger' : 'safe',
-                shelf: item['الموقع'] || item['Location'] || '',
-                ghs: [],
-                notes: item['ملاحظات'] || '',
-                createdAt: serverTimestamp()
-              });
-            } else if (collectionName === 'teachers') {
-              const name = item['الاسم'] || item['Name'] || 'أستاذ غير مسمى';
-              const subject = item['المادة'] || item['Subject'] || 'مادة غير محددة';
-              batch.set(docRef, {
-                name: String(name).trim() || 'أستاذ غير مسمى',
-                subject: String(subject).trim() || 'مادة غير محددة',
-                rank: item['الرتبة'] || item['Rank'] || '',
-                functionalCode: item['الرمز الوظيفي'] || item['Code'] || '',
-                birthDate: formatDate(item['تاريخ الازدياد'] || item['BirthDate']),
-                grade: item['الدرجة'] || item['Grade'] || '',
-                effectiveDate: formatDate(item['تاريخ السريان'] || item['EffectiveDate']),
-                email: item['البريد'] || item['Email'] || '',
-                levels: item['الأطوار'] || item['Levels'] ? String(item['الأطوار'] || item['Levels']).split(';').map(s => s.trim()) : [],
-                createdAt: serverTimestamp()
-              });
-            } else if (collectionName === 'equipment') {
-              const type = (item['النوع'] || item['Type'] || 'other').toLowerCase();
-              const status = (item['الحالة'] || item['Status'] || 'functional').toLowerCase();
-              const name = item['تعيين الجهاز'] || item['الاسم'] || item['Name'] || 'جهاز غير مسمى';
-              const quantity = Number(item['الكمية'] || item['الكمية الإجمالية'] || item['Total'] || 0);
-              
-              batch.set(docRef, {
-                name: String(name).trim() || 'جهاز غير مسمى',
-                type: type === 'زجاجيات' || type === 'glassware' ? 'glassware' : type === 'أجهزة' || type === 'tech' ? 'tech' : 'other',
-                serialNumber: item['رقم الجرد'] || item['الرقم التسلسلي'] || item['Serial'] || '',
-                status: status === 'سليم' || status === 'functional' ? 'functional' : status === 'صيانة' || status === 'maintenance' ? 'maintenance' : 'broken',
-                totalQuantity: isNaN(quantity) ? 0 : quantity,
-                availableQuantity: isNaN(quantity) ? 0 : quantity,
-                brokenQuantity: 0,
-                supplier: item['الممون'] || '',
-                location: item['الموقع'] || '',
-                notes: item['ملاحظات'] || '',
-                foundationalInventory: item['الجرد التأسيسي'] || '',
-                decennialReview: item['المراجعة العشرية'] || '',
-                createdAt: serverTimestamp()
-              });
+          const formatDate = (val: any) => {
+            if (!val) return '';
+            if (val instanceof Date) {
+              return val.toISOString().split('T')[0];
             }
-          });
-          await batch.commit();
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) {
+              return d.toISOString().split('T')[0];
+            }
+            return String(val).trim();
+          };
+
+          const CHUNK_SIZE = 450;
+          const chunks = [];
+          for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+            chunks.push(data.slice(i, i + CHUNK_SIZE));
+          }
+
+          for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            chunk.forEach((item) => {
+              // Detailed heuristics for collection detection
+              let collectionName = '';
+              
+              if (item['الاسم'] && item['المادة']) collectionName = 'teachers';
+              else if (item['تعيين الجهاز'] || item['النوع'] === 'زجاجيات' || item['النوع'] === 'أجهزة') collectionName = 'equipment';
+              else if (item['الاسم'] && (item['الصيغة'] || item['CAS'] || item['الكمية'])) collectionName = 'chemicals';
+              
+              // Fallback based on sheet name if headers are ambiguous
+              if (!collectionName) {
+                const normalizedSheet = sheetName.toLowerCase();
+                if (normalizedSheet.includes('chem')) collectionName = 'chemicals';
+                else if (normalizedSheet.includes('equip')) collectionName = 'equipment';
+                else if (normalizedSheet.includes('teach')) collectionName = 'teachers';
+              }
+
+              if (!collectionName) return;
+
+              const docRef = doc(getUserCollection(collectionName as any));
+              
+              if (collectionName === 'chemicals') {
+                const quantity = Number(item['الكمية'] || 0);
+                batch.set(docRef, {
+                  nameAr: item['الاسم'] || 'مادة غير مسمى',
+                  nameEn: item['Name'] || item['الاسم'] || 'Unnamed Chemical',
+                  formula: item['الصيغة'] || '',
+                  casNumber: item['CAS'] || '',
+                  storageTemp: item['درجة التخزين'] || '',
+                  expiryDate: formatDate(item['تاريخ الانتهاء']),
+                  quantity: isNaN(quantity) ? 0 : quantity,
+                  unit: item['الوحدة'] || 'ml',
+                  state: item['الحالة'] || 'solid',
+                  hazardClass: String(item['الخطورة'] || '').toLowerCase() === 'danger' ? 'danger' : 'safe',
+                  shelf: item['الموقع'] || '',
+                  ghs: [],
+                  notes: item['ملاحظات'] || '',
+                  createdAt: serverTimestamp()
+                });
+              } else if (collectionName === 'teachers') {
+                batch.set(docRef, {
+                  name: String(item['الاسم'] || 'أستاذ غير مسمى').trim(),
+                  subject: String(item['المادة'] || 'مادة غير محددة').trim(),
+                  rank: item['الرتبة'] || '',
+                  functionalCode: item['الرمز الوظيفي'] || '',
+                  birthDate: formatDate(item['تاريخ الازدياد']),
+                  grade: item['الدرجة'] || '',
+                  effectiveDate: formatDate(item['تاريخ السريان']),
+                  email: item['البريد'] || '',
+                  levels: item['الأطوار'] ? String(item['الأطوار']).split(';').map(s => s.trim()) : [],
+                  createdAt: serverTimestamp()
+                });
+              } else if (collectionName === 'equipment') {
+                const typeRaw = String(item['النوع'] || '').toLowerCase();
+                const statusRaw = String(item['الحالة'] || '').toLowerCase();
+                const quantity = Number(item['الكمية الإجمالية'] || 0);
+                
+                batch.set(docRef, {
+                  name: String(item['تعيين الجهاز'] || 'جهاز غير مسمى').trim(),
+                  type: typeRaw.includes('زجاج') ? 'glassware' : typeRaw.includes('جهاز') ? 'tech' : 'other',
+                  serialNumber: item['رقم الجرد'] || item['الرقم التسلسلي'] || '',
+                  status: statusRaw.includes('سليم') ? 'functional' : statusRaw.includes('صيانة') ? 'maintenance' : 'broken',
+                  totalQuantity: isNaN(quantity) ? 0 : quantity,
+                  availableQuantity: isNaN(quantity) ? 0 : quantity,
+                  brokenQuantity: 0,
+                  supplier: item['الممون'] || '',
+                  location: item['الموقع'] || '',
+                  notes: item['ملاحظات'] || '',
+                  foundationalInventory: item['الجرد التأسيسي'] || '',
+                  decennialReview: item['المراجعة العشرية'] || '',
+                  createdAt: serverTimestamp()
+                });
+              }
+              totalImported++;
+            });
+            await batch.commit();
+          }
         }
 
-        setNotification({ message: `تم استيراد ${data.length} سجل بنجاح!`, type: 'success' });
+        setNotification({ message: `تم استيراد ${totalImported} سجل بنجاح من كافة الصفحات!`, type: 'success' });
       } catch (error) {
         console.error('Error importing XLS:', error);
-        setNotification({ message: 'حدث خطأ أثناء استيراد الملف. يرجى التأكد من صيغة الملف.', type: 'error' });
+        setNotification({ message: 'حدث خطأ أثناء استيراد الملف. يرجى التأكد من أن البيانات تطابق النموذج.', type: 'error' });
       } finally {
         setIsImporting(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -281,34 +295,93 @@ export default function Dashboard() {
     }
   };
 
-  const handleExportInventory = async () => {
+  const handleExportTemplate = async () => {
     try {
-      const collections = ['chemicals', 'equipment', 'teachers'];
       const wb = XLSX.utils.book_new();
 
-      for (const coll of collections) {
-        const snap = await new Promise<any>((resolve) => {
-          const unsub = onSnapshot(getUserCollection(coll as any), (s) => {
-            unsub();
-            resolve(s);
-          });
-        });
+      // Fetch Real Data for each sheet
+      const chemSnap = await getDocs(getUserCollection('chemicals'));
+      const equipSnap = await getDocs(getUserCollection('equipment'));
+      const teachSnap = await getDocs(getUserCollection('teachers'));
 
-        const data = snap.docs.map((doc: any) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt
-        }));
+      // Chemicals Data Mapping
+      const chemicalData = chemSnap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          'الاسم': d.nameAr || '',
+          'Name': d.nameEn || '',
+          'الصيغة': d.formula || '',
+          'CAS': d.casNumber || '',
+          'درجة التخزين': d.storageTemp || '',
+          'تاريخ الانتهاء': d.expiryDate || '',
+          'الكمية': d.quantity || 0,
+          'الوحدة': d.unit || '',
+          'الحالة': d.state || '',
+          'الخطورة': d.hazardClass || '',
+          'الموقع': d.shelf || '',
+          'ملاحظات': d.notes || ''
+        };
+      });
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, coll.charAt(0).toUpperCase() + coll.slice(1));
+      // Add a placeholder if empty
+      if (chemicalData.length === 0) {
+        chemicalData.push({ 'الاسم': 'مثال: حمض الكلور', 'Name': 'HCl', 'الصيغة': 'HCl', 'CAS': '7647-01-0', 'درجة التخزين': '25C', 'تاريخ الانتهاء': '2025-12-31', 'الكمية': 500, 'الوحدة': 'ml', 'الحالة': 'liquid', 'الخطورة': 'danger', 'الموقع': 'رف أ', 'ملاحظات': 'مادة أكالة' });
       }
+      const wsChem = XLSX.utils.json_to_sheet(chemicalData);
+      XLSX.utils.book_append_sheet(wb, wsChem, "Chemicals");
 
-      XLSX.writeFile(wb, `Lab_Inventory_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
-      setNotification({ message: 'تم تصدير البيانات بنجاح!', type: 'success' });
+      // Equipment Data Mapping
+      const equipmentData = equipSnap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          'تعيين الجهاز': d.name || '',
+          'النوع': d.type === 'glassware' ? 'زجاجيات' : d.type === 'tech' ? 'أجهزة' : 'أخرى',
+          'رقم الجرد': d.serialNumber || '',
+          'الرقم التسلسلي': d.serialNumber || '',
+          'الحالة': d.status === 'functional' ? 'سليم' : d.status === 'maintenance' ? 'صيانة' : 'تعطل',
+          'الكمية الإجمالية': d.totalQuantity || 0,
+          'الممون': d.supplier || '',
+          'الموقع': d.location || '',
+          'ملاحظات': d.notes || '',
+          'الجرد التأسيسي': d.foundationalInventory || '',
+          'المراجعة العشرية': d.decennialReview || ''
+        };
+      });
+
+      if (equipmentData.length === 0) {
+        equipmentData.push({ 'تعيين الجهاز': 'مثال: مجهر ضوئي', 'النوع': 'أجهزة', 'رقم الجرد': 'LAB-001', 'الرقم التسلسلي': 'SN12345', 'الحالة': 'سليم', 'الكمية الإجمالية': 5, 'الممون': 'وزارة التربية', 'الموقع': 'الخزانة 1', 'ملاحظات': 'دقة عالية', 'الجرد التأسيسي': 'نعم', 'المراجعة العشرية': '2024' });
+      }
+      const wsEquip = XLSX.utils.json_to_sheet(equipmentData);
+      XLSX.utils.book_append_sheet(wb, wsEquip, "Equipment");
+
+      // Teachers Data Mapping
+      const teacherData = teachSnap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          'الاسم': d.name || '',
+          'المادة': d.subject || '',
+          'الرتبة': d.rank || '',
+          'الرمز الوظيفي': d.functionalCode || '',
+          'تاريخ الازدياد': d.birthDate || '',
+          'الدرجة': d.grade || '',
+          'تاريخ السريان': d.effectiveDate || '',
+          'البريد': d.email || '',
+          'الأطوار': (d.levels || []).join(';')
+        };
+      });
+
+      if (teacherData.length === 0) {
+        teacherData.push({ 'الاسم': 'أحمد محمد', 'المادة': 'علوم طبيعية', 'الرتبة': 'أستاذ تعليم ثانوي', 'الرمز الوظيفي': '987654', 'تاريخ الازدياد': '1985-05-15', 'الدرجة': '6', 'تاريخ السريان': '2023-01-01', 'البريد': 'ahmed@mail.com', 'الأطوار': 'ثانوي' });
+      }
+      const wsTeachers = XLSX.utils.json_to_sheet(teacherData);
+      XLSX.utils.book_append_sheet(wb, wsTeachers, "Teachers");
+
+      XLSX.writeFile(wb, `Lab_Full_Data_Template.xlsx`);
+      setNotification({ message: 'تم تحميل كافة البيانات في ملف XLS بنجاح! يمكنك الآن تعديلها وإعادة استيرادها.', type: 'success' });
     } catch (error) {
-      console.error('Error exporting inventory:', error);
-      setNotification({ message: 'حدث خطأ أثناء تصدير البيانات.', type: 'error' });
+      console.error('Error exporting data template:', error);
+      handleFirestoreError(error, OperationType.LIST, 'export_process');
+      setNotification({ message: 'حدث خطأ أثناء تصدير البيانات. يرجى التأكد من اتصالك بالإنترنت وصلاحيات الدخول.', type: 'error' });
     }
   };
 
@@ -318,6 +391,9 @@ export default function Dashboard() {
     { title: 'التقارير اليومية', desc: 'تسجيل ومتابعة النشاطات اليومية للمخبر والحصص التطبيقية.', count: counts.reports.toString(), icon: FileText, color: 'bg-surface-container-low', path: '/daily-report' },
     { title: 'مركز النسخ الاحتياطي', desc: 'واجهة تقنية متطورة لمراقبة حجم البيانات وإدارة النسخ الاحتياطي بصيغة JSON لضمان سلامة السجلات.', count: 'جديد', icon: Database, color: 'bg-surface-container-high', path: '/backup' },
     { title: 'فريق الأساتذة', desc: 'قائمة أساتذة العلوم والفيزياء المستفيدين من خدمات المخبر.', count: counts.teachers.toString(), icon: Users, color: 'bg-primary/10', path: '/teachers' },
+    { title: 'إعارة الوسائل', desc: 'إدارة طلبات إعارة الوسائل والتجهيزات العلمية بين الأقسام والمخابر.', count: 'جديد', icon: RefreshCw, color: 'bg-primary/5', path: '/loan-request' },
+    { title: 'تحضير نشاط تطبيقي', desc: 'إعداد طلبات تحضير الحصص التطبيقية والوسائل والمواد اللازمة قبل 48 ساعة.', count: 'جديد', icon: Activity, color: 'bg-primary/10', path: '/activity-request' },
+    { title: 'إسقاط التجهيزات', desc: 'إدارة عملية التكهين والإسقاط الفني للمعدات التالفة وغير القابلة للإصلاح.', count: 'جديد', icon: Trash2, color: 'bg-error/5', path: '/scrapping' },
     { title: 'الأمن والسلامة', desc: 'بروتوكولات السلامة، طفايات الحريق، ومعدات الإسعاف الأولي.', count: counts.incidents.toString(), icon: ShieldAlert, color: 'bg-error/10', path: '/safety' },
   ];
 
@@ -345,7 +421,7 @@ export default function Dashboard() {
           <p className="text-on-surface/60 text-lg font-bold">الأرضية الرقمية — <span className="text-primary italic">فضاء موظفوا المخابر</span></p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -367,6 +443,14 @@ export default function Dashboard() {
           </button>
 
           <button 
+            onClick={handleExportTemplate}
+            className="bg-white text-primary border-2 border-primary/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 hover:border-primary transition-all active:scale-95"
+          >
+            <Database size={24} />
+            تحميل النموذج
+          </button>
+
+          <button 
             onClick={handleSmartUpdate}
             disabled={isSmartUpdating}
             className="relative z-10 flex items-center gap-4 bg-white px-8 py-4 rounded-[32px] border border-outline/10 shadow-2xl group transition-all hover:shadow-primary/10 hover:bg-primary/5 active:scale-95 disabled:opacity-50"
@@ -376,7 +460,7 @@ export default function Dashboard() {
             </div>
             <div className="flex flex-col text-right">
               <span className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest">تحسين البيانات</span>
-              <span className="text-base font-black text-primary leading-tight">تحديث ذكي للكل</span>
+              <span className="text-base font-black text-primary leading-tight">تحديث ذكي</span>
             </div>
           </button>
         </div>
@@ -580,11 +664,11 @@ export default function Dashboard() {
           <p className="text-on-surface/60 max-w-xl leading-relaxed font-medium text-xl">يتم تحديث الإحصائيات تلقائياً بناءً على التقارير المدخلة من قبل المخبريين والأساتذة. يمكنك تصدير التقارير الشهرية والسنوية بنقرة واحدة لتحليل الأداء العام للمخبر.</p>
           <div className="flex flex-wrap gap-6 pt-8">
             <button 
-              onClick={handleExportInventory}
+              onClick={handleExportTemplate}
               className="bg-primary text-on-primary px-12 py-5 rounded-full font-black shadow-2xl shadow-primary/30 hover:bg-primary-container hover:shadow-primary/40 transition-all active:scale-95 text-lg flex items-center gap-3"
             >
               <Database size={24} />
-              تصدير الجرد الشامل (XLS)
+              تحميل نموذج الجرد (XLS)
             </button>
             <button 
               onClick={handleSmartUpdate}

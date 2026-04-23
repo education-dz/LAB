@@ -54,8 +54,11 @@ export const storage = getStorage(app);
  */
 export const getUserCollection = (collectionName: string) => {
   if (!auth.currentUser) {
+    console.error("DEBUG: getUserCollection called without auth.currentUser. Collection:", collectionName);
     throw new Error("User must be authenticated to access personal data");
   }
+  const path = `users/${auth.currentUser.uid}/${collectionName}`;
+  console.log(`DEBUG: Getting collection at path: ${path}`);
   return collection(db, 'users', auth.currentUser.uid, collectionName);
 };
 
@@ -105,7 +108,15 @@ export interface FirestoreErrorInfo {
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errorMessage = error instanceof Error ? error.message : String(error);
+  const currentUid = auth.currentUser?.uid;
   
+  console.error("DEBUG FLOG: handleFirestoreError called.", { 
+    operationType, 
+    path, 
+    currentUid, 
+    errorMessage 
+  });
+
   if (errorMessage.includes('the client is offline')) {
     const offlineMsg = "فشل الاتصال بقاعدة البيانات. يرجى التأكد من إنشاء قاعدة بيانات Firestore في Firebase Console (lab-education-dz) وتفعيلها في وضع الإنتاج.";
     console.error(offlineMsg);

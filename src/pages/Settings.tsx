@@ -399,6 +399,8 @@ export default function SettingsPage() {
 
   const [isCheckingConnection, setIsCheckingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isFixingPermissions, setIsFixingPermissions] = useState(false);
+  const [fixResults, setFixResults] = useState<{name: string, success: boolean, error?: string}[]>([]);
 
   const checkConnection = async () => {
     setIsCheckingConnection(true);
@@ -414,6 +416,35 @@ export default function SettingsPage() {
     } finally {
       setIsCheckingConnection(false);
     }
+  };
+
+  const fixPermissions = async () => {
+    if (!auth.currentUser) return;
+    setIsFixingPermissions(true);
+    setFixResults([]);
+    const tests = [
+      { name: 'الاتصال العام (Root)', path: '_connection_test_/ping' },
+      { name: 'ملف المستخدم (User Profile)', path: `users/${auth.currentUser.uid}` },
+      { name: 'مجموعة المواد (Chemicals)', path: `users/${auth.currentUser.uid}/chemicals/permission_test` },
+      { name: 'مجموعة الإعدادات (Settings)', path: `users/${auth.currentUser.uid}/settings/permission_test` },
+    ];
+
+    const results = [];
+    for (const test of tests) {
+      try {
+        await setDoc(doc(db, test.path), { 
+          _permission_test: true, 
+          lastTested: serverTimestamp(),
+          clientTime: new Date().toISOString()
+        }, { merge: true });
+        results.push({ name: test.name, success: true });
+      } catch (err: any) {
+        console.error(`Permission test failed for ${test.name}:`, err);
+        results.push({ name: test.name, success: false, error: err.message });
+      }
+    }
+    setFixResults(results);
+    setIsFixingPermissions(false);
   };
 
   const handleSave = async () => {
@@ -1345,6 +1376,59 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <Database className="absolute -bottom-12 -left-12 text-white/5 w-64 h-64 rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
+                  </div>
+                </section>
+
+                <section className="pt-12 border-t border-[#c4c8bd]/20">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-2xl font-black text-[#2b3d22] flex items-center gap-3">
+                      <ShieldAlert className="text-red-500" />
+                      مصحح الصلاحيات المتقدم
+                    </h3>
+                    
+                    <button
+                      onClick={fixPermissions}
+                      disabled={isFixingPermissions}
+                      className="bg-red-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-red-600 transition-all flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {isFixingPermissions ? <Loader2 size={18} className="animate-spin" /> : <Settings size={18} />}
+                      بدء فحص وإصلاح الصلاحيات
+                    </button>
+                  </div>
+
+                  <div className="bg-[#fcf9f3] p-8 rounded-[32px] border-2 border-red-100/50">
+                    <p className="text-sm font-bold text-[#5c6146] mb-6">سيقوم نظام الفحص بمحاولة كتابة بيانات تجريبية في المسارات المطلوبة للكشف عن أي عوائق في الصلاحيات.</p>
+                    
+                    <div className="space-y-4">
+                      {fixResults.map((res, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white p-4 rounded-2xl border border-[#c4c8bd]/20">
+                          <div className="flex items-center gap-3">
+                            {res.success ? (
+                              <CheckCircle2 size={20} className="text-green-500" />
+                            ) : (
+                              <AlertCircle size={20} className="text-red-500" />
+                            )}
+                            <span className="font-bold text-[#2b3d22]">{res.name}</span>
+                          </div>
+                          {!res.success && (
+                            <span className="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded-full font-mono">
+                              {res.error}
+                            </span>
+                          )}
+                          {res.success && (
+                            <span className="text-[10px] bg-green-50 text-green-600 px-3 py-1 rounded-full font-bold">
+                              جاهز للعمل
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                      {fixResults.length === 0 && !isFixingPermissions && (
+                        <div className="text-center py-6 opacity-30">
+                          <Shield size={48} className="mx-auto mb-2" />
+                          <p className="text-xs font-bold">اضغط على الزر أعلاه لبدء الاختبار</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </section>
 

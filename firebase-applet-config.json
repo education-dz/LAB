@@ -1,9 +1,10 @@
 {
   "projectId": "lab-education-dz",
-  "appId": "1:1043692780411:web:9c5155dae4bbaba3b41bde",
+  "appId": "1:1043692780411:web:c2c4ebb6696f268ab41bde",
   "apiKey": "AIzaSyCIARjpIeDOZ__2rW0aFQHFyYCU4zwff9Y",
   "authDomain": "lab-education-dz.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-37818744-6c48-4226-9383-0422a18c40d1",
   "storageBucket": "lab-education-dz.firebasestorage.app",
   "messagingSenderId": "1043692780411",
-  "measurementId": "G-9L9YC6TZQ9"
+  "measurementId": ""
 }

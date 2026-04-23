@@ -1,50 +1,89 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper: checks if user is signed in
-    function isAuthenticated() {
+    // ------------------------------------------------------------
+    // GLOBAL HELPERS
+    // ------------------------------------------------------------
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper: checks if user is the owner of the path
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Helper: checks if user is an admin or the primary owner
-    function isAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email == "faycalassoul@gmail.com" || 
-        request.auth.uid == "UMDdyJMUXHVilG0ihIjTxULQ0yd2"
+    function isMasterUser() {
+      return isSignedIn() && (
+        request.auth.uid == 'UMDdyJMUXHVilG0ihIjTxULQ0yd2' || 
+        request.auth.token.email == 'faycalassoul@gmail.com'
       );
     }
 
-    // 1. PRIMARY ACCESS: Allow the main admin/owner absolute access to everything
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // ------------------------------------------------------------
+    // DEFAULT DENY
+    // ------------------------------------------------------------
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if isMasterUser();
     }
 
-    // 2. USER DATA: Allow each user to manage their own collections
-    // This covers /users/uid, /users/uid/chemicals, /users/uid/equipment, etc.
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
-      match /{allPaths=**} {
-        allow read, write: if isOwner(userId);
-      }
-    }
-
-    // 3. SETTINGS: Allow each user to manage their own settings
-    match /settings/{userId} {
-      allow read, write: if isOwner(userId);
-      match /{allPaths=**} {
-        allow read, write: if isOwner(userId);
-      }
-    }
-
-    // 4. CONNECTION TEST: Allow authenticated users to ping for connectivity
+    // ------------------------------------------------------------
+    // CONNECTION TEST PATH
+    // ------------------------------------------------------------
     match /_connection_test_/{docId} {
-      allow read: if isAuthenticated();
+      allow read, write: if isSignedIn();
+    }
+
+    // ------------------------------------------------------------
+    // USER DATA (SOPHISTICATED SCOPING)
+    // ------------------------------------------------------------
+    match /users/{userId} {
+      allow get, write: if isOwner(userId);
+      
+      // Personal settings/profile data
+      match /settings/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Core Laboratory Entities (User-Scoped)
+      match /chemicals/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /equipment/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /teachers/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /incident_logs/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /reports/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /backups/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /loans/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /activity_preparations/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /scrapping_records/{docId} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }

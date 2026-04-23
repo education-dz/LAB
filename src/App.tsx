@@ -37,6 +37,8 @@ import PedagogicalTracking from './pages/PedagogicalTracking';
 import FollowUpRegistry from './pages/FollowUpRegistry';
 import Sync from './pages/Sync';
 import ActivityRequest from './pages/ActivityRequest';
+import LoanRequest from './pages/LoanRequest';
+import EquipmentScrapping from './pages/EquipmentScrapping';
 import Layout from './components/Layout';
 import FirebaseSetup from './components/FirebaseSetup';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -97,6 +99,8 @@ export default function App() {
             <Route path="follow-up-registry" element={<FollowUpRegistry />} />
             <Route path="sync" element={<Sync />} />
             <Route path="activity-request" element={<ActivityRequest />} />
+            <Route path="loan-request" element={<LoanRequest />} />
+            <Route path="scrapping" element={<EquipmentScrapping />} />
             <Route path="safety" element={<Safety />} />
             <Route path="reports" element={<Reports />} />
             <Route path="archive" element={<Archive />} />

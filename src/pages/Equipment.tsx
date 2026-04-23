@@ -1265,126 +1265,128 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                 </button>
               </div>
               
-              <form onSubmit={handleAddEquipment} className="p-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">اسم الصنف</label>
-                  <input 
-                    required
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    placeholder="مثال: مجهر ضوئي، بيشر 250مل..."
-                    value={newEquipment.name}
-                    onChange={e => setNewEquipment({...newEquipment, name: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">النوع</label>
-                  <select 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner appearance-none"
-                    value={newEquipment.type}
-                    onChange={e => setNewEquipment({...newEquipment, type: e.target.value as any})}
-                  >
-                    <option value="glassware">زجاجيات مخبرية</option>
-                    <option value="tech">أجهزة تقنية / إلكترونية</option>
-                    <option value="other">أدوات ووسائل أخرى</option>
-                  </select>
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الرقم التسلسلي</label>
-                  <input 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    placeholder="SN-000000"
-                    value={newEquipment.serialNumber}
-                    onChange={e => setNewEquipment({...newEquipment, serialNumber: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الحالة التشغيلية</label>
-                  <select 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner appearance-none"
-                    value={newEquipment.status}
-                    onChange={e => setNewEquipment({...newEquipment, status: e.target.value as any})}
-                  >
-                    <option value="functional">سليم / نشط</option>
-                    <option value="maintenance">قيد الصيانة</option>
-                    <option value="broken">تالف / خارج الخدمة</option>
-                  </select>
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">إجمالي الكمية</label>
-                  <input 
-                    type="number"
-                    required
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    value={newEquipment.totalQuantity}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      setNewEquipment({...newEquipment, totalQuantity: val, availableQuantity: val - (newEquipment.brokenQuantity || 0)});
-                    }}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الكمية التالفة</label>
-                  <input 
-                    type="number"
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    value={newEquipment.brokenQuantity}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      setNewEquipment({...newEquipment, brokenQuantity: val, availableQuantity: (newEquipment.totalQuantity || 0) - val});
-                    }}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الممون</label>
-                  <input 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    placeholder="اسم الممون"
-                    value={newEquipment.supplier}
-                    onChange={e => setNewEquipment({...newEquipment, supplier: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الموقع</label>
-                  <input 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    placeholder="مكان التخزين"
-                    value={newEquipment.location}
-                    onChange={e => setNewEquipment({...newEquipment, location: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الجرد التأسيسي</label>
-                  <input 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    placeholder="بيانات الجرد التأسيسي"
-                    value={newEquipment.foundationalInventory}
-                    onChange={e => setNewEquipment({...newEquipment, foundationalInventory: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">المراجعة العشرية</label>
-                  <input 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
-                    placeholder="بيانات المراجعة العشرية"
-                    value={newEquipment.decennialReview}
-                    onChange={e => setNewEquipment({...newEquipment, decennialReview: e.target.value})}
-                  />
-                </div>
-                <div className="col-span-full space-y-3">
-                  <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">ملاحظات</label>
-                  <textarea 
-                    className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner min-h-[100px]"
-                    placeholder="أي ملاحظات إضافية..."
-                    value={newEquipment.notes}
-                    onChange={e => setNewEquipment({...newEquipment, notes: e.target.value})}
-                  />
-                </div>
-                <div className="md:col-span-2 pt-8">
-                  <button type="submit" className="w-full bg-primary text-on-primary py-6 rounded-full font-black text-xl shadow-2xl shadow-primary/30 hover:bg-primary-container hover:shadow-primary/40 transition-all active:scale-[0.98]">
-                    {editingEquipment ? 'حفظ التعديلات' : 'تأكيد إضافة الصنف للجرد'}
-                  </button>
-                </div>
-              </form>
+              <div className="max-h-[65vh] overflow-y-auto custom-scrollbar">
+                <form onSubmit={handleAddEquipment} className="p-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">اسم الصنف</label>
+                    <input 
+                      required
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      placeholder="مثال: مجهر ضوئي، بيشر 250مل..."
+                      value={newEquipment.name}
+                      onChange={e => setNewEquipment({...newEquipment, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">النوع</label>
+                    <select 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner appearance-none"
+                      value={newEquipment.type}
+                      onChange={e => setNewEquipment({...newEquipment, type: e.target.value as any})}
+                    >
+                      <option value="glassware">زجاجيات مخبرية</option>
+                      <option value="tech">أجهزة تقنية / إلكترونية</option>
+                      <option value="other">أدوات ووسائل أخرى</option>
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الرقم التسلسلي</label>
+                    <input 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      placeholder="SN-000000"
+                      value={newEquipment.serialNumber}
+                      onChange={e => setNewEquipment({...newEquipment, serialNumber: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الحالة التشغيلية</label>
+                    <select 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner appearance-none"
+                      value={newEquipment.status}
+                      onChange={e => setNewEquipment({...newEquipment, status: e.target.value as any})}
+                    >
+                      <option value="functional">سليم / نشط</option>
+                      <option value="maintenance">قيد الصيانة</option>
+                      <option value="broken">تالف / خارج الخدمة</option>
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">إجمالي الكمية</label>
+                    <input 
+                      type="number"
+                      required
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      value={newEquipment.totalQuantity}
+                      onChange={e => {
+                        const val = Number(e.target.value);
+                        setNewEquipment({...newEquipment, totalQuantity: val, availableQuantity: val - (newEquipment.brokenQuantity || 0)});
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الكمية التالفة</label>
+                    <input 
+                      type="number"
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      value={newEquipment.brokenQuantity}
+                      onChange={e => {
+                        const val = Number(e.target.value);
+                        setNewEquipment({...newEquipment, brokenQuantity: val, availableQuantity: (newEquipment.totalQuantity || 0) - val});
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الممون</label>
+                    <input 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      placeholder="اسم الممون"
+                      value={newEquipment.supplier}
+                      onChange={e => setNewEquipment({...newEquipment, supplier: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الموقع</label>
+                    <input 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      placeholder="مكان التخزين"
+                      value={newEquipment.location}
+                      onChange={e => setNewEquipment({...newEquipment, location: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">الجرد التأسيسي</label>
+                    <input 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      placeholder="بيانات الجرد التأسيسي"
+                      value={newEquipment.foundationalInventory}
+                      onChange={e => setNewEquipment({...newEquipment, foundationalInventory: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">المراجعة العشرية</label>
+                    <input 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+                      placeholder="بيانات المراجعة العشرية"
+                      value={newEquipment.decennialReview}
+                      onChange={e => setNewEquipment({...newEquipment, decennialReview: e.target.value})}
+                    />
+                  </div>
+                  <div className="col-span-full space-y-3">
+                    <label className="text-xs font-black text-on-surface/40 uppercase tracking-widest mr-4">ملاحظات</label>
+                    <textarea 
+                      className="w-full bg-surface-container-low border-2 border-transparent rounded-[24px] px-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner min-h-[100px]"
+                      placeholder="أي ملاحظات إضافية..."
+                      value={newEquipment.notes}
+                      onChange={e => setNewEquipment({...newEquipment, notes: e.target.value})}
+                    />
+                  </div>
+                  <div className="md:col-span-2 pt-8">
+                    <button type="submit" className="w-full bg-primary text-on-primary py-6 rounded-full font-black text-xl shadow-2xl shadow-primary/30 hover:bg-primary-container hover:shadow-primary/40 transition-all active:scale-[0.98]">
+                      {editingEquipment ? 'حفظ التعديلات' : 'تأكيد إضافة الصنف للجرد'}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </motion.div>
           </div>
         )}
