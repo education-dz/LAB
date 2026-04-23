@@ -1,38 +1,48 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    
+    // Helper: checks if user is signed in
     function isAuthenticated() {
       return request.auth != null;
     }
 
+    // Helper: checks if user is the owner of the path
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Helper: checks if user is an admin or the primary owner
     function isAdmin() {
-      return isAuthenticated() && 
-        ((request.auth.token.email == "faycalassoul@gmail.com" && request.auth.token.email_verified == true) ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin'));
+      return isAuthenticated() && (
+        request.auth.token.email == "faycalassoul@gmail.com" || 
+        request.auth.uid == "UMDdyJMUXHVilG0ihIjTxULQ0yd2"
+      );
     }
 
-    // Global admin access
-    match /{allPaths=**} {
+    // 1. PRIMARY ACCESS: Allow the main admin/owner absolute access to everything
+    match /{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // User-scoped data
-    match /users/{userId}/{allPaths=**} {
+    // 2. USER DATA: Allow each user to manage their own collections
+    // This covers /users/uid, /users/uid/chemicals, /users/uid/equipment, etc.
+    match /users/{userId} {
       allow read, write: if isOwner(userId);
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
-    // Settings
-    match /settings/{userId}/{allPaths=**} {
+    // 3. SETTINGS: Allow each user to manage their own settings
+    match /settings/{userId} {
       allow read, write: if isOwner(userId);
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
-    // Connection test
+    // 4. CONNECTION TEST: Allow authenticated users to ping for connectivity
     match /_connection_test_/{docId} {
       allow read: if isAuthenticated();
     }

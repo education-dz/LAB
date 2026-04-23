@@ -15,6 +15,7 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Beaker, Lock as LockIcon, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Globe, UserPlus, Facebook } from 'lucide-react';
+import logo from '/ministry-logo.png';
 import { cn } from '../lib/utils';
 
 declare global {
@@ -450,7 +451,7 @@ export default function Login() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center p-2 shadow-lg">
               <img 
-                src="/LAB/ministry-logo.png"
+                src={logo}
                 alt="Ministry Logo" 
                 className="w-full h-full object-contain"
                 referrerPolicy="no-referrer"
@@ -503,7 +504,7 @@ export default function Login() {
               </div>
             )}
             <img 
-              src="/LAB/ministry-logo.png"
+              src={logo}
               alt="Logo" 
               className="w-32 h-32 md:w-40 md:h-40 object-contain mx-auto mb-6"
               referrerPolicy="no-referrer"

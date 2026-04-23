@@ -34,6 +34,7 @@ import { doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { db, getUserCollection } from '../firebase';
 import GlobalSearch from './GlobalSearch';
 import Breadcrumbs from './Breadcrumbs';
+import logo from '/ministry-logo.png';
 
 const navItems = [
   { name: 'لوحة القيادة', path: '/', icon: LayoutDashboard },
@@ -136,7 +137,7 @@ export default function Layout() {
         <div className="p-6 flex flex-col items-center gap-2">
           <img 
             className={cn("object-contain transition-all", isSidebarOpen ? "w-16 h-16" : "w-10 h-10")}
-            src="/LAB/ministry-logo.png"
+            src={logo}
             alt="Logo" 
           />
           {isSidebarOpen && (
