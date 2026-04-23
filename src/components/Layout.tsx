@@ -33,6 +33,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { db, getUserCollection } from '../firebase';
 import GlobalSearch from './GlobalSearch';
+import Breadcrumbs from './Breadcrumbs';
 
 const navItems = [
   { name: 'لوحة القيادة', path: '/', icon: LayoutDashboard },
@@ -284,6 +285,7 @@ export default function Layout() {
         </header>
 
         <main className="p-8 print:p-0">
+          <Breadcrumbs />
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>

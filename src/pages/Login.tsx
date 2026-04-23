@@ -7,6 +7,8 @@ import {
   signInWithRedirect,
   getRedirectResult,
   sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+  linkWithCredential,
   GoogleAuthProvider, 
   FacebookAuthProvider
 } from 'firebase/auth';
@@ -33,6 +35,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [pendingCred, setPendingCred] = useState<any>(null);
+  const [linkingMessage, setLinkingMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -210,6 +214,18 @@ export default function Login() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         
+        // If there's a pending credential, link it now
+        if (pendingCred) {
+          try {
+            await linkWithCredential(user, pendingCred);
+            setPendingCred(null);
+            setLinkingMessage(null);
+            console.log('Account linked successfully');
+          } catch (linkErr) {
+            console.error('Error linking account:', linkErr);
+          }
+        }
+        
         // Check if user document exists, if not create it
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (!userDoc.exists()) {
@@ -247,6 +263,27 @@ export default function Login() {
         setError('بيانات الاعتماد غير صالحة. قد يكون هناك مشكلة في إعدادات Google Cloud أو انتهت صلاحية الجلسة.');
       } else if (err.code === 'auth/operation-not-allowed') {
         setError('تسجيل الدخول عبر جوجل غير مفعل في إعدادات Firebase.');
+      } else if (err.code === 'auth/account-exists-with-different-credential') {
+        const email = err.customData?.email;
+        const credential = GoogleAuthProvider.credentialFromError(err);
+        
+        if (email && credential) {
+          setPendingCred(credential);
+          try {
+            const methods = await fetchSignInMethodsForEmail(auth, email);
+            const method = methods[0];
+            let providerName = 'طريقة أخرى';
+            if (method === 'facebook.com') providerName = 'فيسبوك';
+            if (method === 'password') providerName = 'البريد الإلكتروني';
+            
+            setLinkingMessage(`لديك حساب مفعل مسبقاً عبر ${providerName}. يرجى تسجيل الدخول عبر ${providerName} لربط حساب جوجل الخاص بك تلقائياً.`);
+            setError(null);
+          } catch (fetchErr) {
+            setError('هذا البريد الإلكتروني مرتبط بحساب آخر. يرجى تسجيل الدخول بالطريقة التي استخدمتها سابقاً لربط الحسابات.');
+          }
+        } else {
+          setError('هذا البريد الإلكتروني مرتبط بحساب آخر. يرجى تسجيل الدخول بالطريقة التي استخدمتها سابقاً.');
+        }
       } else {
         setError('فشل تسجيل الدخول عبر جوجل. يرجى المحاولة مرة أخرى.');
       }
@@ -278,6 +315,18 @@ export default function Login() {
       } else {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
+
+        // If there's a pending credential, link it now
+        if (pendingCred) {
+          try {
+            await linkWithCredential(user, pendingCred);
+            setPendingCred(null);
+            setLinkingMessage(null);
+            console.log('Account linked successfully');
+          } catch (linkErr) {
+            console.error('Error linking account:', linkErr);
+          }
+        }
         
         // Check if user document exists, if not create it
         const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -340,6 +389,27 @@ export default function Login() {
             </a>
           </span>
         );
+      } else if (err.code === 'auth/account-exists-with-different-credential') {
+        const email = err.customData?.email;
+        const credential = FacebookAuthProvider.credentialFromError(err);
+        
+        if (email && credential) {
+          setPendingCred(credential);
+          try {
+            const methods = await fetchSignInMethodsForEmail(auth, email);
+            const method = methods[0];
+            let providerName = 'طريقة أخرى';
+            if (method === 'google.com') providerName = 'جوجل';
+            if (method === 'password') providerName = 'البريد الإلكتروني';
+            
+            setLinkingMessage(`لديك حساب مفعل مسبقاً عبر ${providerName}. يرجى تسجيل الدخول عبر ${providerName} لربط حساب فيسبوك الخاص بك تلقائياً.`);
+            setError(null);
+          } catch (fetchErr) {
+            setError('هذا البريد الإلكتروني مرتبط بحساب آخر. يرجى تسجيل الدخول بالطريقة التي استخدمتها سابقاً لربط الحسابات.');
+          }
+        } else {
+          setError('هذا البريد الإلكتروني مرتبط بحساب آخر. يرجى تسجيل الدخول بالطريقة التي استخدمتها سابقاً.');
+        }
       } else {
         setError('فشل تسجيل الدخول عبر فيسبوك. يرجى المحاولة مرة أخرى.');
       }
@@ -473,6 +543,13 @@ export default function Login() {
                 </div>
               </div>
 
+              {linkingMessage && (
+                <div className="bg-primary/10 text-primary text-[10px] font-black p-3 rounded-2xl text-center border border-primary/20 mb-4 flex items-center gap-2 justify-center">
+                  <Globe size={14} />
+                  {linkingMessage}
+                </div>
+              )}
+
               {error && (
                 <div className={cn(
                   "text-xs font-black p-4 rounded-2xl text-center border animate-shake",
@@ -579,6 +656,13 @@ export default function Login() {
                       {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {linkingMessage && (
+                <div className="bg-primary/10 text-primary text-[10px] font-black p-3 rounded-2xl text-center border border-primary/20 mb-4 flex items-center gap-2 justify-center">
+                  <Globe size={14} />
+                  {linkingMessage}
                 </div>
               )}
 
