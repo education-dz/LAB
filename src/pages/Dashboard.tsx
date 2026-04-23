@@ -34,6 +34,7 @@ import {
   Clock
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Helmet } from 'react-helmet-async';
 import { cn } from '../lib/utils';
 
 export default function Dashboard() {
@@ -399,6 +400,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-16 max-w-7xl mx-auto px-6 pb-24 rtl font-sans" dir="rtl">
+      <Helmet>
+        <title>لوحة التحكم | الأرضية الرقمية للمخابر</title>
+      </Helmet>
       {/* Notifications */}
       {notification && (
         <div className={cn(

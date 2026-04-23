@@ -6,6 +6,7 @@
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { HelmetProvider } from 'react-helmet-async';
 import { auth } from './firebase';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -42,6 +43,7 @@ import EquipmentScrapping from './pages/EquipmentScrapping';
 import Layout from './components/Layout';
 import FirebaseSetup from './components/FirebaseSetup';
 import ErrorBoundary from './components/ErrorBoundary';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -67,50 +69,57 @@ export default function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <Router>
-        {user && <FirebaseSetup />}
-        <Routes>
-          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/data-deletion" element={<DataDeletion />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route
-            path="/"
-            element={user ? <Layout /> : <Navigate to="/login" />}
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="inventory" element={<InventoryDashboard />} />
-            <Route path="pedagogical" element={<PedagogicalDashboard />} />
-            <Route path="maintenance" element={<Maintenance />} />
-            <Route path="chemicals" element={<Chemicals />} />
-            <Route path="equipment" element={<Equipment />} />
-            <Route path="tech-inventory" element={<TechInventory />} />
-            <Route path="glassware-breakage" element={<GlasswareBreakage />} />
-            <Route path="smart-forms" element={<SmartForms />} />
-            <Route path="chemical-waste" element={<ChemicalWaste />} />
-            <Route path="educational-map" element={<EducationalMap />} />
-            <Route path="consumables-sds" element={<ConsumablesSDS />} />
-            <Route path="backup" element={<BackupCenter />} />
-            <Route path="database-management" element={<DatabaseManagement />} />
-            <Route path="timetable" element={<Timetable />} />
-            <Route path="lab-schedule" element={<LabSchedule />} />
-            <Route path="pedagogical-tracking" element={<PedagogicalTracking />} />
-            <Route path="follow-up-registry" element={<FollowUpRegistry />} />
-            <Route path="sync" element={<Sync />} />
-            <Route path="activity-request" element={<ActivityRequest />} />
-            <Route path="loan-request" element={<LoanRequest />} />
-            <Route path="scrapping" element={<EquipmentScrapping />} />
-            <Route path="safety" element={<Safety />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="archive" element={<Archive />} />
-            <Route path="teachers" element={<Teachers />} />
-            <Route path="daily-report" element={<DailyReport />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </Router>
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <Router>
+          {user && <FirebaseSetup />}
+          <Routes>
+            <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/data-deletion" element={<DataDeletion />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route
+              path="/"
+              element={user ? <Layout /> : <Navigate to="/login" />}
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="inventory" element={<InventoryDashboard />} />
+              <Route path="pedagogical" element={<PedagogicalDashboard />} />
+              <Route path="maintenance" element={<Maintenance />} />
+              <Route path="chemicals" element={<Chemicals />} />
+              <Route path="equipment" element={<Equipment />} />
+              <Route path="tech-inventory" element={<TechInventory />} />
+              <Route path="glassware-breakage" element={<GlasswareBreakage />} />
+              <Route path="smart-forms" element={<SmartForms />} />
+              <Route path="chemical-waste" element={<ChemicalWaste />} />
+              <Route path="educational-map" element={<EducationalMap />} />
+              <Route path="consumables-sds" element={<ConsumablesSDS />} />
+              <Route path="backup" element={<BackupCenter />} />
+              <Route path="database-management" element={<DatabaseManagement />} />
+              <Route path="timetable" element={<Timetable />} />
+              <Route path="lab-schedule" element={<LabSchedule />} />
+              <Route path="pedagogical-tracking" element={<PedagogicalTracking />} />
+              <Route path="follow-up-registry" element={<FollowUpRegistry />} />
+              <Route path="sync" element={<Sync />} />
+              <Route path="activity-request" element={<ActivityRequest />} />
+              <Route path="loan-request" element={<LoanRequest />} />
+              <Route path="scrapping" element={<EquipmentScrapping />} />
+              <Route path="safety" element={<Safety />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="archive" element={<Archive />} />
+              <Route path="teachers" element={<Teachers />} />
+              <Route path="daily-report" element={<DailyReport />} />
+              <Route path="settings" element={<Settings />} />
+              {/* Catch-all 404 route for authenticated users */}
+              <Route path="*" element={<Navigate to="/not-found" replace />} />
+            </Route>
+            {/* Catch-all 404 route matching the base path */}
+            <Route path="/not-found" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/not-found" replace />} />
+          </Routes>
+        </Router>
+      </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 

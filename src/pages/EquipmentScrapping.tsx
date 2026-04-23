@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { onSnapshot, query, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage, auth, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
+import { Helmet } from 'react-helmet-async';
 import { 
   Plus, 
   Printer, 
@@ -52,8 +54,9 @@ interface CommitteeMember {
 
 interface AttachmentDoc {
   name: string;
-  data: string | null; // base64
+  data: string | null; // Used for download URL or ObjectURL
   type: string;
+  file?: File; // Actual file for upload
 }
 
 type Tab = 'list' | 'pv' | 'proposal' | 'attachments';
@@ -99,6 +102,17 @@ export default function EquipmentScrapping() {
     scrapping_request: { name: 'طلب الإسقاط', data: null, type: '' },
     handover_minutes: { name: 'محضر التسليم', data: null, type: '' }
   });
+
+  // Cleanup object URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      Object.values(attachments).forEach(doc => {
+        if (doc.file && doc.data && doc.data.startsWith('blob:')) {
+          URL.revokeObjectURL(doc.data);
+        }
+      });
+    };
+  }, [attachments]);
 
   useEffect(() => {
     const unsubEquip = onSnapshot(getUserCollection('equipment'), (snap) => {
@@ -152,19 +166,43 @@ export default function EquipmentScrapping() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setNotification({ message: 'جاري رفع الملفات وحفظ السجل...', type: 'success' });
+    
     try {
+      const finalAttachments = { ...attachments };
+      const uploadPromises = Object.entries(attachments).map(async ([key, doc]) => {
+        if (doc.file && auth.currentUser) {
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/scrapping/${Date.now()}_${doc.file.name}`);
+          await uploadBytes(fileRef, doc.file);
+          const downloadUrl = await getDownloadURL(fileRef);
+          finalAttachments[key] = {
+            name: doc.name,
+            data: downloadUrl,
+            type: doc.file.type
+          };
+        }
+      });
+      
+      await Promise.all(uploadPromises);
+
       const docRef = await addDoc(getUserCollection('scrapping_records'), {
         scrapItems,
         pvData,
         proposalData,
-        attachments,
+        attachments: finalAttachments,
         createdAt: serverTimestamp()
       });
+      
       await logActivity(LogAction.CREATE, LogModule.EQUIPMENT, `سجل إسقاط بملفات مرفقة رقم: ${proposalData.num}`, docRef.id);
       setNotification({ message: 'تم حفظ السجل والملفات بنجاح!', type: 'success' });
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, 'scrapping_records');
-      setNotification({ message: 'خطأ في الحفظ.', type: 'error' });
+    } catch (e: any) {
+      if (e.message?.includes('storage')) {
+         console.error('Storage Upload Error:', e);
+         setNotification({ message: 'خطأ في رفع الملفات. تأكد من إعدادات سعة التخزين (Storage Rules).', type: 'error' });
+      } else {
+         handleFirestoreError(e, OperationType.CREATE, 'scrapping_records');
+         setNotification({ message: 'خطأ في الحفظ.', type: 'error' });
+      }
     } finally {
       setIsSaving(false);
     }
@@ -174,30 +212,34 @@ export default function EquipmentScrapping() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 800000) {
-      setNotification({ message: 'حجم الملف كبير جداً (الأقصى 800KB لضمان الأمان).', type: 'error' });
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({ message: 'حجم الملف كبير جداً (الأقصى 2MB لضمان الأمان).', type: 'error' });
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAttachments({
-        ...attachments,
-        [key]: {
-          ...attachments[key],
-          data: reader.result as string,
-          type: file.type
-        }
-      });
-      setNotification({ message: 'تم تحميل المستند بنجاح.', type: 'success' });
-    };
-    reader.readAsDataURL(file);
+    const objectUrl = URL.createObjectURL(file);
+    
+    setAttachments({
+      ...attachments,
+      [key]: {
+        ...attachments[key],
+        data: objectUrl,
+        type: file.type,
+        file: file
+      }
+    });
+    setNotification({ message: 'تم إرفاق المستند لمعاينته.', type: 'success' });
   };
 
   const removeAttachment = (key: string) => {
+    const existingData = attachments[key].data;
+    if (existingData && existingData.startsWith('blob:')) {
+      URL.revokeObjectURL(existingData);
+    }
+    
     setAttachments({
       ...attachments,
-      [key]: { ...attachments[key], data: null, type: '' }
+      [key]: { name: attachments[key].name, data: null, type: '', file: undefined }
     });
   };
 
@@ -265,6 +307,9 @@ export default function EquipmentScrapping() {
 
   return (
     <div className="min-h-screen bg-[#fcf9f3] pb-24 rtl font-sans" dir="rtl">
+      <Helmet>
+        <title>إسقاط التجهيزات | الأرضية الرقمية للمخابر</title>
+      </Helmet>
       <div className="max-w-7xl mx-auto p-6 md:p-12">
         
         {/* Header */}
@@ -280,7 +325,7 @@ export default function EquipmentScrapping() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button onClick={handleReset} className="p-4 bg-white border border-outline/10 text-on-surface/40 rounded-2xl hover:text-primary transition-all active:scale-95 shadow-sm"><RotateCcw size={24} /></button>
+            <button title="إعادة تهيئة النموذج" aria-label="إعادة تهيئة النموذج" onClick={handleReset} className="p-4 bg-white border border-outline/10 text-on-surface/40 rounded-2xl hover:text-primary transition-all active:scale-95 shadow-sm"><RotateCcw size={24} /></button>
             <button onClick={handleSave} disabled={isSaving} className="px-8 py-4 bg-white text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50">
               {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
               حفظ السجل
@@ -382,7 +427,7 @@ export default function EquipmentScrapping() {
                           </td>
                           <td className="p-2"><input type="number" value={item.quantity} onChange={e => updateScrapItem(item.id, 'quantity', parseInt(e.target.value))} className="w-full bg-transparent px-2 py-2 font-bold text-center focus:outline-none" /></td>
                           <td className="p-2 text-center">
-                             <button onClick={() => setScrapItems(scrapItems.filter(i => i.id !== item.id))} className="text-error/30 hover:text-error transition-all"><Trash2 size={16}/></button>
+                             <button title="حذف" aria-label="حذف" onClick={() => setScrapItems(scrapItems.filter(i => i.id !== item.id))} className="text-error/30 hover:text-error transition-all p-2 rounded-lg hover:bg-error/10"><Trash2 size={16}/></button>
                           </td>
                         </tr>
                       ))}
@@ -420,7 +465,7 @@ export default function EquipmentScrapping() {
                                      <datalist id="teachers-dl">{teachersList.map(t => <option key={t.id} value={t.name} />)}</datalist>
                                   </td>
                                   <td className="p-2"><input value={m.role} onChange={e => setPvData({...pvData, members: pvData.members.map(mb => mb.id === m.id ? {...mb, role: e.target.value}: mb)})} className="w-full bg-transparent px-2 py-2 font-bold focus:outline-none" placeholder="الوظيفة..." /></td>
-                                  <td className="p-2 text-center"><button onClick={() => setPvData({...pvData, members: pvData.members.filter(mb => mb.id !== m.id)})} className="text-error/30 hover:text-error"><Trash2 size={16}/></button></td>
+                                  <td className="p-2 text-center"><button title="حذف" aria-label="حذف" onClick={() => setPvData({...pvData, members: pvData.members.filter(mb => mb.id !== m.id)})} className="text-error/30 hover:text-error p-2 rounded-lg hover:bg-error/10"><Trash2 size={16}/></button></td>
                                </tr>
                              ))}
                           </tbody>
@@ -486,7 +531,7 @@ export default function EquipmentScrapping() {
                               <button onClick={() => setPreviewDoc(doc)} className="flex-1 py-4 bg-primary text-on-primary rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
                                  <Eye size={18}/> عرض
                               </button>
-                              <button onClick={() => removeAttachment(key)} className="p-4 bg-error/10 text-error rounded-2xl hover:bg-error/20 transition-all">
+                              <button title="مسح المرفق" aria-label="مسح المرفق" onClick={() => removeAttachment(key)} className="p-4 bg-error/10 text-error rounded-2xl hover:bg-error/20 transition-all">
                                  <Trash2 size={18}/>
                               </button>
                            </>
@@ -537,7 +582,7 @@ export default function EquipmentScrapping() {
                      <div className="p-4 bg-primary/10 text-primary rounded-2xl"><FileCheck size={24}/></div>
                      <h2 className="text-2xl font-black text-primary">{previewDoc.name}</h2>
                   </div>
-                  <button onClick={() => setPreviewDoc(null)} className="p-4 bg-surface-container-high rounded-full hover:bg-error/10 hover:text-error transition-all"><X size={24}/></button>
+                  <button title="إغلاق التلميح" aria-label="إغلاق التلميح" onClick={() => setPreviewDoc(null)} className="p-4 bg-surface-container-high rounded-full hover:bg-error/10 hover:text-error transition-all"><X size={24}/></button>
                </div>
                
                <div className="flex-grow p-4 bg-surface-container-low/30 overflow-auto flex items-center justify-center">

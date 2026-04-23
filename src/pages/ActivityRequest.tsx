@@ -21,6 +21,7 @@ import {
   Activity,
   AlertCircle
 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { logActivity, LogAction, LogModule } from '../services/loggingService';
@@ -285,6 +286,9 @@ export default function ActivityRequest() {
 
   return (
     <div className="min-h-screen bg-[#fcf9f3] pb-24 rtl font-sans" dir="rtl">
+      <Helmet>
+        <title>تحضير نشاط تطبيقي | الأرضية الرقمية للمخابر</title>
+      </Helmet>
       <div className="max-w-6xl mx-auto p-6 md:p-12">
         
         {/* Actions Bar */}
