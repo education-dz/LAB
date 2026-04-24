@@ -56,6 +56,7 @@ const navigationGroups = [
     icon: Database,
     items: [
       { name: 'إدارة المخزون', path: '/inventory', icon: Database },
+      { name: 'سجل بطاقات الجرد', path: '/inventory-cards', icon: FileText },
       { name: 'مصفوفة التوافق', path: '/chemical-storage', icon: ShieldCheck },
       { name: 'مركز الطباعة (QR)', path: '/qr-print-center', icon: Printer },
       { name: 'الصيانة والمعايرة', path: '/maintenance', icon: Wrench },

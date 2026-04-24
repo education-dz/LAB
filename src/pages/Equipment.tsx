@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { onSnapshot, query, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, orderBy, limit, getDocs, writeBatch } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
 import * as XLSX from 'xlsx';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Beaker, 
   Plus, 
@@ -20,6 +20,7 @@ import {
   X,
   Printer,
   Package,
+  Database,
   ArrowLeft,
   Sparkles,
   MoreHorizontal,
@@ -73,6 +74,7 @@ interface MaintenanceLog {
 
 export default function Equipment({ isNested = false }: { isNested?: boolean }) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -759,6 +761,13 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               className="hidden" 
               accept=".xls,.xlsx"
             />
+            <button 
+              onClick={() => navigate('/inventory-cards')}
+              className="bg-primary text-white px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/90 transition-all shadow-xl active:scale-95"
+            >
+              <Database size={20} />
+              سجل بطاقات الجرد
+            </button>
             <button 
               onClick={handlePrintInventoryCards}
               className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"

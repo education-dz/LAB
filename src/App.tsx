@@ -40,6 +40,7 @@ import Sync from './pages/Sync';
 import ActivityRequest from './pages/ActivityRequest';
 import LoanRequest from './pages/LoanRequest';
 import EquipmentScrapping from './pages/EquipmentScrapping';
+import InventoryCardsRegistry from './pages/InventoryCardsRegistry';
 import Layout from './components/Layout';
 import FirebaseSetup from './components/FirebaseSetup';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -96,6 +97,7 @@ export default function App() {
               <Route path="maintenance" element={<Maintenance />} />
               <Route path="chemicals" element={<Chemicals />} />
               <Route path="equipment" element={<Equipment />} />
+              <Route path="inventory-cards" element={<InventoryCardsRegistry />} />
               <Route path="tech-inventory" element={<TechInventory />} />
               <Route path="glassware-breakage" element={<GlasswareBreakage />} />
               <Route path="smart-forms" element={<SmartForms />} />

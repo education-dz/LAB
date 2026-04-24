@@ -25,6 +25,13 @@ const inventoryModules = [
     path: '/chemicals' 
   },
   { 
+    title: 'بطاقات الجرد', 
+    desc: 'سجل رسمي لبطاقات الجرد يتضمن الأرقام التسلسلية والمراجعات العشرية.', 
+    icon: Database, 
+    color: 'bg-primary/20', 
+    path: '/inventory-cards' 
+  },
+  { 
     title: 'الزجاجيات والعتاد', 
     desc: 'قاعدة بيانات شاملة للأجهزة والمعدات الزجاجية والميكانيكية.', 
     icon: Beaker, 
