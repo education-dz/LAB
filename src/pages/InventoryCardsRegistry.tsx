@@ -10,7 +10,10 @@ import {
   FileText,
   QrCode,
   Trash2,
-  Package
+  Package,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -29,11 +32,16 @@ interface InventoryItem {
   notes: string;
 }
 
+type SortField = keyof InventoryItem | 'index';
+type SortDirection = 'asc' | 'desc' | null;
+
 export default function InventoryCardsRegistry() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [printingItem, setPrintingItem] = useState<InventoryItem | null>(null);
+  const [sortField, setSortField] = useState<SortField>('index');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -91,7 +99,35 @@ export default function InventoryCardsRegistry() {
     }
   };
 
-  const filteredItems = items.filter(item => 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedItems = [...items].sort((a, b) => {
+    if (!sortDirection || sortField === 'index') return 0;
+    
+    const aValue = a[sortField as keyof InventoryItem];
+    const bValue = b[sortField as keyof InventoryItem];
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue, 'ar') 
+        : bValue.localeCompare(aValue, 'ar');
+    }
+    
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+
+    return 0;
+  });
+
+  const filteredItems = sortedItems.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -111,6 +147,11 @@ export default function InventoryCardsRegistry() {
   const handlePrintIndividual = (item: InventoryItem) => {
     setPrintingItem(item);
     setTimeout(() => window.print(), 100);
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <ChevronsUpDown size={14} className="opacity-30 group-hover:opacity-100 transition-opacity" />;
+    return sortDirection === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
   };
 
   if (loading) {
@@ -446,15 +487,87 @@ export default function InventoryCardsRegistry() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-primary text-white">
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 w-[60px]">رقم</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10">رقم الجرد</th>
-              <th className="p-5 text-right font-black text-xs uppercase tracking-widest border-l border-white/10 w-[25%] text-center">تعيين الجهاز</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10">الجرد التأسيسي</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10">المراجعة العشرية</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10">الكمية</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10">الممون</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10">الحالة</th>
-              <th className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 w-[15%]">ملاحظات</th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 w-[60px] cursor-pointer group"
+                onClick={() => handleSort('index')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  رقم
+                  <SortIcon field="index" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 cursor-pointer group"
+                onClick={() => handleSort('serialNumber')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  رقم الجرد
+                  <SortIcon field="serialNumber" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-right font-black text-xs uppercase tracking-widest border-l border-white/10 w-[25%] text-center cursor-pointer group"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  تعيين الجهاز
+                  <SortIcon field="name" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 cursor-pointer group"
+                onClick={() => handleSort('foundationalInventory')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  الجرد التأسيسي
+                  <SortIcon field="foundationalInventory" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 cursor-pointer group"
+                onClick={() => handleSort('decennialReview')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  المراجعة العشرية
+                  <SortIcon field="decennialReview" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 cursor-pointer group"
+                onClick={() => handleSort('totalQuantity')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  الكمية
+                  <SortIcon field="totalQuantity" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 cursor-pointer group"
+                onClick={() => handleSort('supplier')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  الممون
+                  <SortIcon field="supplier" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 cursor-pointer group"
+                onClick={() => handleSort('status')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  الحالة
+                  <SortIcon field="status" />
+                </div>
+              </th>
+              <th 
+                className="p-5 text-center font-black text-xs uppercase tracking-widest border-l border-white/10 w-[15%] cursor-pointer group"
+                onClick={() => handleSort('notes')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  ملاحظات
+                  <SortIcon field="notes" />
+                </div>
+              </th>
               <th className="p-5 text-center font-black text-xs uppercase tracking-widest no-print w-[80px]">إجراءات</th>
             </tr>
           </thead>
