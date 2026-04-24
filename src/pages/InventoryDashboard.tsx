@@ -8,7 +8,10 @@ import {
   Database,
   ArrowLeft,
   Sparkles,
-  Wrench
+  Wrench,
+  ShieldCheck,
+  RefreshCw,
+  Printer
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -62,6 +65,34 @@ const inventoryModules = [
     icon: Wrench, 
     color: 'bg-surface-container-high', 
     path: '/maintenance' 
+  },
+  { 
+    title: 'إسقاط التجهيزات', 
+    desc: 'إدارة عملية التكهين والإسقاط الفني للمعدات التالفة وغير القابلة للإصلاح.', 
+    icon: Trash2, 
+    color: 'bg-error/10', 
+    path: '/scrapping' 
+  },
+  { 
+    title: 'مصفوفة التوافق', 
+    desc: 'قواعد تخزين المواد الكيميائية وتفادي التفاعلات الخطرة.', 
+    icon: ShieldCheck, 
+    color: 'bg-[#4a7c59]/10', 
+    path: '/chemical-storage' 
+  },
+  { 
+    title: 'إعارة الوسائل', 
+    desc: 'إدارة طلبات إعارة الوسائل والتجهيزات العلمية بين الأقسام والمخابر.', 
+    icon: RefreshCw, 
+    color: 'bg-[#d4a574]/10', 
+    path: '/loan-request' 
+  },
+  { 
+    title: 'مركز الطباعة (QR)', 
+    desc: 'إنشاء وطباعة ملصقات QR Code لكافة المواد والأجهزة.', 
+    icon: Printer, 
+    color: 'bg-primary/10', 
+    path: '/qr-print-center' 
   },
 ];
 

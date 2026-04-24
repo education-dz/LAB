@@ -46,6 +46,7 @@ const navItems = [
   { name: 'لوحة القيادة', path: '/', icon: LayoutDashboard },
   { name: 'إدارة المخزون', path: '/inventory', icon: Database },
   { name: 'التشريع المدرسي', path: '/school-legislation', icon: Scale },
+  { name: 'المولد الذكي للنماذج', path: '/smart-forms', icon: FileText },
   { name: 'مصفوفة التوافق', path: '/chemical-storage', icon: ShieldCheck },
   { name: 'المتابعة البيداغوجية', path: '/pedagogical', icon: BookOpen },
   { name: 'الميزانية والطلبيات', path: '/budget-purchases', icon: Wallet },

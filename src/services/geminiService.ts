@@ -266,3 +266,215 @@ export async function getEquipmentIntelligence(items: { id: string; name: string
     return null;
   }
 }
+
+export interface MaintenanceInsight {
+  overview: string;
+  urgentActions: {
+    equipmentName: string;
+    issue: string;
+    recommendation: string;
+    actionRequired: 'repair' | 'replace' | 'calibrate' | 'scrapping';
+  }[];
+  preventiveMeasures: string[];
+}
+
+export async function analyzeMaintenance(logs: any[], retries = 3, delay = 5000): Promise<MaintenanceInsight | null> {
+  try {
+    const hasKey = await ensureApiKey();
+    if (!hasKey) return null;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY || '' });
+    
+    const compactLogs = logs.map(l => ({
+      equipmentName: l.equipmentName,
+      issue: l.issue,
+      status: l.status,
+      priority: l.priority,
+      date: l.startDate
+    }));
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `You are an expert laboratory technician and maintenance manager in Algeria. 
+      Analyze the provided equipment maintenance logs for a high school laboratory.
+      
+      Provide:
+      1. A brief overview of the equipment health status.
+      2. Identify urgent logs or equipment that break down frequently and give specific action recommendations (repair, calibrate, or scrap/replace).
+      3. Recommend preventive measures for the laboratory equipment.
+      
+      Respond completely in Arabic.
+      
+      Logs: ${JSON.stringify(compactLogs)}
+      `,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            overview: { type: Type.STRING },
+            urgentActions: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  equipmentName: { type: Type.STRING },
+                  issue: { type: Type.STRING },
+                  recommendation: { type: Type.STRING },
+                  actionRequired: { type: Type.STRING }
+                },
+                required: ["equipmentName", "issue", "recommendation", "actionRequired"]
+              }
+            },
+            preventiveMeasures: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
+          },
+          required: ["overview", "urgentActions", "preventiveMeasures"]
+        }
+      }
+    });
+
+    if (!response.text) return null;
+    return JSON.parse(response.text.trim()) as MaintenanceInsight;
+  } catch (error: any) {
+    if ((error?.status === 'RESOURCE_EXHAUSTED' || error?.code === 429) && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return analyzeMaintenance(logs, retries - 1, delay * 1.5);
+    }
+    console.error("Error analyzing maintenance logs:", error);
+    return null;
+  }
+}
+
+export interface FormRecommendation {
+  recommendedPath: string;
+  reasoning: string;
+}
+
+export async function findSmartForm(query: string, availableForms: {title: string, path: string, desc: string}[]): Promise<FormRecommendation | null> {
+  try {
+    const hasKey = await ensureApiKey();
+    if (!hasKey) return null;
+    
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY || '' });
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `You are an intelligent assistant for a laboratory management system in Algeria.
+      The user is asking for a specific document, form, or process.
+      Match their request to one of the available forms.
+      
+      User query: "${query}"
+      
+      Available Forms:
+      ${JSON.stringify(availableForms)}
+      
+      Return the path of the most appropriate form and a brief reason (in Arabic) explaining why.
+      `,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            recommendedPath: { type: Type.STRING },
+            reasoning: { type: Type.STRING }
+          },
+          required: ["recommendedPath", "reasoning"]
+        }
+      }
+    });
+
+    if (!response.text) return null;
+    return JSON.parse(response.text.trim()) as FormRecommendation;
+  } catch (error: any) {
+    console.error("Error finding smart form:", error);
+    return null;
+  }
+}
+
+export interface PedagogicalInsight {
+  overview: string;
+  criticalDelays: {
+    subject: string;
+    teacher: string;
+    reason: string;
+    recommendation: string;
+  }[];
+  generalRecommendations: string[];
+}
+
+export async function analyzePedagogicalTracking(entries: any[], retries = 3, delay = 5000): Promise<PedagogicalInsight | null> {
+  try {
+    const hasKey = await ensureApiKey();
+    if (!hasKey) return null;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY || '' });
+    
+    // Format lightly to save tokens
+    const compactEntries = entries.map(e => ({
+      subject: e.subject,
+      level: e.level,
+      branch: e.branch,
+      teacher: e.teacher,
+      progress: e.progress,
+      status: e.status,
+      delayWeeks: e.delayWeeks,
+      delayReason: e.delayReason
+    }));
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `You are an expert pedagogical inspector and school director in Algeria. 
+      Analyze the provided pedagogical progression tracking data for a high school.
+      
+      Provide:
+      1. A brief overview of the progression (overview).
+      2. Identify critical delays, their reasons, and provide a concrete pedagogical recommendation for the teacher/administration to catch up (criticalDelays).
+      3. Provide a list of general recommendations to improve the curriculum tracking process (generalRecommendations).
+      
+      Respond completely in Arabic.
+      
+      Data: ${JSON.stringify(compactEntries)}
+      `,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            overview: { type: Type.STRING },
+            criticalDelays: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  subject: { type: Type.STRING },
+                  teacher: { type: Type.STRING },
+                  reason: { type: Type.STRING },
+                  recommendation: { type: Type.STRING }
+                },
+                required: ["subject", "teacher", "reason", "recommendation"]
+              }
+            },
+            generalRecommendations: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
+          },
+          required: ["overview", "criticalDelays", "generalRecommendations"]
+        }
+      }
+    });
+
+    if (!response.text) return null;
+    return JSON.parse(response.text.trim()) as PedagogicalInsight;
+  } catch (error: any) {
+    if ((error?.status === 'RESOURCE_EXHAUSTED' || error?.code === 429) && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return analyzePedagogicalTracking(entries, retries - 1, delay * 1.5);
+    }
+    console.error("Error analyzing pedagogical tracking:", error);
+    return null;
+  }
+}

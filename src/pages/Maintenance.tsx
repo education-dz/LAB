@@ -13,7 +13,9 @@ import {
   MoreVertical,
   Trash2,
   Edit2,
-  Hammer
+  Hammer,
+  Sparkles,
+  Link as LinkIcon
 } from 'lucide-react';
 import { 
   collection, 
@@ -30,6 +32,8 @@ import {
 import { db, getUserCollection, handleFirestoreError, OperationType } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { Link } from 'react-router-dom';
+import { analyzeMaintenance, MaintenanceInsight } from '../services/geminiService';
 
 interface MaintenanceLog {
   id: string;
@@ -62,6 +66,20 @@ export default function Maintenance() {
     priority: 'medium',
     startDate: new Date().toISOString().split('T')[0]
   });
+  const [aiInsight, setAiInsight] = useState<MaintenanceInsight | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    try {
+      const insight = await analyzeMaintenance(logs);
+      setAiInsight(insight);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   useEffect(() => {
     const q = query(getUserCollection('maintenance_logs'), orderBy('createdAt', 'desc'));
@@ -154,18 +172,141 @@ export default function Maintenance() {
             <Wrench size={14} />
             إدارة الصيانة التقنية
           </div>
-          <h1 className="text-4xl font-black text-primary tracking-tight font-serif">الصيانة والإصلاح</h1>
-          <p className="text-on-surface/60 font-medium">تتبع حالة الأجهزة المعطلة وجدولة عمليات الإصلاح</p>
+          <h1 className="text-4xl font-black text-primary tracking-tight font-serif">الصيانة ومعايرة التجهيزات</h1>
+          <p className="text-on-surface/60 font-medium">تتبع حالة الأجهزة المعطلة، الجدولة، والاقتراح للإسقاط</p>
         </div>
 
-        <button 
-          onClick={() => setIsAddingLog(true)}
-          className="bg-primary text-on-primary px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-lg shadow-primary/20 hover:scale-105 transition-all active:scale-95"
-        >
-          <Plus size={24} />
-          إضافة سجل صيانة
-        </button>
+        <div className="flex flex-wrap items-center gap-3 relative z-10 w-full md:w-auto">
+          <Link 
+            to="/scrapping"
+            className="flex-1 md:flex-none justify-center bg-white text-error border border-outline/10 px-6 py-4 rounded-2xl font-black flex items-center gap-3 shadow-sm hover:shadow-md hover:bg-error/5 transition-all"
+          >
+            <History size={20} />
+            إسقاط التجهيزات
+          </Link>
+
+          <button 
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="flex-1 md:flex-none justify-center bg-primary/10 text-primary border border-primary/20 px-6 py-4 rounded-[24px] font-black flex items-center gap-3 hover:bg-primary/20 transition-all disabled:opacity-50"
+          >
+            {isAnalyzing ? (
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent animate-spin rounded-full" />
+            ) : (
+              <Sparkles size={20} />
+            )}
+            توصيات الصيانة (AI)
+          </button>
+
+          <button 
+            onClick={() => setIsAddingLog(true)}
+            className="flex-1 md:flex-none justify-center bg-primary text-on-primary px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-lg shadow-primary/20 hover:scale-105 transition-all active:scale-95"
+          >
+            <Plus size={24} />
+            إضافة سجل صيانة
+          </button>
+        </div>
       </header>
+
+      {/* KPIs Section */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[
+          { label: 'إجمالي الأعطال', value: logs.length, icon: Wrench, color: 'text-primary', bg: 'bg-primary/10' },
+          { label: 'قيد الانتظار', value: logs.filter(l => l.status === 'pending').length, icon: Clock, color: 'text-error', bg: 'bg-error/10' },
+          { label: 'جاري الإصلاح', value: logs.filter(l => l.status === 'in-progress').length, icon: Hammer, color: 'text-warning', bg: 'bg-warning/10' },
+          { label: 'تم الإصلاح', value: logs.filter(l => l.status === 'completed').length, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+        ].map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <div key={i} className="bg-white rounded-3xl p-6 border border-outline/5 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-secondary font-bold text-sm mb-1">{stat.label}</p>
+                <p className="text-3xl font-black text-primary">{stat.value}</p>
+              </div>
+              <div className={cn("w-14 h-14 rounded-full flex items-center justify-center", stat.bg)}>
+                <Icon className={stat.color} size={28} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* AI Insights Section */}
+      <AnimatePresence>
+        {aiInsight && (
+          <motion.section 
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-primary/5 border border-primary/20 rounded-[40px] p-8 shadow-md relative">
+              <div className="absolute top-0 right-0 w-2 h-full bg-primary" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/20 text-primary rounded-2xl">
+                  <Sparkles size={28} />
+                </div>
+                <h2 className="text-2xl font-black text-primary">المفتش الصناعي الذكي (AI)</h2>
+              </div>
+              
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-black text-secondary mb-2 uppercase tracking-widest">موجز حالة التجهيزات</h3>
+                  <p className="text-on-surface font-medium leading-relaxed">{aiInsight.overview}</p>
+                </div>
+                
+                {aiInsight.urgentActions?.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-black text-error mb-4 uppercase tracking-widest">إجراءات مستعجلة</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {aiInsight.urgentActions.map((action, index) => (
+                        <div key={index} className="bg-white rounded-2xl p-6 border border-error/20 shadow-sm relative overflow-hidden">
+                          <div className={cn("absolute top-0 left-0 w-1 h-full", 
+                            action.actionRequired === 'scrapping' || action.actionRequired === 'replace' ? 'bg-error' : 
+                            action.actionRequired === 'calibrate' ? 'bg-warning' : 'bg-primary'
+                          )} />
+                          <p className="font-black text-primary mb-1">{action.equipmentName}</p>
+                          <p className="text-xs text-on-surface/60 font-bold mb-3">{action.issue}</p>
+                          <div className="bg-surface-container-low p-3 rounded-xl border border-outline/5">
+                            <p className="text-xs font-black text-primary mb-1 inline-flex items-center gap-2">
+                              {action.actionRequired === 'replace' || action.actionRequired === 'scrapping' ? 'التصرف:' : 'الإجراء:'}
+                            </p>
+                            <p className="text-sm font-bold text-on-surface/80">{action.recommendation}</p>
+                          </div>
+                          {(action.actionRequired === 'replace' || action.actionRequired === 'scrapping') && (
+                            <Link to="/scrapping" className="mt-3 block text-center text-xs font-bold text-error bg-error/10 hover:bg-error/20 py-2 rounded-lg transition-colors">
+                              فتح نموذج الإسقاط
+                            </Link>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div>
+                  <h3 className="text-sm font-black text-primary mb-2 uppercase tracking-widest">توصيات الصيانة الوقائية</h3>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {aiInsight.preventiveMeasures.map((measure, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm font-bold text-on-surface/80 bg-white p-4 rounded-xl border border-outline/5 shadow-sm">
+                        <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />
+                        <span>{measure}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setAiInsight(null)}
+                className="mt-8 text-sm font-black text-outline hover:text-primary transition-colors"
+              >
+                إخفاء التحليل
+              </button>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-3xl shadow-sm border border-outline/5">

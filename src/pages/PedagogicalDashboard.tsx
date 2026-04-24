@@ -8,7 +8,9 @@ import {
   PlusCircle,
   ArrowLeft,
   Sparkles,
-  GraduationCap
+  GraduationCap,
+  Users,
+  Calculator
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -69,6 +71,20 @@ const pedagogicalModules = [
     icon: PlusCircle, 
     color: 'bg-error/10', 
     path: '/activity-request' 
+  },
+  { 
+    title: 'تسيير الأفواج', 
+    desc: 'إدارة وتنظيم أفواج التلاميذ ضمن الأقسام والمخابر.', 
+    icon: Users, 
+    color: 'bg-[#8bc34a]/10', 
+    path: '/student-groups' 
+  },
+  { 
+    title: 'الحاسبة المخبرية', 
+    desc: 'مجموعة من الأدوات والحسابات السريعة لتحضير المحاليل.', 
+    icon: Calculator, 
+    color: 'bg-primary/10', 
+    path: '/calculators' 
   },
 ];
 

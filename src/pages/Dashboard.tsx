@@ -31,7 +31,12 @@ import {
   Plus,
   Activity,
   CheckCircle,
-  Clock
+  Wallet,
+  Scale,
+  Archive,
+  Server,
+  Settings,
+  ShieldCheck
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Helmet } from 'react-helmet-async';
@@ -390,12 +395,14 @@ export default function Dashboard() {
     { title: 'لوحة الجرد الشاملة', desc: 'إدارة كافة ممتلكات المخبر من كواشف، أجهزة، زجاجيات ونفايات في مكان واحد.', count: (counts.chemicals + counts.equipment).toString(), icon: Database, color: 'bg-primary/10', path: '/inventory' },
     { title: 'المتابعة البيداغوجية', desc: 'تسيير الجداول الزمنية، خريطة الأقسام، والتحضير الذكي للنشاطات.', count: 'جديد', icon: BookOpen, color: 'bg-primary/5', path: '/pedagogical' },
     { title: 'التقارير اليومية', desc: 'تسجيل ومتابعة النشاطات اليومية للمخبر والحصص التطبيقية.', count: counts.reports.toString(), icon: FileText, color: 'bg-surface-container-low', path: '/daily-report' },
-    { title: 'مركز النسخ الاحتياطي', desc: 'واجهة تقنية متطورة لمراقبة حجم البيانات وإدارة النسخ الاحتياطي بصيغة JSON لضمان سلامة السجلات.', count: 'جديد', icon: Database, color: 'bg-surface-container-high', path: '/backup' },
-    { title: 'فريق الأساتذة', desc: 'قائمة أساتذة العلوم والفيزياء المستفيدين من خدمات المخبر.', count: counts.teachers.toString(), icon: Users, color: 'bg-primary/10', path: '/teachers' },
-    { title: 'إعارة الوسائل', desc: 'إدارة طلبات إعارة الوسائل والتجهيزات العلمية بين الأقسام والمخابر.', count: 'جديد', icon: RefreshCw, color: 'bg-primary/5', path: '/loan-request' },
-    { title: 'تحضير نشاط تطبيقي', desc: 'إعداد طلبات تحضير الحصص التطبيقية والوسائل والمواد اللازمة قبل 48 ساعة.', count: 'جديد', icon: Activity, color: 'bg-primary/10', path: '/activity-request' },
-    { title: 'إسقاط التجهيزات', desc: 'إدارة عملية التكهين والإسقاط الفني للمعدات التالفة وغير القابلة للإصلاح.', count: 'جديد', icon: Trash2, color: 'bg-error/5', path: '/scrapping' },
-    { title: 'الأمن والسلامة', desc: 'بروتوكولات السلامة، طفايات الحريق، ومعدات الإسعاف الأولي.', count: counts.incidents.toString(), icon: ShieldAlert, color: 'bg-error/10', path: '/safety' },
+    { title: 'الميزانية والطلبيات', desc: 'تسيير الميزانية، وتخطيط طلبيات الشراء الخاصة بالمخبر للسنة الدراسية.', count: 'جديد', icon: Wallet, color: 'bg-warning/10', path: '/budget-purchases' },
+    { title: 'التشريع المدرسي', desc: 'تجميع القوانين والمراسيم المنظمة لعمل المخبري وإجراءات حوادث العمل.', count: 'جديد', icon: Scale, color: 'bg-[#d4a574]/10', path: '/school-legislation' },
+    { title: 'الأرشيف الرقمي', desc: 'أرشفة كافة الوثائق، المحاضر والتقارير السابقة للرجوع إليها وقت الحاجة.', count: 'جديد', icon: Archive, color: 'bg-[#4a7c59]/10', path: '/archive' },
+    { title: 'فريق الأساتذة', desc: 'قائمة أساتذة العلوم والفيزياء المستفيدين من خدمات المخبر والجداول الزمنية.', count: counts.teachers.toString(), icon: Users, color: 'bg-primary/10', path: '/teachers' },
+    { title: 'الأمن والسلامة', desc: 'بروتوكولات السلامة، طفايات الحريق، وإدارة معدات الإسعاف الأولي والتوجيهات.', count: counts.incidents.toString(), icon: ShieldAlert, color: 'bg-error/10', path: '/safety' },
+    { title: 'دليل السلامة', desc: 'دليل تفصيلي لإجراءات الأمن والمخاطر المهنية في المخابر المدرسية.', count: 'جديد', icon: ShieldCheck, color: 'bg-[#8bc34a]/10', path: '/safety-guide' },
+    { title: 'قاعدة البيانات والتخزين', desc: 'إدارة النسخ الاحتياطي وحذف أو استعادة السجلات والارتباط السحابي.', count: 'تقنية', icon: Server, color: 'bg-surface-container-high', path: '/database-management' },
+    { title: 'إعدادات النظام', desc: 'تكوين إعدادات المخبر، الحساب، خيارات الواجهة.', count: 'جديد', icon: Settings, color: 'bg-outline/5', path: '/settings' },
   ];
 
   return (

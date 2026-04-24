@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { BookOpen, CheckCircle2, AlertCircle, ArrowLeft, Plus, Download, Filter, Search, MoreVertical, Trash2, Edit2, TrendingUp, FileText, Calendar, ExternalLink } from 'lucide-react';
-import { motion } from 'motion/react';
+import { BookOpen, CheckCircle2, AlertCircle, ArrowLeft, Plus, Download, Filter, Search, MoreVertical, Trash2, Edit2, TrendingUp, FileText, Calendar, ExternalLink, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { CURRICULUM_DB } from '../data/curriculumData';
@@ -9,6 +9,7 @@ import { getUserCollection, handleFirestoreError, OperationType } from '../fireb
 import { useTimeSlots } from '../hooks/useTimeSlots';
 import TimeSlotManager from '../components/TimeSlotManager';
 import { Clock } from 'lucide-react';
+import { analyzePedagogicalTracking, PedagogicalInsight } from '../services/geminiService';
 
 interface Teacher {
   id: string;
@@ -308,10 +309,13 @@ export default function PedagogicalTracking() {
   const [entries, setEntries] = useState<TrackingEntry[]>(INITIAL_DATA);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [filterLevel, setFilterLevel] = useState('الكل');
+
   const filteredEntries = entries.filter(entry => 
-    entry.subject.includes(searchTerm) || 
-    entry.teacher.includes(searchTerm) || 
-    entry.level.includes(searchTerm)
+    (filterLevel === 'الكل' || entry.level === filterLevel) &&
+    (entry.subject.includes(searchTerm) || 
+     entry.teacher.includes(searchTerm) || 
+     entry.level.includes(searchTerm))
   );
 
   const openProgressions = () => {
@@ -334,6 +338,20 @@ export default function PedagogicalTracking() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TrackingEntry | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [aiInsight, setAiInsight] = useState<PedagogicalInsight | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    try {
+      const insight = await analyzePedagogicalTracking(entries);
+      setAiInsight(insight);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   useEffect(() => {
     const q = query(getUserCollection('teachers'));
@@ -646,6 +664,18 @@ export default function PedagogicalTracking() {
         
         <div className="flex flex-wrap items-center gap-4 relative z-10">
           <button 
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="bg-primary/20 text-primary border border-primary/20 px-6 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/30 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {isAnalyzing ? (
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent animate-spin rounded-full" />
+            ) : (
+              <Sparkles size={24} />
+            )}
+            الذكاء البيداغوجي (تحليل)
+          </button>
+          <button 
             onClick={() => setIsTimeManagerOpen(true)}
             className="bg-white text-primary border border-outline/10 px-6 py-4 rounded-[24px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
@@ -709,16 +739,101 @@ export default function PedagogicalTracking() {
         </div>
       </section>
 
+      {/* AI Insights Section */}
+      <AnimatePresence>
+        {aiInsight && (
+          <motion.section 
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-primary/5 border border-primary/20 rounded-[40px] p-8 shadow-2xl relative">
+              <div className="absolute top-0 right-0 w-2 h-full bg-primary" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/20 text-primary rounded-2xl">
+                  <Sparkles size={28} />
+                </div>
+                <h2 className="text-2xl font-black text-primary">تقييم المفتش الذكي (AI)</h2>
+              </div>
+              
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-black text-secondary mb-2 uppercase tracking-widest">النظرة العامة</h3>
+                  <p className="text-on-surface font-medium leading-relaxed">{aiInsight.overview}</p>
+                </div>
+                
+                {aiInsight.criticalDelays?.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-black text-error mb-4 uppercase tracking-widest">تحذيرات تأخر حرجة</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {aiInsight.criticalDelays.map((delay, index) => (
+                        <div key={index} className="bg-white rounded-2xl p-6 border border-error/20 shadow-sm relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-1 h-full bg-error" />
+                          <p className="font-black text-error mb-1">{delay.subject} - {delay.teacher}</p>
+                          <p className="text-xs text-on-surface/60 font-bold mb-3">{delay.reason}</p>
+                          <div className="bg-success/10 p-3 rounded-xl border border-success/10">
+                            <p className="text-xs font-black text-success mb-1">توصية لتدارك التأخر:</p>
+                            <p className="text-sm font-bold text-success/80">{delay.recommendation}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div>
+                  <h3 className="text-sm font-black text-primary mb-2 uppercase tracking-widest">توجيهات إدارية وبيداغوجية</h3>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {aiInsight.generalRecommendations.map((rec, i) => (
+                      <li key={i} className="flex gap-3 text-sm font-bold text-on-surface/80 bg-white p-4 rounded-xl border border-outline/5 shadow-sm">
+                        <CheckCircle2 size={18} className="text-primary shrink-0" />
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setAiInsight(null)}
+                className="mt-8 text-sm font-black text-outline hover:text-primary transition-colors"
+              >
+                إخفاء التحليل
+              </button>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
       {/* Tracking List */}
       <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
-        <div className="p-8 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
-          <h2 className="text-2xl font-black text-primary">متابعة تنفيذ المناهج</h2>
-          <div className="relative">
+        <div className="p-8 border-b border-outline/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-container-low/30">
+          <div className="flex items-center gap-6 flex-wrap">
+            <h2 className="text-2xl font-black text-primary">متابعة تنفيذ المناهج</h2>
+            <div className="flex items-center bg-white p-1 rounded-xl border border-outline/10 shadow-sm">
+              {['الكل', 'أولى ثانوي', 'ثانية ثانوي', 'ثالثة ثانوي'].map(level => (
+                <button
+                  key={level}
+                  onClick={() => setFilterLevel(level)}
+                  className={cn(
+                    "px-4 py-2 text-sm font-bold rounded-lg transition-all",
+                    filterLevel === level 
+                      ? "bg-primary text-on-primary shadow-sm" 
+                      : "text-on-surface/60 hover:bg-surface-container-high"
+                  )}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="relative w-full md:w-auto">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40" size={18} />
             <input 
               type="text" 
-              placeholder="بحث..." 
-              className="bg-white border border-outline/10 rounded-xl pr-10 pl-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+              placeholder="بحث عن مادة، أستاذ..." 
+              className="w-full md:w-64 bg-white border border-outline/10 rounded-xl pr-10 pl-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
