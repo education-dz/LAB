@@ -46,5 +46,13 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
     }
+    
+    // ------------------------------------------------------------
+    // SETTINGS DATA
+    // ------------------------------------------------------------
+    match /settings/{userId} {
+      // Allow the user to read/write their own settings document
+      allow get, write: if isOwner(userId);
+    }
   }
 }

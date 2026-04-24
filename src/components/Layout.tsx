@@ -30,7 +30,8 @@ import {
   ShieldCheck,
   Scale,
   Calculator,
-  Wrench
+  Wrench,
+  ChevronDown,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
@@ -42,26 +43,51 @@ import GlobalSearch from './GlobalSearch';
 import Breadcrumbs from './Breadcrumbs';
 import logo from '/ministry-logo.png';
 
-const navItems = [
-  { name: 'لوحة القيادة', path: '/', icon: LayoutDashboard },
-  { name: 'إدارة المخزون', path: '/inventory', icon: Database },
-  { name: 'التشريع المدرسي', path: '/school-legislation', icon: Scale },
-  { name: 'المولد الذكي للنماذج', path: '/smart-forms', icon: FileText },
-  { name: 'مصفوفة التوافق', path: '/chemical-storage', icon: ShieldCheck },
-  { name: 'المتابعة البيداغوجية', path: '/pedagogical', icon: BookOpen },
-  { name: 'الميزانية والطلبيات', path: '/budget-purchases', icon: Wallet },
-  { name: 'تسيير الأفواج', path: '/student-groups', icon: Users },
-  { name: 'مركز الطباعة (QR)', path: '/qr-print-center', icon: Printer },
-  { name: 'الصيانة والمعايرة', path: '/maintenance', icon: Wrench },
-  { name: 'الأرشيف الرقمي', path: '/archive', icon: Archive },
-  { name: 'دليل السلامة', path: '/safety-guide', icon: ShieldAlert },
-  { name: 'الحاسبة المخبرية', path: '/calculators', icon: Calculator },
-  { name: 'الإعدادات', path: '/settings', icon: Settings },
+const navigationGroups = [
+  {
+    title: 'لوحة التحكم الرئيسية',
+    icon: LayoutDashboard,
+    items: [
+      { name: 'لوحة القيادة', path: '/', icon: LayoutDashboard },
+    ]
+  },
+  {
+    title: 'لوحة الجرد الشاملة',
+    icon: Database,
+    items: [
+      { name: 'إدارة المخزون', path: '/inventory', icon: Database },
+      { name: 'مصفوفة التوافق', path: '/chemical-storage', icon: ShieldCheck },
+      { name: 'مركز الطباعة (QR)', path: '/qr-print-center', icon: Printer },
+      { name: 'الصيانة والمعايرة', path: '/maintenance', icon: Wrench },
+      { name: 'الحاسبة المخبرية', path: '/calculators', icon: Calculator },
+      { name: 'دليل السلامة', path: '/safety-guide', icon: ShieldAlert },
+    ]
+  },
+  {
+    title: 'المتابعة البيداغوجية',
+    icon: BookOpen,
+    items: [
+      { name: 'لوحة التحكم البيداغوجية', path: '/pedagogical', icon: BookOpen },
+      { name: 'المولد الذكي للنماذج', path: '/smart-forms', icon: FileText },
+      { name: 'تسيير الأفواج', path: '/student-groups', icon: Users },
+      { name: 'الأرشيف الرقمي', path: '/archive', icon: Archive },
+      { name: 'التشريع المدرسي', path: '/school-legislation', icon: Scale },
+    ]
+  },
+  {
+    title: 'الإدارة والإعدادات',
+    icon: Settings,
+    items: [
+      { name: 'الإعدادات الشخصية', path: '/settings', icon: Settings },
+      { name: 'الميزانية والطلبيات', path: '/budget-purchases', icon: Wallet },
+    ]
+  },
 ];
 
 export default function Layout() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['لوحة التحكم الرئيسية', 'لوحة الجرد الشاملة']);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
@@ -165,24 +191,97 @@ export default function Layout() {
           )}
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
+        <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto no-scrollbar">
+          {navigationGroups.map((group) => {
+            const isExpanded = expandedGroups.includes(group.title);
+            const toggleGroup = () => {
+              if (!isSidebarOpen) {
+                setIsSidebarOpen(true);
+                setExpandedGroups([group.title]);
+                return;
+              }
+              setExpandedGroups(prev => 
+                prev.includes(group.title) 
+                  ? prev.filter(t => t !== group.title)
+                  : [...prev, group.title]
+              );
+            };
+
+            const GroupIcon = group.icon;
+
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-200",
-                  isActive 
-                    ? "bg-secondary-container text-primary font-bold shadow-sm" 
-                    : "text-secondary hover:bg-secondary-container/30"
+              <div key={group.title} className="space-y-1">
+                <button
+                  onClick={toggleGroup}
+                  className={cn(
+                    "w-full flex items-center justify-between px-4 py-2 rounded-xl transition-all duration-200 group/title",
+                    isExpanded ? "text-primary bg-primary/5" : "text-secondary hover:bg-secondary-container/30"
+                  )}
+                >
+                  <div className="flex items-center gap-4">
+                    <GroupIcon size={20} className={cn(isExpanded && "text-primary")} />
+                    {isSidebarOpen && <span className="text-sm font-bold">{group.title}</span>}
+                  </div>
+                  {isSidebarOpen && (
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown size={16} className="text-secondary/50 group-hover/title:text-primary" />
+                    </motion.div>
+                  )}
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isExpanded && isSidebarOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden pr-4 flex flex-col gap-1 mt-1"
+                    >
+                      {group.items.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        const ItemIcon = item.icon;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-2 rounded-full transition-all duration-200 group/item",
+                              isActive 
+                                ? "bg-secondary-container text-primary font-bold shadow-sm" 
+                                : "text-secondary/80 hover:bg-secondary-container/20 hover:text-primary"
+                            )}
+                          >
+                            <ItemIcon size={18} className={cn(isActive && "text-primary")} />
+                            <span className="text-[13px]">{item.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Only Group Icon when sidebar is closed */}
+                {!isSidebarOpen && (
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={toggleGroup}
+                      title={group.title}
+                      className={cn(
+                        "p-3 rounded-xl transition-all duration-200",
+                        isExpanded 
+                          ? "bg-primary text-on-primary shadow-lg" 
+                          : "text-secondary hover:bg-secondary-container/30"
+                      )}
+                    >
+                      <GroupIcon size={24} />
+                    </button>
+                  </div>
                 )}
-              >
-                <Icon size={22} className={cn(isActive && "text-primary")} />
-                {isSidebarOpen && <span className="text-sm">{item.name}</span>}
-              </Link>
+              </div>
             );
           })}
         </nav>

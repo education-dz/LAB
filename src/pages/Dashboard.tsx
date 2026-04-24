@@ -236,10 +236,9 @@ export default function Dashboard() {
   };
 
   const stats = [
-    { label: 'إجمالي التقارير', value: counts.reports.toString(), trend: '+12%', icon: FileText, color: 'bg-[#4a7c59]/10', path: '/reports' },
-    { label: 'التجهيزات النشطة', value: counts.equipment.toString(), trend: 'عنصر', icon: Package, color: 'bg-[#8bc34a]/10', path: '/equipment' },
-    { label: 'كواشف منخفضة', value: counts.lowStock.toString(), trend: 'تحتاج طلب', icon: AlertTriangle, color: 'bg-error/10', path: '/chemicals', filter: 'low' },
-    { label: 'فريق العمل (الأساتذة)', value: counts.teachers.toString(), trend: 'نشط', icon: Users, color: 'bg-[#d4a574]/10', path: '/teachers' },
+    { label: 'إجمالي السجلات التقنية', value: (counts.equipment + counts.chemicals).toString(), trend: '+12%', icon: Database, color: 'bg-primary/10', path: '/inventory' },
+    { label: 'جلسات العمل والمطالبات', value: counts.reports.toString(), trend: 'نشط', icon: FileText, color: 'bg-secondary-container', path: '/reports' },
+    { label: 'تنبيهات النظام الحرجة', value: (counts.lowStock + counts.brokenEquip).toString(), trend: 'تتطلب تدخل', icon: AlertTriangle, color: 'bg-tertiary-container/20 text-tertiary', path: '/safety' },
   ];
 
   const [isSmartUpdating, setIsSmartUpdating] = useState(false);
@@ -393,16 +392,14 @@ export default function Dashboard() {
 
   const modules = [
     { title: 'لوحة الجرد الشاملة', desc: 'إدارة كافة ممتلكات المخبر من كواشف، أجهزة، زجاجيات ونفايات في مكان واحد.', count: (counts.chemicals + counts.equipment).toString(), icon: Database, color: 'bg-primary/10', path: '/inventory' },
-    { title: 'المتابعة البيداغوجية', desc: 'تسيير الجداول الزمنية، خريطة الأقسام، والتحضير الذكي للنشاطات.', count: 'جديد', icon: BookOpen, color: 'bg-primary/5', path: '/pedagogical' },
-    { title: 'التقارير اليومية', desc: 'تسجيل ومتابعة النشاطات اليومية للمخبر والحصص التطبيقية.', count: counts.reports.toString(), icon: FileText, color: 'bg-surface-container-low', path: '/daily-report' },
-    { title: 'الميزانية والطلبيات', desc: 'تسيير الميزانية، وتخطيط طلبيات الشراء الخاصة بالمخبر للسنة الدراسية.', count: 'جديد', icon: Wallet, color: 'bg-warning/10', path: '/budget-purchases' },
-    { title: 'التشريع المدرسي', desc: 'تجميع القوانين والمراسيم المنظمة لعمل المخبري وإجراءات حوادث العمل.', count: 'جديد', icon: Scale, color: 'bg-[#d4a574]/10', path: '/school-legislation' },
-    { title: 'الأرشيف الرقمي', desc: 'أرشفة كافة الوثائق، المحاضر والتقارير السابقة للرجوع إليها وقت الحاجة.', count: 'جديد', icon: Archive, color: 'bg-[#4a7c59]/10', path: '/archive' },
-    { title: 'فريق الأساتذة', desc: 'قائمة أساتذة العلوم والفيزياء المستفيدين من خدمات المخبر والجداول الزمنية.', count: counts.teachers.toString(), icon: Users, color: 'bg-primary/10', path: '/teachers' },
-    { title: 'الأمن والسلامة', desc: 'بروتوكولات السلامة، طفايات الحريق، وإدارة معدات الإسعاف الأولي والتوجيهات.', count: counts.incidents.toString(), icon: ShieldAlert, color: 'bg-error/10', path: '/safety' },
-    { title: 'دليل السلامة', desc: 'دليل تفصيلي لإجراءات الأمن والمخاطر المهنية في المخابر المدرسية.', count: 'جديد', icon: ShieldCheck, color: 'bg-[#8bc34a]/10', path: '/safety-guide' },
-    { title: 'قاعدة البيانات والتخزين', desc: 'إدارة النسخ الاحتياطي وحذف أو استعادة السجلات والارتباط السحابي.', count: 'تقنية', icon: Server, color: 'bg-surface-container-high', path: '/database-management' },
-    { title: 'إعدادات النظام', desc: 'تكوين إعدادات المخبر، الحساب، خيارات الواجهة.', count: 'جديد', icon: Settings, color: 'bg-outline/5', path: '/settings' },
+    { title: 'اللوحة البيداغوجية', desc: 'تسيير الجداول، الأساتذة، الأفواج، التقارير اليومية والنماذج.', count: 'شامل', icon: BookOpen, color: 'bg-primary-container/20 text-primary', path: '/pedagogical' },
+    { title: 'الميزانية والطلبيات', desc: 'تسيير الميزانية، وتخطيط طلبيات الشراء الخاصة بالمخبر.', count: 'مالي', icon: Wallet, color: 'bg-surface-container-high', path: '/budget-purchases' },
+    { title: 'التشريع المدرسي', desc: 'القوانين والمراسيم المنظمة لعمل المخبري وحوادث العمل.', count: 'قانوني', icon: Scale, color: 'bg-surface-container-high', path: '/school-legislation' },
+    { title: 'الأرشيف الرقمي', desc: 'أرشفة كافة الوثائق والمحاضر السابقة.', count: 'سجلات', icon: Archive, color: 'bg-surface-container-low', path: '/archive' },
+    { title: 'الأمن والسلامة', desc: 'بروتوكولات السلامة، طفايات الحريق، ومعدات الإسعاف.', count: counts.incidents.toString(), icon: ShieldAlert, color: 'bg-error/10', path: '/safety' },
+    { title: 'دليل السلامة', desc: 'دليل تفصيلي لإجراءات الأمن والمخاطر.', count: 'إرشادات', icon: ShieldCheck, color: 'bg-surface-container-low', path: '/safety-guide' },
+    { title: 'النسخ والبيانات', desc: 'إدارة النسخ الاحتياطي السحابي واستعادة السجلات.', count: 'تقنية', icon: Server, color: 'bg-surface-container-highest', path: '/database-management' },
+    { title: 'إعدادات النظام', desc: 'تكوين إعدادات المخبر والحساب.', count: 'عام', icon: Settings, color: 'bg-surface-container-low', path: '/settings' },
   ];
 
   return (
@@ -443,35 +440,35 @@ export default function Dashboard() {
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isImporting}
-            className="bg-primary text-on-primary px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-2xl shadow-primary/30 hover:bg-primary-container hover:shadow-primary/40 transition-all active:scale-95 disabled:opacity-50"
+            className="bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-4 rounded-full text-[0.875rem] font-black flex items-center gap-3 shadow-ambient hover:shadow-ambient-hover hover:-translate-y-[2px] transition-all duration-300 ease-out active:scale-95 disabled:opacity-50"
           >
             {isImporting ? (
               <div className="w-6 h-6 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
             ) : (
-              <FileUp size={24} />
+              <FileUp size={20} />
             )}
-            استيراد XLS
+            استيراد السجلات (XLS)
           </button>
 
           <button 
             onClick={handleExportTemplate}
-            className="bg-white text-primary border-2 border-primary/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 hover:border-primary transition-all active:scale-95"
+            className="bg-secondary-container text-primary-dim px-8 py-4 rounded-full text-[0.875rem] font-bold flex items-center gap-3 shadow-ambient hover:bg-[#d5dbc0] hover:-translate-y-[2px] hover:shadow-ambient-hover transition-all duration-300 ease-out active:scale-95"
           >
-            <Database size={24} />
-            تحميل النموذج
+            <Database size={20} />
+            تصدير الهيكل المرجعي
           </button>
 
           <button 
             onClick={handleSmartUpdate}
             disabled={isSmartUpdating}
-            className="relative z-10 flex items-center gap-4 bg-white px-8 py-4 rounded-[32px] border border-outline/10 shadow-2xl group transition-all hover:shadow-primary/10 hover:bg-primary/5 active:scale-95 disabled:opacity-50"
+            className="relative z-10 flex items-center gap-4 bg-surface-container-lowest px-8 py-4 rounded-full shadow-ambient hover:shadow-ambient-hover hover:-translate-y-[2px] transition-all duration-300 ease-out group active:scale-95 disabled:opacity-50"
           >
-            <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
-              {isSmartUpdating ? <RefreshCw size={22} className="animate-spin" /> : <Sparkles size={22} />}
+            <div className="p-2 bg-primary/10 rounded-full text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+              {isSmartUpdating ? <RefreshCw size={18} className="animate-spin" /> : <Sparkles size={18} />}
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-[10px] font-black text-on-surface/30 uppercase tracking-widest">تحسين البيانات</span>
-              <span className="text-base font-black text-primary leading-tight">تحديث ذكي</span>
+              <span className="text-[0.6875rem] font-black text-on-surface-variant uppercase tracking-widest">محرك الذكاء الاصطناعي</span>
+              <span className="text-[0.875rem] font-black text-primary leading-tight">تحديث المعرفات</span>
             </div>
           </button>
         </div>
@@ -487,19 +484,19 @@ export default function Dashboard() {
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-error/5 backdrop-blur-xl text-on-error-container p-6 rounded-[40px] flex items-center gap-6 border border-error/10 shadow-2xl shadow-error/5 relative overflow-hidden group"
+              className="bg-[oklch(0.97_0.02_20)] text-on-error-container p-6 rounded-md3-card flex items-center gap-6 shadow-ambient hover:shadow-ambient-hover hover:-translate-y-[2px] transition-all duration-300 ease-out relative overflow-hidden group"
             >
               <div className="absolute top-0 left-0 w-32 h-32 bg-error/5 rounded-br-[100px] -ml-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
-              <div className="bg-error p-5 rounded-[24px] text-white shadow-xl shadow-error/30 relative z-10">
-                <AlertTriangle size={28} />
+              <div className="bg-error p-5 rounded-[20px] text-white shadow-ambient relative z-10 w-16 h-16 flex items-center justify-center">
+                <AlertTriangle size={24} />
               </div>
               <div className="flex-1 relative z-10">
-                <h4 className="font-black text-lg mb-1 text-error">تنبيه حرج: مخزون الكواشف</h4>
-                <p className="text-sm text-error/70 font-bold">هناك {counts.lowStock} مواد كيميائية وصلت إلى الحد الأدنى.</p>
+                <h4 className="font-bold text-[1.75rem] leading-none mb-2 text-error font-sans">تنبيه حرج</h4>
+                <p className="text-[0.875rem] text-error/80 font-bold">هناك {counts.lowStock} مواد كيميائية وصلت إلى الحد الأدنى.</p>
               </div>
               <button 
                 onClick={() => navigate('/chemicals')}
-                className="relative z-10 bg-error text-white text-xs font-black px-8 py-4 rounded-full shadow-lg shadow-error/20 hover:bg-error/90 transition-all active:scale-95"
+                className="relative z-10 bg-error text-white text-[0.875rem] font-bold px-8 py-3 rounded-full shadow-ambient hover:shadow-ambient-hover hover:bg-error/90 transition-all duration-300 ease-out active:scale-95"
               >
                 معالجة المخزون
               </button>
@@ -511,19 +508,19 @@ export default function Dashboard() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-primary/5 backdrop-blur-xl text-primary p-6 rounded-[40px] flex items-center gap-6 border border-primary/10 shadow-2xl shadow-primary/5 relative overflow-hidden group"
+              className="bg-primary/5 text-primary p-6 rounded-md3-card flex items-center gap-6 shadow-ambient hover:shadow-ambient-hover hover:-translate-y-[2px] transition-all duration-300 ease-out relative overflow-hidden group"
             >
               <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-br-[100px] -ml-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
-              <div className="bg-primary p-5 rounded-[24px] text-on-primary shadow-xl shadow-primary/30 relative z-10">
-                <Hammer size={28} />
+              <div className="bg-primary p-5 rounded-[20px] text-on-primary shadow-ambient relative z-10 w-16 h-16 flex items-center justify-center">
+                <Hammer size={24} />
               </div>
               <div className="flex-1 relative z-10">
-                <h4 className="font-black text-lg mb-1 text-primary">صيانة مطلوبة</h4>
-                <p className="text-sm text-primary/70 font-bold">هناك {counts.brokenEquip} أجهزة تحتاج إلى صيانة فورية.</p>
+                <h4 className="font-bold text-[1.75rem] leading-none mb-2 text-primary">صيانة مطلوبة</h4>
+                <p className="text-[0.875rem] text-primary/80 font-bold">هناك {counts.brokenEquip} أجهزة تحتاج إلى صيانة فورية.</p>
               </div>
               <button 
                 onClick={() => navigate('/equipment')}
-                className="relative z-10 bg-primary text-on-primary text-xs font-black px-8 py-4 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+                className="relative z-10 bg-gradient-to-r from-primary to-primary-container text-on-primary text-[0.875rem] font-bold px-8 py-3 rounded-full shadow-ambient hover:shadow-ambient-hover transition-all duration-300 ease-out active:scale-95"
               >
                 سجل الصيانة
               </button>
@@ -533,7 +530,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats Strip */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-8">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -541,28 +538,28 @@ export default function Dashboard() {
               key={stat.label}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => navigate(stat.path + (stat.filter ? `?filter=${stat.filter}` : ''))}
+              transition={{ delay: i * 0.05, duration: 0.3, ease: "easeOut" }}
+              onClick={() => navigate(stat.path + ((stat as any).filter ? `?filter=${(stat as any).filter}` : ''))}
               className={cn(
-                "p-8 rounded-[40px] border border-outline/5 transition-all group relative overflow-hidden shadow-xl cursor-pointer hover:-translate-y-2 hover:shadow-2xl",
+                "p-8 rounded-md3-card transition-all duration-300 ease-out group relative cursor-pointer shadow-ambient hover:shadow-ambient-hover hover:-translate-y-[2px]",
                 stat.color
               )}
             >
               <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
               <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <div className="p-4 bg-white rounded-[16px] shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-300">
                   <Icon size={24} />
                 </div>
                 <span className={cn(
-                  "text-[10px] font-black px-4 py-1.5 rounded-full shadow-sm uppercase tracking-widest",
-                  stat.label === 'كواشف منخفضة' ? "bg-error text-white" : "bg-white text-primary"
+                  "text-[0.6875rem] font-black px-4 py-1.5 rounded-full shadow-sm tracking-widest",
+                  stat.label === 'تنبيهات النظام الحرجة' ? "bg-error text-white" : "bg-white text-primary"
                 )}>
                   {stat.trend}
                 </span>
               </div>
               <div className="relative z-10">
-                <p className="text-xs text-on-surface/40 font-black uppercase tracking-widest mb-1">{stat.label}</p>
-                <span className="text-5xl font-black text-primary tracking-tighter group-hover:scale-110 transition-transform inline-block">{stat.value}</span>
+                <p className="text-[0.875rem] text-on-surface/80 font-bold mb-1">{stat.label}</p>
+                <span className="text-[3.5rem] leading-none font-black text-primary group-hover:scale-105 transition-transform inline-block origin-right font-sans" dir="ltr">{stat.value}</span>
               </div>
             </motion.div>
           );
@@ -629,29 +626,29 @@ export default function Dashboard() {
                 key={mod.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.05 }}
+                transition={{ delay: 0.2 + i * 0.05, duration: 0.3, ease: 'easeOut' }}
                 onClick={() => navigate(mod.path)}
-                className="bg-white p-8 rounded-[40px] hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 transition-all duration-500 group cursor-pointer border border-outline/5 relative overflow-hidden shadow-xl"
+                className="bg-surface-container-lowest p-8 rounded-md3-card hover:shadow-ambient-hover hover:-translate-y-[2px] transition-all duration-300 ease-out group cursor-pointer relative overflow-hidden shadow-ambient"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000" />
                 
                 <div className="flex justify-between items-start mb-10 relative z-10">
                   <div className={cn(
-                    "w-20 h-20 rounded-[28px] flex items-center justify-center shadow-inner transition-all duration-500 group-hover:rotate-12 group-hover:scale-110",
+                    "w-20 h-20 rounded-[24px] flex items-center justify-center shadow-sm transition-all duration-500 group-hover:rotate-12 group-hover:scale-110",
                     mod.color
                   )}>
-                    <Icon size={36} className="text-primary" />
+                    <Icon size={36} className="text-primary mix-blend-multiply" />
                   </div>
-                  <span className="bg-surface-container-low backdrop-blur-sm text-primary px-5 py-2 rounded-full text-sm font-black shadow-sm border border-outline/5">{mod.count}</span>
+                  <span className="bg-surface-container-low text-primary px-5 py-2 rounded-full text-[0.6875rem] font-black shadow-sm">{mod.count}</span>
                 </div>
                 
                 <div className="relative z-10">
-                  <h4 className="text-2xl font-black text-primary mb-3 group-hover:text-primary-container transition-colors">{mod.title}</h4>
-                  <p className="text-base text-on-surface/60 mb-10 line-clamp-2 leading-relaxed font-medium">{mod.desc}</p>
+                  <h4 className="text-[1.75rem] leading-tight font-bold text-primary mb-3 group-hover:text-primary-container transition-colors font-sans">{mod.title}</h4>
+                  <p className="text-[0.875rem] text-on-surface/80 mb-10 line-clamp-2 leading-relaxed font-medium">{mod.desc}</p>
                 </div>
 
-                <div className="pt-6 flex justify-between items-center text-primary font-black text-sm border-t border-outline/5 relative z-10">
-                  <span className="group-hover:tracking-[0.2em] transition-all uppercase text-xs">استعراض القسم</span>
+                <div className="pt-6 flex justify-between items-center text-primary font-black text-sm relative z-10">
+                  <span className="group-hover:tracking-[0.2em] transition-all uppercase text-[0.6875rem]">استعراض القسم</span>
                   <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shadow-sm">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                   </div>
