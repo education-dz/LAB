@@ -28,6 +28,12 @@ const routeMap: Record<string, string> = {
   'archive': 'الأرشيف الرقمي',
   'teachers': 'قائمة الأساتذة',
   'daily-report': 'التقرير اليومي',
+  'chemical-storage': 'مصفوفة التوافق',
+  'school-legislation': 'التشريع المدرسي',
+  'qr-print-center': 'مركز الطباعة',
+  'student-groups': 'تسيير الأفواج',
+  'safety-guide': 'دليل السلامة',
+  'calculators': 'الحاسبة المخبرية',
   'settings': 'الإعدادات'
 };
 

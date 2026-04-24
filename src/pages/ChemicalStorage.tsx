@@ -105,7 +105,7 @@ export default function ChemicalStorageMatrix() {
       </style>
 
       <div className="no-print">
-        <Breadcrumbs paths={[{ label: 'مصفوفة التوافق', path: '/chemical-matrix' }]} />
+        <Breadcrumbs />
         
         <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-8">
           <div>

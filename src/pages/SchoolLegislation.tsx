@@ -90,11 +90,10 @@ export default function SchoolLegislation() {
         const cleanName = `legislation_${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         const fileRef = ref(storage, `uploads/legislation/${cleanName}`);
         
-        // Add a 15-second timeout for the upload to prevent infinite hanging
-        // if Firebase Storage is not fully initialized or rules are missing.
+        // Add a 30-second timeout for the upload to prevent infinite hanging
         const uploadTask = uploadBytes(fileRef, selectedFile);
         const timeoutPromise = new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error("UPLOAD_TIMEOUT")), 15000)
+          setTimeout(() => reject(new Error("UPLOAD_TIMEOUT")), 30000)
         );
         
         try {
@@ -102,8 +101,13 @@ export default function SchoolLegislation() {
           fileUrl = await getDownloadURL(fileRef);
           fileName = selectedFile.name;
         } catch (uploadErr: any) {
+          console.error("Upload error details:", uploadErr);
           if (uploadErr.message === "UPLOAD_TIMEOUT") {
-            throw new Error("لم يكتمل الرفع. يرجى تفعيل خدمة Storage في Firebase Console للمشروع لتتمكن من رفع الملفات.");
+            throw new Error("لم يكتمل الرفع (انتهت المهلة). يرجى التأكد من تفعيل Storage في console.firebase.google.com وتعيين القواعد (Rules) لتسمح بالرفع. يمكنك إضافة الوثيقة بدون ملف كحل مؤقت.");
+          } else if (uploadErr.code === 'storage/unauthorized') {
+            throw new Error("عذراً، لا تملك الصلاحية لرفع ملفات. يرجى مراجعة قواعد الحماية (Rules) لخدمة Storage في Firebase.");
+          } else if (uploadErr.code === 'storage/project-not-found' || uploadErr.message?.includes('project')) {
+            throw new Error("خدمة التخزين (Storage) غير مفعلة لهذا المشروع. يرجى تفعيلها من لوحة تحكم Firebase.");
           }
           throw uploadErr;
         }
@@ -144,9 +148,17 @@ export default function SchoolLegislation() {
         try {
           const storage = getStorage();
           const fileRef = ref(storage, fileUrl);
-          await deleteObject(fileRef);
-        } catch (storageErr) {
-          console.warn("Could not delete associated file from storage", storageErr);
+          
+          // Delete operation wrapper with timeout
+          const deletePromise = deleteObject(fileRef);
+          const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error("DELETE_TIMEOUT")), 10000)
+          );
+          
+          await Promise.race([deletePromise, timeoutPromise]);
+        } catch (storageErr: any) {
+          console.warn("Could not delete associated file from storage (this is non-blocking)", storageErr);
+          // We don't throw here because the document record is already deleted from Firestore
         }
       }
       
@@ -178,7 +190,7 @@ export default function SchoolLegislation() {
 
   return (
     <div className="p-8 pb-32 max-w-7xl mx-auto">
-      <Breadcrumbs paths={[{ label: 'التشريع المدرسي', path: '/school-legislation' }]} />
+      <Breadcrumbs />
       
       <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-8">
         <div>

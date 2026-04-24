@@ -189,7 +189,7 @@ export default function BudgetPurchases() {
 
   return (
     <div className="p-8 pb-32 max-w-7xl mx-auto">
-      <Breadcrumbs paths={[{ label: 'الميزانية والطلبيات', path: '/budget-purchases' }]} />
+      <Breadcrumbs />
       
       <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-8">
         <div>

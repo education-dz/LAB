@@ -28,7 +28,9 @@ import {
   Printer,
   Wallet,
   ShieldCheck,
-  Scale
+  Scale,
+  Calculator,
+  Wrench
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
@@ -49,6 +51,10 @@ const navItems = [
   { name: 'الميزانية والطلبيات', path: '/budget-purchases', icon: Wallet },
   { name: 'تسيير الأفواج', path: '/student-groups', icon: Users },
   { name: 'مركز الطباعة (QR)', path: '/qr-print-center', icon: Printer },
+  { name: 'الصيانة والمعايرة', path: '/maintenance', icon: Wrench },
+  { name: 'الأرشيف الرقمي', path: '/archive', icon: Archive },
+  { name: 'دليل السلامة', path: '/safety-guide', icon: ShieldAlert },
+  { name: 'الحاسبة المخبرية', path: '/calculators', icon: Calculator },
   { name: 'الإعدادات', path: '/settings', icon: Settings },
 ];
 
@@ -60,7 +66,6 @@ export default function Layout() {
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [lowStockCount, setLowStockCount] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [isNotificationsMenuOpen, setIsNotificationsMenuOpen] = useState(false);
   const [isNotificationsMenuOpen, setIsNotificationsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -263,47 +268,6 @@ export default function Layout() {
                   referrerPolicy="no-referrer"
                 />
               </button>
-
-              <AnimatePresence>
-                {isNotificationsMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute left-10 lg:left-14 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-surface-container-highest rounded-2xl shadow-xl border border-outline-variant p-2 z-50 text-right"
-                  >
-                    <div className="px-4 py-3 border-b border-outline-variant/50 mb-2 flex justify-between items-center bg-surface sticky top-0 z-10 rounded-xl">
-                      <p className="text-sm font-black text-primary">الإشعارات</p>
-                      {notifications.length > 0 && (
-                        <span className="bg-error/10 text-error px-2 py-0.5 rounded-full text-xs font-bold">{notifications.length} جديد</span>
-                      )}
-                    </div>
-                    {notifications.length === 0 ? (
-                      <div className="p-8 flex flex-col items-center justify-center text-secondary">
-                        <Bell size={32} className="opacity-20 mb-2" />
-                        <p className="text-sm">لا توجد إشعارات جديدة</p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-1">
-                        {notifications.map((notif, i) => (
-                          <div key={i} className="p-3 bg-error/5 hover:bg-error/10 rounded-xl transition-colors flex items-start gap-3">
-                             <div className="p-2 bg-error/10 text-error rounded-full shrink-0"><ShieldAlert size={16}/></div>
-                             <div>
-                                <p className="text-sm font-bold text-primary">{notif.nameAr}</p>
-                                <p className="text-xs text-secondary mt-1">المخزون منخفض: <span className="font-bold text-error">{notif.quantity}</span> كمية متبقية</p>
-                             </div>
-                          </div>
-                        ))}
-                        {notifications.length > 0 && (
-                          <Link to="/inventory" onClick={() => setIsNotificationsMenuOpen(false)} className="w-full mt-2 py-2 text-center text-xs font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20">
-                            عرض المخزون بالكامل
-                          </Link>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               <AnimatePresence>
                 {isNotificationsMenuOpen && (

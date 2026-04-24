@@ -50,12 +50,8 @@ import StudentGroups from './pages/StudentGroups';
 import BudgetPurchases from './pages/BudgetPurchases';
 import ChemicalStorage from './pages/ChemicalStorage';
 import SchoolLegislation from './pages/SchoolLegislation';
-
-import QRPrintCenter from './pages/QRPrintCenter';
-import StudentGroups from './pages/StudentGroups';
-import BudgetPurchases from './pages/BudgetPurchases';
-import ChemicalStorage from './pages/ChemicalStorage';
-import SchoolLegislation from './pages/SchoolLegislation';
+import SafetyGuide from './pages/SafetyGuide';
+import LabCalculators from './pages/LabCalculators';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -106,6 +102,8 @@ export default function App() {
               <Route path="chemical-waste" element={<ChemicalWaste />} />
               <Route path="chemical-storage" element={<ChemicalStorage />} />
               <Route path="school-legislation" element={<SchoolLegislation />} />
+              <Route path="safety-guide" element={<SafetyGuide />} />
+              <Route path="calculators" element={<LabCalculators />} />
               <Route path="educational-map" element={<EducationalMap />} />
               <Route path="consumables-sds" element={<ConsumablesSDS />} />
               <Route path="backup" element={<BackupCenter />} />
