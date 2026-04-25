@@ -89,6 +89,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [qrCodeItem, setQrCodeItem] = useState<Equipment | null>(null);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const targetId = searchParams.get('id');
@@ -683,6 +684,54 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
     }
   };
 
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredEquipment.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredEquipment.map(e => e.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`هل أنت متأكد من حذف ${selectedIds.length} صنف؟`)) return;
+    try {
+      const batch = writeBatch(db);
+      selectedIds.forEach(id => {
+        batch.delete(doc(getUserCollection('equipment'), id));
+      });
+      await batch.commit();
+      await logActivity(LogAction.DELETE, LogModule.EQUIPMENT, `حذف جماعي لـ ${selectedIds.length} صنف`);
+      setSelectedIds([]);
+      alert('تم الحذف بنجاح!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'equipment/bulk');
+    }
+  };
+
+  const handleBulkStatusUpdate = async (status: Equipment['status']) => {
+    try {
+      const batch = writeBatch(db);
+      selectedIds.forEach(id => {
+        batch.update(doc(getUserCollection('equipment'), id), { 
+          status,
+          updatedAt: serverTimestamp()
+        });
+      });
+      await batch.commit();
+      await logActivity(LogAction.UPDATE, LogModule.EQUIPMENT, `تحديث حالة جماعي (${status}) لـ ${selectedIds.length} صنف`);
+      setSelectedIds([]);
+      alert('تم تحديث الحالة بنجاح!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'equipment/bulk-status');
+    }
+  };
+
   const filteredEquipment = equipment
     .filter(e => {
       const matchesSearch = 
@@ -932,6 +981,19 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
           <table className="w-full text-right border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 text-on-surface/40 text-xs font-black uppercase tracking-[0.2em]">
+                <th className="px-6 py-6 text-right w-12">
+                  <div 
+                    onClick={handleSelectAll}
+                    className={cn(
+                      "w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-all mx-auto",
+                      selectedIds.length === filteredEquipment.length && filteredEquipment.length > 0
+                        ? "bg-primary border-primary text-white" 
+                        : "border-outline/30 hover:border-primary/50"
+                    )}
+                  >
+                    {selectedIds.length === filteredEquipment.length && filteredEquipment.length > 0 && <CheckCircle size={12} />}
+                  </div>
+                </th>
                 <th className="px-10 py-6 cursor-pointer hover:text-primary transition-colors" onClick={() => handleSort('serialNumber')}>
                   <div className="flex items-center gap-2">
                     رقم الجرد
@@ -1005,7 +1067,32 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                 </tr>
               ) : (
                 filteredEquipment.map((e) => (
-                  <tr key={e.id} className="hover:bg-primary/[0.02] transition-colors group">
+                  <tr 
+                    key={e.id} 
+                    onClick={() => {
+                      // Optional: handle something on row click if needed
+                    }}
+                    className={cn(
+                      "hover:bg-primary/[0.02] transition-colors group",
+                      selectedIds.includes(e.id) && "bg-primary/[0.04]"
+                    )}
+                  >
+                    <td className="px-6 py-8">
+                      <div 
+                        onClick={(evt) => {
+                          evt.stopPropagation();
+                          handleToggleSelect(e.id);
+                        }}
+                        className={cn(
+                          "w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-all mx-auto",
+                          selectedIds.includes(e.id) 
+                            ? "bg-primary border-primary text-white scale-110" 
+                            : "border-outline/30 group-hover:border-primary/50"
+                        )}
+                      >
+                        {selectedIds.includes(e.id) && <CheckCircle size={12} />}
+                      </div>
+                    </td>
                     <td className="px-10 py-8">
                       <span className="text-sm font-black text-primary/60 bg-surface-container-low px-3 py-1 rounded-full">
                         {e.serialNumber || '---'}
@@ -1215,6 +1302,76 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest">يرجى عدم إغلاق الصفحة</p>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-secondary text-white px-8 py-5 rounded-[32px] shadow-2xl flex items-center gap-8 min-w-[600px]"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-black">{selectedIds.length} صنف مختار</span>
+              <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">عمليات جماعية</span>
+            </div>
+
+            <div className="h-8 w-px bg-white/10" />
+
+            <div className="flex gap-2">
+              <button 
+                onClick={() => handleBulkStatusUpdate('functional')}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-success/20 text-success hover:bg-success hover:text-white transition-all font-black text-xs"
+              >
+                <CheckCircle size={14} />
+                سليم
+              </button>
+              <button 
+                onClick={() => handleBulkStatusUpdate('broken')}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-error/20 text-error-container hover:bg-error hover:text-white transition-all font-black text-xs"
+              >
+                <AlertTriangle size={14} />
+                تالف
+              </button>
+              <button 
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-error/20 text-error-container hover:bg-error hover:text-white transition-all font-black text-xs border border-error/30"
+              >
+                <Trash2 size={14} />
+                حذف المختار
+              </button>
+              
+              <button 
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-xs"
+                onClick={() => {
+                  const items = equipment.filter(e => selectedIds.includes(e.id));
+                  const worksheet = XLSX.utils.json_to_sheet(items.map(e => ({
+                    'Item Name': e.name,
+                    'Type': e.type,
+                    'Serial': e.serialNumber,
+                    'Status': e.status,
+                    'Total Qty': e.totalQuantity
+                  })));
+                  const workbook = XLSX.utils.book_new();
+                  XLSX.utils.book_append_sheet(workbook, worksheet, "SelectedItems");
+                  XLSX.writeFile(workbook, `selected_equipment_${new Date().getTime()}.xlsx`);
+                }}
+              >
+                <Download size={14} />
+                تصدير المختار
+              </button>
+
+              <button 
+                onClick={() => setSelectedIds([])}
+                className="p-2 hover:bg-white/10 rounded-full transition-all ml-2"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

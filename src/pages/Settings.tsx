@@ -26,7 +26,8 @@ import {
   Chrome,
   AlertCircle,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -59,6 +60,7 @@ export default function SettingsPage() {
 
   // Professional Info State
   const [jobTitle, setJobTitle] = useState('ملحق بالمخابر');
+  const [soilType, setSoilType] = useState(''); // Request 7: التربة المختارة
   const [grade, setGrade] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [employeeId, setEmployeeId] = useState('1010101010101010');
@@ -304,6 +306,8 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
+  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
 
   // Account Linking State
   const [linkingError, setLinkingError] = useState<React.ReactNode | null>(null);
@@ -380,6 +384,7 @@ export default function SettingsPage() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setJobTitle(data.jobTitle || 'ملحق بالمخابر');
+          setSoilType(data.soilType || '');
           setGrade(data.grade || '');
           setSpecialty(data.specialty || '');
           setSelectedDirectorate(data.directorate || '');
@@ -448,35 +453,6 @@ export default function SettingsPage() {
     setIsFixingPermissions(false);
   };
 
-  const handleUpdatePassword = async () => {
-    if (!auth.currentUser) return;
-    if (!newPassword || !confirmPassword) {
-      alert('الرجاء إدخال كلمة المرور وتأكيدها');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      alert('كلمات المرور غير متطابقة');
-      return;
-    }
-    
-    setIsUpdatingPassword(true);
-    try {
-      await updatePassword(auth.currentUser, newPassword);
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error: any) {
-      if (error.code === 'auth/requires-recent-login') {
-        alert('يجب عليك تسجيل الخروج ثم الدخول مرة أخرى لتغيير كلمة المرور لأسباب أمنية.');
-      } else {
-        alert('حدث خطأ أثناء تحديث كلمة المرور: ' + error.message);
-      }
-    } finally {
-      setIsUpdatingPassword(false);
-    }
-  };
-
   const handleSave = async () => {
     if (!auth.currentUser) return;
     setIsSaving(true);
@@ -485,6 +461,7 @@ export default function SettingsPage() {
       
       await setDoc(doc(db, 'settings', auth.currentUser.uid), {
         jobTitle,
+        soilType,
         grade,
         specialty,
         directorate: selectedDirectorate,
@@ -595,6 +572,44 @@ export default function SettingsPage() {
       await signOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword) {
+      setPasswordChangeError('يرجى إدخال كلمة المرور الجديدة');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordChangeError('كلمات المرور غير متطابقة');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordChangeError('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    setPasswordChangeSuccess(false);
+    setPasswordChangeError(null);
+
+    try {
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, newPassword);
+        setPasswordChangeSuccess(true);
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setPasswordChangeSuccess(false), 5000);
+      }
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      let msg = 'فشل تحديث كلمة المرور';
+      if (error.code === 'auth/requires-recent-login') {
+        msg = 'يرجى تسجيل الخروج ثم الدخول مرة أخرى لتغيير كلمة المرور (لدواعي أمنية)';
+      }
+      setPasswordChangeError(msg);
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -1280,43 +1295,66 @@ export default function SettingsPage() {
                   </div>
                   <div className="bg-[#fcf9f3] p-8 rounded-[32px] border border-[#c4c8bd]/30">
                     <p className="text-sm font-bold text-[#5c6146] mb-6">تغيير كلمة المرور الخاصة بك بانتظام يعزز أمان بياناتك.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-3">
-                        <label className="text-sm font-black text-[#5c6146] mr-2">كلمة المرور الجديدة</label>
-                        <input 
-                          className="w-full bg-white border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-[#2b3d22] transition-all font-bold" 
-                          type="password" 
-                          placeholder="••••••••"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                          <label className="text-sm font-black text-[#5c6146] mr-2">الرتبة المهنية (أو التربة المختارة)</label>
+                          <input 
+                            className="w-full bg-white border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-[#2b3d22] transition-all text-[#1c1c18] font-bold" 
+                            type="text" 
+                            value={soilType}
+                            onChange={(e) => setSoilType(e.target.value)}
+                            placeholder="اكتب الرتبة أو التربة هنا..."
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-sm font-black text-[#5c6146] mr-2">تأكيد كلمة المرور</label>
+                          <input 
+                            className="w-full bg-white border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-[#2b3d22] transition-all font-bold" 
+                            type="password" 
+                            placeholder="••••••••"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-3">
-                        <label className="text-sm font-black text-[#5c6146] mr-2">تأكيد كلمة المرور</label>
-                        <input 
-                          className="w-full bg-white border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-[#2b3d22] transition-all font-bold" 
-                          type="password" 
-                          placeholder="••••••••"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="mt-8 flex justify-end">
-                      <button 
-                        onClick={handleUpdatePassword}
-                        disabled={isUpdatingPassword || !newPassword}
-                        className="flex items-center gap-2 px-8 py-4 bg-[#2b3d22] text-white rounded-2xl font-bold shadow-lg shadow-[#2b3d22]/10 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                      >
-                        {isUpdatingPassword ? (
-                          <Loader2 size={20} className="animate-spin" />
-                        ) : (
-                          <CheckCircle2 size={20} />
-                        )}
-                        حفظ كلمة المرور
-                      </button>
-                    </div>
+                      <div className="mt-10 flex flex-col items-center gap-6">
+                        <AnimatePresence>
+                          {passwordChangeSuccess && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }} 
+                              animate={{ opacity: 1, y: 0 }} 
+                              className="w-full max-w-sm bg-green-50 text-green-700 p-4 rounded-2xl border border-green-100 flex items-center justify-center gap-2 font-bold text-sm"
+                            >
+                              <CheckCircle2 size={18} />
+                              تم تغيير كلمة المرور بنجاح
+                            </motion.div>
+                          )}
+                          {passwordChangeError && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }} 
+                              animate={{ opacity: 1, y: 0 }} 
+                              className="w-full max-w-sm bg-red-50 text-red-700 p-4 rounded-2xl border border-red-100 flex items-center justify-center gap-2 font-bold text-sm"
+                            >
+                              <ShieldAlert size={18} />
+                              {passwordChangeError}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <button 
+                          onClick={handleUpdatePassword}
+                          disabled={isUpdatingPassword || !newPassword}
+                          className="flex items-center gap-4 px-12 py-5 bg-[#2b3d22] text-white rounded-3xl font-black shadow-[0_15px_40px_rgba(43,61,34,0.3)] hover:scale-[1.03] active:scale-[0.97] transition-all disabled:opacity-50"
+                        >
+                          {isUpdatingPassword ? (
+                            <Loader2 size={24} className="animate-spin" />
+                          ) : (
+                            <ShieldCheck size={24} />
+                          )}
+                          تحديث وحفظ كلمة المرور الجديدة
+                        </button>
+                      </div>
                   </div>
                 </section>
 

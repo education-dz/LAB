@@ -39,11 +39,11 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // SETTINGS (PILLAR 1)
+    // SETTINGS / CONFIG
     // -------------------------------------------------------------------------
-
     match /settings/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && isValidId(userId);
     }
 
     // -------------------------------------------------------------------------

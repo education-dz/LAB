@@ -52,16 +52,52 @@ export default function NotificationCenter() {
         type: 'alert' as const,
         date: new Date().toISOString(),
         read: false,
-        link: '/equipment',
+        link: '/inventory/equipment',
         icon: Wrench
       }));
       
       updateNotifications(equipNotifs, 'equip_');
     });
 
+    // Listen to expiring chemicals (within 30 days)
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    const dateStr = thirtyDaysFromNow.toISOString().split('T')[0];
+
+    const expiryQ = query(
+      getUserCollection('chemicals'), 
+      where('expiryDate', '<=', dateStr),
+      where('expiryDate', '!=', '')
+    );
+    
+    const unsubExpiry = onSnapshot(expiryQ, (snap) => {
+      const expiryNotifs = snap.docs.map(doc => {
+        const data = doc.data();
+        const expiry = new Date(data.expiryDate);
+        const today = new Date();
+        const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return {
+          id: `expiry_${doc.id}`,
+          title: diffDays <= 0 ? 'مادة منتهية الصلاحية' : 'قرب انتهاء الصلاحية',
+          description: diffDays <= 0 
+            ? `انتهت صلاحية المادة ${data.nameAr || data.name} بتاريخ ${data.expiryDate}`
+            : `ستنتهي صلاحية المادة ${data.nameAr || data.name} بعد ${diffDays} يوم`,
+          type: diffDays <= 0 ? 'alert' as const : 'warning' as const,
+          date: new Date().toISOString(),
+          read: false,
+          link: '/inventory/chemicals',
+          icon: ShieldAlert
+        };
+      });
+      
+      updateNotifications(expiryNotifs, 'expiry_');
+    });
+
     return () => {
       unsubChem();
       unsubEquip();
+      unsubExpiry();
     };
   }, []);
 

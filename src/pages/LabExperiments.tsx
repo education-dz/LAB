@@ -13,13 +13,22 @@ import {
   FileText,
   X,
   Check,
-  ArrowRight
+  ArrowRight,
+  Trash2,
+  Sparkles,
+  ClipboardList,
+  CheckCircle,
+  FileDown,
+  ListFilter
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, getUserCollection, handleFirestoreError, OperationType } from '../firebase';
-import { onSnapshot, query, addDoc, serverTimestamp, orderBy, getDocs } from 'firebase/firestore';
+import { onSnapshot, query, addDoc, serverTimestamp, orderBy, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { cn } from '../lib/utils';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { ensureApiKey, analyzeExperiment } from '../services/geminiService';
+import { logActivity, LogAction, LogModule } from '../services/loggingService';
+import * as XLSX from 'xlsx';
 
 interface Experiment {
   id: string;
@@ -41,6 +50,8 @@ export default function LabExperiments() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const [newExp, setNewExp] = useState<Partial<Experiment>>({
     title: '',
@@ -96,11 +107,12 @@ export default function LabExperiments() {
   const handleAddExperiment = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addDoc(getUserCollection('experiment_logs'), {
+      const docRef = await addDoc(getUserCollection('experiment_logs'), {
         ...newExp,
         date: serverTimestamp(),
         createdAt: serverTimestamp()
       });
+      await logActivity(LogAction.CREATE, LogModule.REPORTS, `تسجيل تجربة جديدة: ${newExp.title}`, docRef.id);
       setIsModalOpen(false);
       setNewExp({
         title: '', teacher: '', subject: 'الفيزياء', level: '', group: '',
@@ -108,6 +120,71 @@ export default function LabExperiments() {
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'experiment_logs');
+    }
+  };
+
+  const handleAIAnalyze = async () => {
+    if (!newExp.title) {
+      alert('الرجاء إدخال عنوان التجربة أولاً.');
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    try {
+      const hasKey = await ensureApiKey();
+      if (!hasKey) {
+        alert('يرجى اختيار مفتاح API الخاص بك لاستخدام ميزة المساعد الذكي.');
+        return;
+      }
+      
+      const analysis = await analyzeExperiment({ 
+        title: newExp.title, 
+        subject: newExp.subject,
+        level: newExp.level
+      });
+      
+      if (analysis) {
+        setNewExp(prev => ({
+          ...prev,
+          title: analysis.smartTitle,
+          outcome: analysis.smartOutcome,
+          safetyNotes: analysis.suggestedSafetyNotes
+        }));
+      }
+    } catch (error) {
+      console.error('AI Error:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredExperiments.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredExperiments.map(e => e.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`هل أنت متأكد من حذف ${selectedIds.length} سجل؟`)) return;
+    try {
+      const batch = writeBatch(db);
+      selectedIds.forEach(id => {
+        batch.delete(doc(getUserCollection('experiment_logs'), id));
+      });
+      await batch.commit();
+      await logActivity(LogAction.DELETE, LogModule.REPORTS, `حذف جماعي لـ ${selectedIds.length} سجل تجربة`);
+      setSelectedIds([]);
+      alert('تم الحذف بنجاح!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'experiment_logs/bulk');
     }
   };
 
@@ -158,15 +235,28 @@ export default function LabExperiments() {
       {/* Search and List */}
       <div className="bg-white rounded-[32px] border border-outline/10 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
-            <input 
-              type="text" 
-              placeholder="بحث عن تجربة، أستاذ، أو قسم..." 
-              className="w-full bg-white border border-outline/10 rounded-2xl pr-12 pl-4 py-3 font-bold text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex items-center gap-6 flex-1">
+             <div 
+                onClick={handleSelectAll}
+                className={cn(
+                  "w-6 h-6 rounded-lg border-2 cursor-pointer flex items-center justify-center transition-all shrink-0",
+                  selectedIds.length === filteredExperiments.length && filteredExperiments.length > 0
+                    ? "bg-primary border-primary text-white" 
+                    : "border-outline/30 hover:border-primary/50 bg-white"
+                )}
+              >
+                {selectedIds.length === filteredExperiments.length && filteredExperiments.length > 0 && <Check size={14} />}
+              </div>
+            <div className="relative w-full max-w-md">
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+              <input 
+                type="text" 
+                placeholder="بحث عن تجربة، أستاذ، أو قسم..." 
+                className="w-full bg-white border border-outline/10 rounded-2xl pr-12 pl-4 py-3 font-bold text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
@@ -177,10 +267,28 @@ export default function LabExperiments() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="p-8 hover:bg-primary/5 transition-all group cursor-pointer"
+              onClick={() => handleToggleSelect(exp.id)}
+              className={cn(
+                "p-8 hover:bg-primary/5 transition-all group cursor-pointer border-r-4",
+                selectedIds.includes(exp.id) ? "bg-primary/5 border-primary" : "border-transparent"
+              )}
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="flex items-start gap-6">
+                  <div 
+                    onClick={(e_evt) => {
+                      e_evt.stopPropagation();
+                      handleToggleSelect(exp.id);
+                    }}
+                    className={cn(
+                      "w-6 h-6 rounded-lg border-2 cursor-pointer flex items-center justify-center transition-all bg-white mt-5",
+                      selectedIds.includes(exp.id) 
+                        ? "bg-primary border-primary text-white scale-110" 
+                        : "border-outline/30 group-hover:border-primary/50"
+                    )}
+                  >
+                    {selectedIds.includes(exp.id) && <Check size={14} />}
+                  </div>
                   <div className={cn(
                     "w-16 h-16 rounded-[20px] flex items-center justify-center shrink-0 shadow-inner",
                     exp.subject === 'الفيزياء' ? "bg-success/10 text-success" : 
@@ -274,7 +382,23 @@ export default function LabExperiments() {
                     <div className="space-y-6">
                       <div className="space-y-2">
                         <label className="text-xs font-black text-secondary/60 uppercase tracking-widest mr-2">اسم التجربة / الدرس</label>
-                        <input required className="w-full bg-surface-container-low border border-outline/10 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold" value={newExp.title} onChange={e => setNewExp({...newExp, title: e.target.value})} placeholder="مثال: تعيين كمية المادة عن طريق المعايرة..." />
+                        <div className="flex gap-2">
+                          <input required className="flex-1 bg-surface-container-low border border-outline/10 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold" value={newExp.title} onChange={e => setNewExp({...newExp, title: e.target.value})} placeholder="مثال: تعيين كمية المادة عن طريق المعايرة..." />
+                          <button 
+                            type="button"
+                            onClick={handleAIAnalyze}
+                            disabled={isAnalyzing}
+                            className="bg-primary-container text-primary px-4 rounded-2xl flex items-center justify-center shadow-inner hover:bg-primary/10 transition-all disabled:opacity-50"
+                            title="تحسين ذكي"
+                          >
+                            <span className="sr-only">AI Assist</span>
+                            {isAnalyzing ? (
+                              <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                            ) : (
+                              <FlaskConical size={20} className="text-primary" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -357,6 +481,63 @@ export default function LabExperiments() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-secondary text-white px-8 py-5 rounded-[32px] shadow-2xl flex items-center gap-10 min-w-[500px]"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-black">{selectedIds.length} سجل مختار</span>
+              <span className="text-[10px] text-white/40 font-bold">عمليات جماعية</span>
+            </div>
+
+            <div className="h-10 w-px bg-white/10" />
+
+            <div className="flex gap-4">
+              <button 
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-error/20 text-error-container hover:bg-error hover:text-white transition-all font-black text-sm"
+              >
+                <Trash2 size={18} />
+                حذف السجلات
+              </button>
+              
+              <button 
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-sm"
+                onClick={() => {
+                  const items = experiments.filter(e => selectedIds.includes(e.id));
+                  const worksheet = XLSX.utils.json_to_sheet(items.map(e => ({
+                    'Experiment': e.title,
+                    'Teacher': e.teacher,
+                    'Subject': e.subject,
+                    'Level': e.level,
+                    'Group': e.group,
+                    'Materials': e.materialsUsed.length
+                  })));
+                  const workbook = XLSX.utils.book_new();
+                  XLSX.utils.book_append_sheet(workbook, worksheet, "SelectedExp");
+                  XLSX.writeFile(workbook, `selected_experiments_${new Date().getTime()}.xlsx`);
+                }}
+              >
+                <FileText size={18} />
+                تصدير للملفات
+              </button>
+
+              <button 
+                onClick={() => setSelectedIds([])}
+                className="p-2.5 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

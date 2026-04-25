@@ -606,3 +606,69 @@ export async function analyzeLabImage(base64Image: string) {
     return null;
   }
 }
+
+export interface ExperimentAnalysis {
+  smartTitle: string;
+  smartOutcome: string;
+  suggestedSafetyNotes: string;
+  materialsNeeded: { name: string; estimatedQty: string }[];
+}
+
+export async function analyzeExperiment(expData: any, retries = 3, delay = 5000): Promise<ExperimentAnalysis | null> {
+  try {
+    const hasKey = await ensureApiKey();
+    if (!hasKey) return null;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY || '' });
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `You are an expert laboratory technician in Algeria. 
+      Review this laboratory experiment and provide a professional summary and safety guidance.
+      
+      Experiment Data: ${JSON.stringify(expData)}
+      
+      Provide:
+      1. A professional Arabic title (smartTitle).
+      2. A concise pedagogical outcome in Arabic (smartOutcome).
+      3. Critical safety notes in Arabic (suggestedSafetyNotes).
+      4. List of materials likely needed based on the title if they are missing (materialsNeeded).
+      
+      Respond completely in Arabic.
+      `,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            smartTitle: { type: Type.STRING },
+            smartOutcome: { type: Type.STRING },
+            suggestedSafetyNotes: { type: Type.STRING },
+            materialsNeeded: { 
+              type: Type.ARRAY, 
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  estimatedQty: { type: Type.STRING }
+                },
+                required: ["name", "estimatedQty"]
+              }
+            }
+          },
+          required: ["smartTitle", "smartOutcome", "suggestedSafetyNotes", "materialsNeeded"]
+        }
+      }
+    });
+
+    if (!response.text) return null;
+    return JSON.parse(response.text.trim()) as ExperimentAnalysis;
+  } catch (error: any) {
+    if ((error?.status === 'RESOURCE_EXHAUSTED' || error?.code === 429) && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return analyzeExperiment(expData, retries - 1, delay * 1.5);
+    }
+    console.error("Error analyzing experiment:", error);
+    return null;
+  }
+}

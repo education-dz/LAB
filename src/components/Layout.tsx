@@ -137,7 +137,7 @@ export default function Layout() {
           
           if (settingsDoc.exists()) {
             const settingsData = settingsDoc.data();
-            const job = settingsData.jobTitle || settingsData.grade || role;
+            const job = settingsData.soilType || settingsData.jobTitle || settingsData.grade || role;
             const cycle = settingsData.cycle ? ` — ${settingsData.cycle}` : '';
             role = `${job}${cycle}`;
           } else if (userDoc.exists()) {

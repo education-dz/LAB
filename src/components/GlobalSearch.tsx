@@ -45,17 +45,20 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     const delayDebounceFn = setTimeout(async () => {
       setLoading(true);
       try {
+        const [eqSnap, chemSnap, teacherSnap, expSnap] = await Promise.all([
+          getDocs(query(getUserCollection('equipment'), limit(5))),
+          getDocs(query(getUserCollection('chemicals'), limit(5))),
+          getDocs(query(getUserCollection('teachers'), limit(5))),
+          getDocs(query(getUserCollection('experiments'), limit(5)))
+        ]);
+
         const searchResults: SearchResult[] = [];
-        
-        // Search Equipment
-        const eqQuery = query(
-          getUserCollection('equipment'),
-          limit(3)
-        );
-        const eqSnap = await getDocs(eqQuery);
+        const term = searchTerm.toLowerCase();
+
+        // Process Equipment
         eqSnap.docs.forEach(doc => {
           const data = doc.data();
-          if (data.name?.toLowerCase().includes(searchTerm.toLowerCase())) {
+          if (data.name?.toLowerCase().includes(term)) {
             searchResults.push({
               id: doc.id,
               title: data.name,
@@ -66,15 +69,10 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           }
         });
 
-        // Search Chemicals
-        const chemQuery = query(
-          getUserCollection('chemicals'),
-          limit(3)
-        );
-        const chemSnap = await getDocs(chemQuery);
+        // Process Chemicals
         chemSnap.docs.forEach(doc => {
           const data = doc.data();
-          if (data.name?.toLowerCase().includes(searchTerm.toLowerCase())) {
+          if (data.name?.toLowerCase().includes(term)) {
             searchResults.push({
               id: doc.id,
               title: data.name,
@@ -85,21 +83,30 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           }
         });
 
-        // Search Teachers
-        const teacherQuery = query(
-          getUserCollection('teachers'),
-          limit(3)
-        );
-        const teacherSnap = await getDocs(teacherQuery);
+        // Process Teachers
         teacherSnap.docs.forEach(doc => {
           const data = doc.data();
-          if (data.name?.toLowerCase().includes(searchTerm.toLowerCase())) {
+          if (data.name?.toLowerCase().includes(term)) {
             searchResults.push({
               id: doc.id,
               title: data.name,
               type: 'teacher',
               path: '/teachers',
               subtitle: data.subject
+            });
+          }
+        });
+
+        // Process Experiments
+        expSnap.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.title?.toLowerCase().includes(term)) {
+            searchResults.push({
+              id: doc.id,
+              title: data.title,
+              type: 'report',
+              path: '/experiments',
+              subtitle: data.type
             });
           }
         });

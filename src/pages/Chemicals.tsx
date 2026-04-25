@@ -90,6 +90,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [isBulkConfirmOpen, setIsBulkConfirmOpen] = useState(false);
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [suggestedUpdate, setSuggestedUpdate] = useState<ChemicalIntelligence | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Chemical; direction: 'asc' | 'desc' } | null>(null);
@@ -774,6 +775,37 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
     setSortConfig({ key, direction });
   };
 
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredChemicals.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredChemicals.map(c => c.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`هل أنت متأكد من حذف ${selectedIds.length} مادة؟`)) return;
+    
+    try {
+      const batch = writeBatch(db);
+      selectedIds.forEach(id => {
+        batch.delete(doc(getUserCollection('chemicals'), id));
+      });
+      await batch.commit();
+      await logActivity(LogAction.DELETE, LogModule.CHEMICALS, `حذف جماعي لـ ${selectedIds.length} مادة`);
+      setSelectedIds([]);
+      alert('تم الحذف بنجاح!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'chemicals/bulk');
+    }
+  };
+
   const filteredChemicals = chemicals.filter(c => {
     const matchesSearch = c.nameEn?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          c.nameAr?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -976,10 +1008,23 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
               </div>
             </div>
 
-            <div className="overflow-x-auto scrollbar-hide">
+            <div className="overflow-x-auto scrollbar-hide relative">
               <table className="w-full text-right border-collapse table-auto">
                 <thead>
                   <tr className="bg-surface-container-low/50 text-secondary/60 text-[11px] font-black uppercase tracking-widest">
+                    <th className="px-3 py-5 text-right w-12">
+                      <div 
+                        onClick={handleSelectAll}
+                        className={cn(
+                          "w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-all",
+                          selectedIds.length === filteredChemicals.length && filteredChemicals.length > 0
+                            ? "bg-primary border-primary text-white" 
+                            : "border-outline/30 hover:border-primary/50"
+                        )}
+                      >
+                        {selectedIds.length === filteredChemicals.length && filteredChemicals.length > 0 && <Check size={12} />}
+                      </div>
+                    </th>
                     <th className="px-3 py-5 text-right w-10">#</th>
                     <th 
                       className="px-3 py-5 text-right min-w-[140px] cursor-pointer hover:text-primary transition-colors"
@@ -1068,6 +1113,22 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                           selectedChemical?.id === c.id && "bg-surface-container-low/60 border-r-4 border-primary"
                         )}
                       >
+                        <td className="px-3 py-4">
+                          <div 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleSelect(c.id);
+                            }}
+                            className={cn(
+                              "w-5 h-5 rounded border-2 cursor-pointer flex items-center justify-center transition-all",
+                              selectedIds.includes(c.id) 
+                                ? "bg-primary border-primary text-white scale-110" 
+                                : "border-outline/30 group-hover:border-primary/50"
+                            )}
+                          >
+                            {selectedIds.includes(c.id) && <Check size={12} />}
+                          </div>
+                        </td>
                         <td className="px-3 py-4 font-bold text-secondary/60">{index + 1}</td>
                         <td className="px-3 py-4">
                           <div className="flex flex-col">
@@ -1323,6 +1384,62 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
           </div>
         </div>
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-secondary text-white px-8 py-5 rounded-[32px] shadow-2xl flex items-center gap-10 min-w-[500px]"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-black">{selectedIds.length} مادة مختارة</span>
+              <span className="text-[10px] text-white/60 font-bold">يمكنك إجراء عمليات جماعية على هذه المواد</span>
+            </div>
+
+            <div className="h-10 w-px bg-white/10" />
+
+            <div className="flex gap-4">
+              <button 
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-error/20 text-error-container hover:bg-error hover:text-white transition-all font-black text-sm"
+              >
+                <Trash2 size={18} />
+                حذف المختار
+              </button>
+              
+              <button 
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-sm"
+                onClick={() => {
+                  const items = chemicals.filter(c => selectedIds.includes(c.id));
+                  const worksheet = XLSX.utils.json_to_sheet(items.map(c => ({
+                    'Chemical': c.nameEn,
+                    'Arabic': c.nameAr,
+                    'Formula': c.formula,
+                    'Qty': c.quantity,
+                    'Unit': c.unit
+                  })));
+                  const workbook = XLSX.utils.book_new();
+                  XLSX.utils.book_append_sheet(workbook, worksheet, "SelectedItems");
+                  XLSX.writeFile(workbook, `selected_chemicals_${new Date().getTime()}.xlsx`);
+                }}
+              >
+                <Download size={18} />
+                تصدير المختار
+              </button>
+
+              <button 
+                onClick={() => setSelectedIds([])}
+                className="p-2.5 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add Modal */}
       <AnimatePresence>
