@@ -377,30 +377,29 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
 
     const hazardousCount = sortedChemicals.filter(c => (c.ghs && c.ghs.length > 0) || c.hazardClass === 'danger').length;
     const today = new Date();
-    const formattedDate = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+    const formattedDate = today.toLocaleDateString('ar-DZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const schoolName = "بوحازم عبد المجيد - عين كرشة";
+    const stateName = "أم البواقي";
+    const academicYear = "2025/2026";
 
     const tableRows = sortedChemicals.map((c, index) => {
       const isHazardous = (c.ghs && c.ghs.length > 0) || c.hazardClass === 'danger';
-      const ghsIcons = (c.ghs || []).map(code => 
-        `<div style="display: inline-flex; flex-direction: column; align-items: center; margin: 2px; border: 1px solid #ddd; padding: 2px; border-radius: 4px; background: white;">
-          <img src="${GHS_ICONS[code]}" style="height: 28px; width: 28px;" alt="${code}" />
-          <span style="font-size: 7px; font-weight: bold; margin-top: 1px;">${GHS_LABELS[code] || code}</span>
-        </div>`
+      const ghsPictograms = (c.ghs || []).map(code => 
+        `<div class="ghs-pic"><img src="${GHS_ICONS[code]}" alt="${code}" /></div>`
       ).join('');
 
       return `
-        <tr style="${isHazardous ? 'background-color: #fee2e2;' : ''}">
-          <td style="text-align: center;">${index + 1}</td>
-          <td style="font-weight: 600;">${c.nameEn}</td>
-          <td>${c.nameAr}</td>
-          <td style="font-family: 'JetBrains Mono', monospace;">${c.formula}</td>
-          <td style="text-align: center;">${c.unit}</td>
-          <td style="text-align: center; font-weight: 600;">${c.quantity}</td>
-          <td style="text-align: center;">${c.state === 'solid' ? 'صلب' : c.state === 'liquid' ? 'سائل' : 'غاز'}</td>
-          <td>${c.hazardClass === 'danger' ? 'خطر' : 'آمن'}</td>
-          <td style="text-align: center;">${ghsIcons}</td>
-          <td style="text-align: center;">${c.shelf}</td>
-          <td style="font-size: 0.85em;">${c.notes || '-'}</td>
+        <tr class="${isHazardous ? 'hazardous-row' : ''}">
+          <td class="text-center">${index + 1}</td>
+          <td class="font-bold text-lg">${c.nameAr}</td>
+          <td class="text-sm en-font">${c.nameEn}</td>
+          <td class="mono-font">${c.formula || '—'}</td>
+          <td class="text-center">${c.unit}</td>
+          <td class="text-center font-bold">${c.quantity}</td>
+          <td class="text-center">${c.state === 'solid' ? 'صلب' : c.state === 'liquid' ? 'سائل' : 'غاز'}</td>
+          <td class="text-center">${c.shelf || '—'}</td>
+          <td><div class="ghs-container">${ghsPictograms}</div></td>
+          <td class="notes-cell">${c.notes || '—'}</td>
         </tr>
       `;
     }).join('');
@@ -408,170 +407,240 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
     printWindow.document.write(`
       <html dir="rtl" lang="ar">
         <head>
-          <title>سجل المواد الكيميائية للمخبر - ${formattedDate}</title>
-          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+          <meta charset="UTF-8">
+          <title>سجل المواد الكيميائية — ${schoolName}</title>
+          <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
           <style>
-            @page { size: A4 landscape; margin: 10mm; }
+            :root {
+              --primary: #006494;
+              --on-primary: #ffffff;
+              --primary-container: #cbe6ff;
+              --secondary: #50606e;
+              --surface: #fdfcff;
+              --surface-variant: #dee3eb;
+              --outline: #71787e;
+              --error: #ba1a1a;
+            }
+
+            * { box-sizing: border-box; margin: 0; padding: 0; }
             body { 
-              font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
-              margin: 0; 
-              padding: 10px; 
-              color: #1a1a1a;
+              font-family: 'Cairo', sans-serif; 
+              direction: rtl; 
+              background: #f8f9fb; 
+              color: #1a1c1e;
+              padding: 20px;
+            }
+
+            #toolbar {
+              position: fixed; top: 0; left: 0; right: 0; 
+              z-index: 100; background: #1a1c1e; color: white;
+              padding: 12px 24px; display: flex; align-items: center; gap: 15px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+            #toolbar h3 { flex: 1; font-weight: 800; font-size: 16px; }
+            .tb-btn { 
+              padding: 10px 20px; border: none; border-radius: 20px; 
+              cursor: pointer; font-weight: 700; font-size: 13px; font-family: Cairo;
+              transition: all 0.2s;
+            }
+            .tb-print { background: #00b894; color: white; }
+            .tb-close { background: #e74c3c; color: white; }
+
+            .page-sheet {
+              background: white;
+              width: 297mm;
+              min-height: 210mm;
+              margin: 60px auto 20px;
+              padding: 15mm;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+              display: flex;
+              flex-direction: column;
+            }
+
+            /* --- Header Layout --- */
+            .official-header {
+              display: grid;
+              grid-template-columns: 1fr 2fr 1fr;
+              margin-bottom: 20px;
+              padding-bottom: 15px;
+              border-bottom: 2px solid var(--primary);
+              align-items: start;
+            }
+            .oh-right { text-align: right; line-height: 1.6; font-size: 10pt; }
+            .oh-center { text-align: center; line-height: 1.5; font-size: 11pt; font-weight: 800; }
+            .oh-left { text-align: left; line-height: 1.6; font-size: 10pt; }
+            .oh-center img { height: 50px; margin-bottom: 5px; }
+
+            .main-title {
+              text-align: center;
+              font-size: 22pt;
+              font-weight: 900;
+              color: var(--primary);
+              margin: 10px 0;
+              letter-spacing: -0.5px;
+              text-shadow: 1px 1px 0 rgba(0,0,0,0.05);
+            }
+
+            .registry-meta {
+              display: flex;
+              justify-content: center;
+              gap: 30px;
+              margin-bottom: 20px;
+              padding: 10px;
+              background: var(--primary-container);
+              border-radius: 12px;
+              font-weight: 700;
+              color: var(--on-primary-container);
+            }
+
+            /* --- Table Design --- */
+            .registry-table {
+              width: 100%;
+              border-collapse: separate;
+              border-spacing: 0;
+              font-size: 10pt;
+              margin-bottom: 20px;
+            }
+            .registry-table th {
+              background: #f0f4f8;
+              color: var(--secondary);
+              font-weight: 800;
+              padding: 12px 8px;
+              border: 1px solid #d1d5db;
+              text-align: center;
+              font-size: 9pt;
+            }
+            .registry-table td {
+              padding: 10px 8px;
+              border: 1px solid #e5e7eb;
               line-height: 1.4;
             }
-            .page-header {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 20px;
-              border-bottom: 1px double #000;
-              padding-bottom: 10px;
+            .registry-table tr:nth-child(even) { background: #fafbfc; }
+            .hazardous-row { background-color: #fff1f2 !important; }
+            .hazardous-row td:first-child { border-right: 4px solid var(--error); }
+
+            .text-center { text-align: center; }
+            .font-bold { font-weight: 800; }
+            .mono-font { font-family: 'JetBrains Mono', monospace; font-size: 9pt; }
+            .en-font { font-family: sans-serif; color: var(--secondary); }
+            .notes-cell { font-size: 9pt; color: #444; font-style: italic; }
+
+            .ghs-container { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+            .ghs-pic { 
+              width: 32px; height: 32px; border: 1px solid #ddd; 
+              border-radius: 4px; background: white; padding: 2px;
+              display: flex; align-items: center; justify-content: center;
             }
-            .header-right, .header-left {
-              width: 45%;
-              font-size: 12px;
-              font-weight: 600;
-            }
-            .header-center {
-              text-align: center;
-              width: 100%;
-              margin-bottom: 15px;
-            }
-            .header-center h2 { margin: 5px 0; font-size: 16px; text-decoration: underline; }
-            .header-center h3 { margin: 5px 0; font-size: 14px; }
-            
-            .stats-bar {
-              display: flex;
+            .ghs-pic img { width: 100%; height: 100%; object-fit: contain; }
+
+            /* --- Footer --- */
+            .registry-footer {
+              margin-top: auto;
+              padding-top: 30px;
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
               gap: 20px;
-              margin-bottom: 15px;
-              font-weight: 700;
-              background: #f3f4f6;
-              padding: 8px 15px;
-              border-radius: 4px;
-              border: 1px solid #e5e7eb;
             }
-
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              font-size: 11px;
-            }
-            th, td { 
-              border: 1px solid #000; 
-              padding: 6px 4px; 
-              text-align: right; 
-            }
-            th { 
-              background-color: #e5e7eb; 
-              font-weight: 700; 
+            .sign-box {
               text-align: center;
-              font-size: 10px;
+              border: 1px solid #eee;
+              padding: 15px;
+              border-radius: 12px;
+              background: #fafafa;
             }
+            .sign-box h4 { margin-bottom: 50px; font-weight: 800; text-decoration: underline; color: var(--secondary); }
             
-            .legend {
-              margin-top: 15px;
-              font-size: 11px;
-              font-weight: 600;
-            }
-
-            .footer-signatures {
-              margin-top: 40px;
+            .inst-stamp {
+              width: 40mm;
+              height: 25mm;
+              border: 2px dashed #ccc;
+              border-radius: 12px;
+              margin: 10px auto;
               display: flex;
-              justify-content: space-between;
-              padding: 0 50px;
-            }
-            .signature-box {
-              text-align: center;
-              width: 200px;
-            }
-            .signature-box p { margin-bottom: 40px; font-weight: 700; text-decoration: underline; }
-
-            .print-meta {
-              position: fixed;
-              bottom: 0;
-              left: 0;
-              font-size: 9px;
-              color: #666;
+              align-items: center;
+              justify-content: center;
+              font-size: 8pt;
+              color: #999;
             }
 
             @media print {
-              .no-print { display: none; }
-              body { padding: 0; }
-              tr { page-break-inside: avoid; }
+              #toolbar { display: none !important; }
+              body { background: white !important; padding: 0 !important; }
+              .page-sheet { 
+                margin: 0 !important; box-shadow: none !important; 
+                width: 100% !important; padding: 10mm !important;
+                border-radius: 0 !important;
+              }
+              @page { size: A4 landscape; margin: 0; }
+              .registry-table th { background: #eee !important; -webkit-print-color-adjust: exact; }
+              .hazardous-row { background-color: #fff1f1 !important; -webkit-print-color-adjust: exact; }
+              .registry-meta { background: #eee !important; color: black !important; -webkit-print-color-adjust: exact; }
             }
           </style>
         </head>
         <body>
-          <div class="header-center">
-            <h3>الجمهورية الجزائرية الديمقراطية الشعبية</h3>
-            <h3>وزارة التربية الوطنية</h3>
+          <div id="toolbar">
+              <h3>📄 جرد المواد الكيميائية — سجل المخبر</h3>
+              <button class="tb-btn tb-print" onclick="window.print()">🖨️ طباعة السجل</button>
+              <button class="tb-btn tb-close" onclick="window.close()">✕ إغلاق</button>
           </div>
 
-          <div class="page-header">
-            <div class="header-right">
-              <div>مديرية التربية لولاية: أم البواقي</div>
-              <div>ثانوية: بوحازم عبد المجيد - عين كرشة</div>
+          <div class="page-sheet">
+            <header class="official-header">
+              <div class="oh-right">
+                <div>وزارة التربية الوطنية</div>
+                <div>مديرية التربية لولاية: ${stateName}</div>
+                <div>المؤسسة: ${schoolName}</div>
+              </div>
+              <div class="oh-center">
+                <p>الجمهورية الجزائرية الديمقراطية الشعبية</p>
+                <div class="main-title">سجل جرد المواد الكيميائية للمخبر</div>
+              </div>
+              <div class="oh-left">
+                <div>السنة الدراسية: ${academicYear}</div>
+                <div>تاريخ الطباعة: ${formattedDate}</div>
+                <div class="inst-stamp">ختم المؤسسة</div>
+              </div>
+            </header>
+
+            <div class="registry-meta">
+              <span>إجمالي المواد: ${sortedChemicals.length}</span>
+              <span style="border-right: 2px solid rgba(0,0,0,0.1); padding-right: 20px;">المواد الخطرة: ${hazardousCount}</span>
             </div>
-            <div class="header-left" style="text-align: left;">
-              <div>السنة الدراسية: 2025/2026</div>
-            </div>
-          </div>
 
-          <div class="header-center">
-            <h2>سجل المواد الكيميائية للمخبر</h2>
-          </div>
+            <table class="registry-table">
+              <thead>
+                <tr>
+                  <th width="40">رقم</th>
+                  <th>الاسم العربي للمادة</th>
+                  <th>Désignation (En)</th>
+                  <th width="120">الصيغة</th>
+                  <th width="60">الوحدة</th>
+                  <th width="60">الكمية</th>
+                  <th width="70">الحالة</th>
+                  <th width="60">الرف</th>
+                  <th width="100">GHS Pictograms</th>
+                  <th>ملاحظات إضافية</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
 
-          <div class="stats-bar">
-            <span>إجمالي المواد: ${sortedChemicals.length}</span>
-            <span>المواد الخطرة: ${hazardousCount}</span>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 30px;">رقم</th>
-                <th>PRODUIT CHIMIQUE</th>
-                <th>الاسم العربي</th>
-                <th>الصيغة</th>
-                <th style="width: 40px;">الوحدة</th>
-                <th style="width: 50px;">الكمية</th>
-                <th style="width: 50px;">الحالة</th>
-                <th>الخطورة</th>
-                <th style="width: 80px;">GHS</th>
-                <th style="width: 40px;">الرف</th>
-                <th>ملاحظات</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-
-          <div class="legend">
-            <span style="display: inline-block; width: 15px; height: 15px; background: #fee2e2; border: 1px solid #000; vertical-align: middle; margin-left: 5px;"></span>
-            خلفية حمراء = مادة خطرة
-          </div>
-
-          <div class="footer-signatures">
-            <div class="signature-box">
-              <p>رئيس المصلحة</p>
-            </div>
-            <div class="signature-box">
-              <p>المقتصد</p>
-            </div>
-            <div class="signature-box">
-              <p>المخبري</p>
-            </div>
-          </div>
-
-          <div class="print-meta no-print">
-            طُبع بواسطة نظام الإدارة المخبرية الذكي بتاريخ: ${formattedDate}
+            <footer class="registry-footer">
+              <div class="sign-box"><h4>المخبري الرئيسي</h4></div>
+              <div class="sign-box"><h4>المقتصد</h4></div>
+              <div class="sign-box"><h4>مدير المؤسسة</h4></div>
+              <div class="sign-box"><h4>مفتش التربية الوطنية</h4></div>
+            </footer>
           </div>
         </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
   };
+
 
   const handleExportPDF = async () => {
     const headers = ['#', 'الاسم العلمي', 'الاسم العربي', 'الصيغة', 'الكمية', 'الرف', 'تاريخ الصلاحية'];
@@ -705,89 +774,135 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
     }
 
     const today = new Date();
-    const formattedDate = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
-    const academicYear = "2025/2026"; // Should ideally be dynamic
+    const academicYear = "2025/2026"; 
     const schoolName = "بوحازم عبد المجيد - عين كرشة";
     const stateName = "أم البواقي";
 
     const cardsHtml = items.map((c, index) => {
       const stateAr = c.state === 'solid' ? 'صلب' : c.state === 'liquid' ? 'سائل' : 'غاز';
       const hazardAr = c.hazardClass === 'danger' ? (c.ghs?.[0] ? GHS_LABELS[c.ghs[0]] : 'خطر') : 'آمن';
-      const ghsIcon = c.ghs?.[0] ? '☠️' : '—'; // Simplified for the card format
+      const ghsIcon = c.ghs?.[0] ? '☠️' : '—'; 
 
       return `
         <div class="pcard">
-          <div class="ph">
-            <div class="ph-r">مديرية التربية لولاية: ${stateName}<br>ثانوية: ${schoolName}</div>
-            <div class="ph-c">الجمهورية الجزائرية الديمقراطية الشعبية<br>وزارة التربية الوطنية</div>
-            <div class="ph-l">السنة الدراسية: ${academicYear}</div>
+          <div class="ph-container">
+            <div class="ph">
+              <div class="ph-r">مديرية التربية لولاية: ${stateName}<br>ثانوية: ${schoolName}</div>
+              <div class="ph-c">الجمهورية الجزائرية الديمقراطية الشعبية<br>وزارة التربية الوطنية</div>
+              <div class="ph-l">
+                <div>السنة الدراسية: ${academicYear}</div>
+                <div class="header-stamp">ختم المؤسسة</div>
+              </div>
+            </div>
           </div>
-          <div class="pcard-title">بطاقة مخزون — مادة كيميائية</div>
-          <div class="ic-years">
-            <span><b>الرمز:</b> ${index + 1}</span>
-            <span><b>وحدة القياس:</b> ${c.unit}</span>
+
+          <div class="pcard-badge">رقم البطاقة: ${index + 1}</div>
+          <h1 class="pcard-title">بطاقة مخزون مادة كيميائية</h1>
+          
+          <div class="ic-meta-expressive">
+             <div class="ic-field main">
+                <span class="l">اسم المادة (AR)</span>
+                <span class="v">${c.nameAr}</span>
+             </div>
+             <div class="ic-field sub">
+                <span class="l">NOM DU PRODUIT</span>
+                <span class="v en">${c.nameEn}</span>
+             </div>
           </div>
-          <div class="ic-meta" style="grid-template-columns:repeat(3,1fr)">
-            <div class="ic-mf"><div class="ml">الاسم بالعربية</div><div class="mv" style="font-weight:700">${c.nameAr}</div></div>
-            <div class="ic-mf"><div class="ml">PRODUIT CHIMIQUE</div><div class="mv" style="direction:ltr;font-size:5pt">${c.nameEn}</div></div>
-            <div class="ic-mf" style="border-left:none"><div class="ml">ختم المؤسسة</div><div class="mv ic-stamp"></div></div>
+
+          <div class="ic-grid-info">
+             <div class="ic-info-box">
+                <span class="l">الصيغة</span>
+                <span class="v en-bold">${c.formula || '—'}</span>
+             </div>
+             <div class="ic-info-box">
+                <span class="l">الحالة</span>
+                <span class="v">${stateAr}</span>
+             </div>
+             <div class="ic-info-box">
+                <span class="l">الرف</span>
+                <span class="v">${c.shelf || '—'}</span>
+             </div>
+             <div class="ic-info-box danger">
+                <span class="l">GHS</span>
+                <span class="v emoji">${ghsIcon}</span>
+             </div>
           </div>
-          <div class="ic-sec"><div class="ist">الصيغة الكيميائية:</div><div class="idl" style="direction:ltr;font-family:monospace;font-size:8pt;font-weight:700">${c.formula}</div></div>
-          <div class="ic-row2">
-            <div class="ic-col"><div class="ist">الحالة الفيزيائية:</div><div class="idl">${stateAr}</div></div>
-            <div class="ic-col"><div class="ist">الرف:</div><div class="idl" style="font-weight:700">${c.shelf}</div></div>
-            <div class="ic-col"><div class="ist">رمز GHS:</div><div class="idl" style="font-size:10pt;text-align:center">${ghsIcon}</div></div>
+
+          <div class="ic-safety-strip">
+             <b>طبيعة الخطورة:</b> ${hazardAr} 
+             <span style="margin-right: 15px">|</span> 
+             <b>وحدة القياس:</b> ${c.unit}
           </div>
-          <div class="ic-sec">
-            <div class="ist">الخطورة / DANGER:</div>
-            <div class="idl" style="font-size:5pt">${hazardAr}</div>
-          </div>
-          <div class="ic-sec">
-            <div class="ist">ملاحظات السلامة:</div>
-            <div class="idl" style="font-size:5pt">${c.notes || 'تجنب التلامس المباشر، تخزين في وعاء مغلق.'}</div>
-          </div>
-          <table class="ic-tbl">
-            <thead>
-              <tr>
-                <th rowspan="2">التاريخ</th><th colspan="2">رقم سند الطلب</th><th rowspan="2">المصدر/الاتجاه</th><th rowspan="2">الثمن</th><th colspan="3">الكمية</th><th rowspan="2">ملاحظات</th>
-              </tr>
-              <tr><th>دخول</th><th>خروج</th><th>دخول</th><th>خروج</th><th>المخزون</th></tr>
-            </thead>
-            <tbody>
-              <tr><td></td><td></td><td></td><td></td><td></td><td>${c.quantity} ${c.unit}</td><td>..........</td><td>..........</td><td style="font-size:5pt">نقل ←</td></tr>
-              ${Array(8).fill('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('')}
-              <tr><td></td><td></td><td></td><td></td><td></td><td>..........</td><td>..........</td><td>..........</td><td style="font-size:5pt">ينقل ←</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="pcard">
-          <div class="back-title">تتمة — ${c.nameAr} (${c.formula}) | رقم: <u>${index + 1}</u></div>
-          <div class="ic-bsec">
-            <div class="ic-btitle">حركة المخزون — تتمة</div>
+
+          <div class="ic-table-container">
             <table class="ic-tbl">
               <thead>
                 <tr>
-                  <th rowspan="2">التاريخ</th><th colspan="2">رقم سند الطلب</th><th rowspan="2">المصدر/الاتجاه</th><th rowspan="2">الثمن</th><th colspan="3">الكمية</th><th rowspan="2">ملاحظات</th>
+                  <th rowspan="2" width="12%">التاريخ</th>
+                  <th colspan="2">سند الطلب</th>
+                  <th rowspan="2">المصدر</th>
+                  <th rowspan="2" width="10%">الثمن</th>
+                  <th colspan="3">الكمية</th>
+                  <th rowspan="2">ملاحظات</th>
                 </tr>
-                <tr><th>دخول</th><th>خروج</th><th>دخول</th><th>خروج</th><th>المخزون</th></tr>
+                <tr><th>خروج</th><th>دخول</th><th>خروج</th><th>دخول</th><th>المخزون</th></tr>
               </thead>
               <tbody>
-                <tr><td></td><td></td><td></td><td></td><td></td><td>..........</td><td>..........</td><td>..........</td><td style="font-size:5pt">نقل ←</td></tr>
-                ${Array(10).fill('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('')}
-                <tr><td></td><td></td><td></td><td></td><td></td><td>..........</td><td>..........</td><td>..........</td><td style="font-size:5pt">ينقل ←</td></tr>
+                <tr class="initial-stock">
+                  <td>${today.toLocaleDateString('en-GB')}</td>
+                  <td>-</td><td>-</td>
+                  <td>رصيد أول المدة</td>
+                  <td>-</td>
+                  <td>-</td><td>${c.quantity}</td><td>${c.quantity}</td>
+                  <td>رصيد ابتدائي</td>
+                </tr>
+                ${Array(14).fill('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('')}
+                <tr class="carry-over">
+                  <td colspan="5">الرصيد المنقول لظهر البطاقة</td>
+                  <td></td><td></td><td class="bold">..........</td>
+                  <td>ينقل ←</td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <div class="ic-bsec" style="margin-top:6mm">
-            <div class="ic-btitle">شروط السلامة عند التخزين</div>
+        </div>
+
+        <div class="pcard back">
+          <div class="back-header">
+             <span>تتمة حركة المخزون — ${c.nameAr}</span>
+             <span class="ref">REF: ${index + 1}</span>
+          </div>
+
+          <div class="ic-table-container">
             <table class="ic-tbl">
               <thead>
-                <tr><th width="35%">التاريخ</th><th width="40%">الإجراء / الملاحظة</th><th width="25%">الإمضاء</th></tr>
+                <tr>
+                  <th rowspan="2" width="12%">التاريخ</th>
+                  <th colspan="2">سند الطلب</th>
+                  <th rowspan="2">المصدر</th>
+                  <th rowspan="2" width="10%">الثمن</th>
+                  <th colspan="3">الكمية</th>
+                  <th rowspan="2">ملاحظات</th>
+                </tr>
+                <tr><th>خروج</th><th>دخول</th><th>خروج</th><th>دخول</th><th>المخزون</th></tr>
               </thead>
               <tbody>
-                ${Array(5).fill('<tr><td></td><td></td><td></td></tr>').join('')}
+                <tr class="initial-stock">
+                  <td colspan="5">المجموع المنقول من وجه البطاقة</td>
+                  <td></td><td></td><td>..........</td>
+                  <td>نقل ←</td>
+                </tr>
+                ${Array(22).fill('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>').join('')}
               </tbody>
             </table>
+          </div>
+
+          <div class="ic-safety-rules">
+             <h3>⚠️ تعليمات السلامة الخاصة بالتخزين</h3>
+             <div class="rules-box">
+                ${c.notes || 'يجب حفظ هذه المادة في ظروف ملائمة بعيداً عن الرطوبة والحرارة ووفق معايير السلامة المنصوص عليها في دليل المختبرات.'}
+             </div>
           </div>
         </div>
       `;
@@ -797,103 +912,154 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
       <html dir="rtl" lang="ar">
         <head>
           <meta charset="UTF-8">
-          <title>بطاقات مخزون المواد الكيميائية — ${items.length} مادة</title>
-          <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+          <title>بطاقة مخزون</title>
+          <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
           <style>
+            :root {
+              --primary: #006494;
+              --on-primary: #ffffff;
+              --primary-container: #cbe6ff;
+              --on-primary-container: #001e30;
+              --secondary: #50606e;
+              --tertiary: #65587b;
+              --error: #ba1a1a;
+              --outline: #71787e;
+              --surface: #fdfcff;
+              --surface-variant: #dee3eb;
+            }
+
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Cairo', Arial, sans-serif; direction: rtl; background: #eef2f7; font-size: 7pt; }
+            body { 
+              font-family: 'Cairo', sans-serif; 
+              direction: rtl; 
+              background: #f0f2f5; 
+              color: #1a1c1e;
+              padding: 20px;
+            }
 
             #toolbar {
-                position: sticky; top: 0; z-index: 99;
-                background: #1a2744; color: white;
-                padding: 8px 16px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 13px;
+              position: fixed; top: 0; left: 0; right: 0; 
+              z-index: 100; background: #1a1c1e; color: white;
+              padding: 12px 24px; display: flex; align-items: center; gap: 15px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             }
-            #toolbar h3 { flex: 1; }
-            .tb-btn { padding: 7px 16px; border: none; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 12px; font-family: Cairo, sans-serif; }
+            #toolbar h3 { flex: 1; font-weight: 800; font-size: 16px; }
+            .tb-btn { 
+              padding: 10px 20px; border: none; border-radius: 20px; 
+              cursor: pointer; font-weight: 700; font-size: 13px; font-family: Cairo;
+              transition: all 0.2s;
+            }
             .tb-print { background: #00b894; color: white; }
-            .tb-close  { background: #e74c3c; color: white; }
-            .tb-info   { background: rgba(255,255,255,0.15); color: white; font-size: 11px; padding: 5px 10px; border-radius: 5px; }
+            .tb-close { background: #e74c3c; color: white; }
 
-            #body { padding: 12px; }
+            #body { padding-top: 60px; max-width: 900px; margin: 0 auto; }
 
             .pcard {
-                background: white; border: 1px solid #000; padding: 3mm 4mm;
-                direction: rtl; width: 138mm; height: 200mm;
-                margin: 8px auto; display: flex; flex-direction: column; overflow: hidden;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.12); gap: 1.5mm;
+              background: white;
+              width: 148mm;
+              height: 210mm;
+              margin: 20px auto;
+              padding: 8mm;
+              border-radius: 24px;
+              box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+              display: flex;
+              flex-direction: column;
+              border: 1px solid rgba(0,0,0,0.05);
+              position: relative;
+              overflow: hidden;
             }
 
-            .ph {
-                display: grid; grid-template-columns: 1fr 1.5fr 1fr;
-                border-bottom: 1px solid #000; padding-bottom: 1.5mm; margin-bottom: 0;
-                font-size: 5.5pt; gap: 2px; align-items: start; flex-shrink: 0;
+            .pcard.back { border-style: dashed; }
+
+            .ph-container {
+              background: var(--surface-variant);
+              margin: -8mm -8mm 4mm -8mm;
+              padding: 6mm 8mm;
+              border-radius: 0 0 24px 24px;
             }
-            .ph-r { text-align: right; font-weight: bold; line-height: 1.45; }
-            .ph-c { text-align: center; font-weight: bold; line-height: 1.45; }
-            .ph-l { text-align: left; font-size: 5pt; line-height: 1.45; }
+            .ph {
+              display: grid; grid-template-columns: 1fr 1.5fr 1fr;
+              font-size: 7.5pt; gap: 4px; align-items: start; color: var(--secondary);
+            }
+            .ph-r { text-align: right; line-height: 1.5; }
+            .ph-c { text-align: center; font-weight: 800; line-height: 1.5; }
+            .ph-l { text-align: left; line-height: 1.5; }
+
+            .header-stamp {
+              margin-top: 5px;
+              width: 35mm;
+              height: 20mm;
+              border: 1px dashed var(--outline);
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 6pt;
+              color: var(--outline);
+              font-weight: 400;
+            }
+
+            .pcard-badge {
+              position: absolute; top: 12mm; left: 8mm;
+              background: var(--primary-container); color: var(--on-primary-container);
+              padding: 2px 12px; border-radius: 12px; font-size: 8pt; font-weight: 700;
+            }
 
             .pcard-title {
-                text-align: center; font-size: 8pt; font-weight: bold;
-                text-decoration: underline; text-underline-offset: 1.5px;
-                flex-shrink: 0; padding: 0.5mm 0;
+              text-align: center; font-size: 14pt; font-weight: 900;
+              color: var(--primary); margin: 4mm 0;
             }
 
-            .ic-years { display: flex; justify-content: space-between; font-size: 5.5pt; flex-shrink: 0; }
-            .ic-meta { display: grid; border: 1px solid #000; flex-shrink: 0; }
-            .ic-mf { padding: 1mm 2mm; border-left: 1px solid #000; font-size: 5.5pt; }
-            .ic-mf:last-child { border-left: none; }
-            .ic-ml { font-weight: bold; font-size: 5pt; color: #333; }
-            .mv { border-bottom: 1px solid #777; min-height: 8mm; padding: 0.5mm 1mm; font-size: 5.5pt; }
-            .ic-stamp { min-height: 10mm !important; }
+            .ic-meta-expressive { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6mm; }
+            .ic-field { border-radius: 12px; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; }
+            .ic-field.main { background: #f0f4f9; border-right: 4px solid var(--primary); }
+            .ic-field.sub { background: #fafbfc; border-right: 4px solid var(--outline); font-size: 9pt; }
+            .ic-field .l { font-weight: 700; color: var(--secondary); font-size: 8.5pt; }
+            .ic-field .v { font-weight: 800; font-size: 11pt; }
+            .ic-field .v.en { font-family: sans-serif; font-size: 9pt; text-transform: uppercase; }
 
-            .ic-sec { flex-shrink: 0; }
-            .ist { font-weight: bold; font-size: 5.5pt; margin-bottom: 0.5mm; }
-            .idl { border-bottom: 1px dotted #666; min-height: 5mm; padding: 0.5mm 1mm; font-size: 5.5pt; margin-bottom: 1mm; }
+            .ic-grid-info { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6mm; }
+            .ic-info-box { background: #fff; border: 1px solid var(--surface-variant); border-radius: 12px; padding: 6px; text-align: center; }
+            .ic-info-box .l { display: block; font-size: 7pt; font-weight: 700; color: var(--tertiary); margin-bottom: 2px; }
+            .ic-info-box .v { font-weight: 800; font-size: 9.5pt; }
+            .ic-info-box .v.en-bold { font-family: monospace; font-weight: 900; font-size: 10pt; }
+            .ic-info-box.danger { border-color: var(--error); background: #fff8f8; }
 
-            .ic-row2 { display: flex; gap: 3mm; flex-shrink: 0; }
-            .ic-col { flex: 1; }
+            .ic-safety-strip { background: var(--on-primary-container); color: white; border-radius: 8px; padding: 5px 12px; font-size: 8.5pt; margin-bottom: 6mm; }
 
-            .ic-tbl { width: 100%; border-collapse: collapse; font-size: 5.5pt; flex-shrink: 0; table-layout: fixed; }
-            .ic-tbl th, .ic-tbl td { border: 1px solid #000; padding: 0.5mm 1mm; text-align: center; }
-            .ic-tbl th { background: #dde4ee; font-size: 5pt; white-space: nowrap; }
-            .ic-tbl td { height: 5mm; }
+            .ic-table-container { flex: 1; margin-bottom: 4mm; }
+            .ic-tbl { width: 100%; border-collapse: collapse; font-size: 8pt; table-layout: fixed; }
+            .ic-tbl th, .ic-tbl td { border: 0.5pt solid var(--surface-variant); padding: 4px; text-align: center; }
+            .ic-tbl th { background: #e8ecef; color: var(--secondary); font-weight: 800; font-size: 7pt; }
+            .ic-tbl td { height: 6mm; }
+            tr.initial-stock { background: #f0fdf4; font-weight: 600; }
+            .bold { font-weight: 900; }
 
-            .back-title {
-                text-align: center; font-weight: bold; font-size: 6pt;
-                border-bottom: 1.5px solid #000; padding-bottom: 1.5mm; margin-bottom: 1.5mm;
-                flex-shrink: 0;
-            }
-
-            .ic-bsec { flex-shrink: 0; margin-bottom: 2mm; }
-            .ic-btitle {
-                font-weight: bold; font-size: 5.5pt;
-                background: #eef1f7; border: 1px solid #000; border-bottom: none;
-                padding: 1mm 3mm; text-align: center;
-            }
+            .back-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-bottom: 6mm; font-weight: 900; font-size: 11pt; color: var(--primary); }
+            .rules-box { background: #fffafa; border: 1px solid #ffeded; padding: 10px; border-radius: 12px; font-size: 8.5pt; color: #444; line-height: 1.6; }
 
             @media print {
-                #toolbar { display: none !important; }
-                body { background: white !important; margin: 0; }
-                #body { padding: 0 !important; }
-                @page { size: A5 portrait; margin: 5mm; }
-                .pcard {
-                    width: 100% !important; height: calc(210mm - 10mm) !important;
-                    margin: 0 !important; padding: 4mm 5mm !important;
-                    border: 1.5px solid #000 !important; box-shadow: none !important;
-                    page-break-after: always !important; break-after: page !important;
-                    overflow: hidden !important;
-                }
-                .pcard:last-child { page-break-after: avoid !important; break-after: avoid !important; }
-                tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+              #toolbar { display: none !important; }
+              body { background: white !important; padding: 0 !important; }
+              @page { size: A5 portrait; margin: 3mm; }
+              .pcard {
+                width: 100% !important; height: calc(210mm - 6mm) !important;
+                margin: 0 !important; border: 1px solid #000 !important;
+                border-radius: 0 !important; box-shadow: none !important;
+                page-break-after: always !important; padding: 5mm !important;
+              }
+              .ph-container { border-radius: 0 !important; margin-bottom: 2mm !important; }
+              .ic-meta-expressive .ic-field { background: white !important; border: 1px solid #eee !important; box-shadow: none !important; }
+              .ic-tbl th { background: #f0f0f0 !important; border: 0.5pt solid #000 !important; print-color-adjust: exact; }
+              .ic-tbl td { border: 0.5pt solid #000 !important; }
             }
           </style>
         </head>
         <body>
           <div id="toolbar">
-              <h3>🖨️ بطاقات مخزون المواد الكيميائية — ${items.length} مادة</h3>
-              <span class="tb-info">📄 A5 recto-verso — بطاقة واحدة لكل صفحة</span>
-              <button class="tb-btn tb-print" onclick="window.print()">🖨️ طباعة الآن</button>
-              <button class="tb-btn tb-close" onclick="window.close()">✕ إغلاق</button>
+              <h3>🎨 جرد كيميائي — ${items.length} عنصر</h3>
+              <button class="tb-btn tb-print" onclick="window.print()">🖨️ بدء الطباعة</button>
+              <button class="tb-btn tb-close" onclick="window.close()">✕ إغلاق المعاينة</button>
           </div>
           <div id="body">
             ${cardsHtml}
