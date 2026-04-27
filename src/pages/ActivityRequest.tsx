@@ -306,7 +306,7 @@ export default function ActivityRequest() {
           <div className="flex items-center gap-3">
             <button 
               onClick={handleReset} 
-              className="p-4 bg-white text-on-surface/40 rounded-2xl hover:text-primary transition-all shadow-sm border border-outline/10 active:scale-95"
+              className="p-4 bg-surface text-on-surface/40 rounded-2xl hover:text-primary transition-all shadow-sm border border-outline/10 active:scale-95"
               title="نموذج جديد"
             >
               <RotateCcw size={24} />
@@ -314,7 +314,7 @@ export default function ActivityRequest() {
             <button 
               onClick={handleSave} 
               disabled={isSaving} 
-              className="px-8 py-4 bg-white text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
+              className="px-8 py-4 bg-surface text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
             >
               {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
               حفظ الطلب
@@ -332,7 +332,7 @@ export default function ActivityRequest() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
-          className="bg-white rounded-[40px] shadow-2xl border border-outline/5 overflow-hidden relative"
+          className="bg-surface rounded-[40px] shadow-2xl border border-outline/5 overflow-hidden relative"
         >
           {/* Watermark Decoration */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full -mr-40 -mt-40 blur-3xl pointer-events-none" />
@@ -481,7 +481,7 @@ export default function ActivityRequest() {
                               <input list="equip-dl" value={item.name} onChange={e => handleEquipChange(item.id, 'name', e.target.value)} className="w-full bg-transparent px-3 py-2 font-bold focus:outline-none focus:border-b-2 border-primary transition-all" placeholder="الاسم..." />
                             </td>
                             <td className="p-2">
-                              <input type="number" value={item.quantity} onChange={e => handleEquipChange(item.id, 'quantity', e.target.value)} className="w-full bg-transparent px-2 py-2 font-bold text-center focus:outline-none focus:bg-white/50 rounded-lg transition-all" />
+                              <input type="number" value={item.quantity} onChange={e => handleEquipChange(item.id, 'quantity', e.target.value)} className="w-full bg-transparent px-2 py-2 font-bold text-center focus:outline-none focus:bg-surface/50 rounded-lg transition-all" />
                             </td>
                             <td className="p-2 text-center">
                               <button onClick={() => setEquipItems(equipItems.filter(i => i.id !== item.id))} className="p-2 text-error/30 hover:text-error hover:bg-error/10 rounded-lg transition-all"><Trash2 size={16}/></button>
@@ -519,7 +519,7 @@ export default function ActivityRequest() {
                               {item.formula && <span className="text-[10px] font-mono text-secondary/60 mr-2">{item.formula}</span>}
                             </td>
                             <td className="p-2">
-                              <input value={item.quantity} onChange={e => handleChemChange(item.id, 'quantity', e.target.value)} className="w-full bg-transparent px-2 py-2 font-bold text-center focus:outline-none focus:bg-white/50 rounded-lg transition-all" placeholder="مثال: 50مل" />
+                              <input value={item.quantity} onChange={e => handleChemChange(item.id, 'quantity', e.target.value)} className="w-full bg-transparent px-2 py-2 font-bold text-center focus:outline-none focus:bg-surface/50 rounded-lg transition-all" placeholder="مثال: 50مل" />
                             </td>
                             <td className="p-2 text-center">
                               <button onClick={() => setChemItems(chemItems.filter(i => i.id !== item.id))} className="p-2 text-error/30 hover:text-error hover:bg-error/10 rounded-lg transition-all"><Trash2 size={16}/></button>

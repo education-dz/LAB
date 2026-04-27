@@ -126,7 +126,7 @@ export default function LabSchedule() {
         <div className="flex items-center gap-4 relative z-10">
           <button 
             onClick={() => navigate('/pedagogical')}
-            className="bg-white text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
             العودة للفضاء البيداغوجي
@@ -156,12 +156,12 @@ export default function LabSchedule() {
               "p-6 rounded-[32px] border transition-all text-right group relative overflow-hidden",
               filterLab === lab 
                 ? "bg-primary text-on-primary border-primary shadow-xl shadow-primary/20" 
-                : "bg-white text-on-surface border-outline/10 hover:border-primary/30"
+                : "bg-surface text-on-surface border-outline/10 hover:border-primary/30"
             )}
           >
             <div className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors",
-              filterLab === lab ? "bg-white/20" : "bg-primary/5 text-primary"
+              filterLab === lab ? "bg-surface/20" : "bg-primary/5 text-primary"
             )}>
               <FlaskConical size={24} />
             </div>
@@ -177,7 +177,7 @@ export default function LabSchedule() {
       </section>
 
       {/* Reservations Table */}
-      <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
+      <section className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
         <div className="p-8 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <h2 className="text-2xl font-black text-primary">جدول الحجوزات</h2>
           <div className="flex items-center gap-4">
@@ -186,7 +186,7 @@ export default function LabSchedule() {
               <input 
                 type="text" 
                 placeholder="بحث..." 
-                className="bg-white border border-outline/10 rounded-xl pr-10 pl-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+                className="bg-surface border border-outline/10 rounded-xl pr-10 pl-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -276,7 +276,7 @@ export default function LabSchedule() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden border border-outline/10"
+              className="relative bg-surface w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden border border-outline/10"
             >
               <div className="p-8 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
                 <h3 className="text-2xl font-black text-primary">حجز جديد</h3>

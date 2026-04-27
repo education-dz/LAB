@@ -76,7 +76,7 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
     <div className="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center rtl" dir="rtl">
       <button 
         onClick={onClose}
-        className="absolute top-6 right-6 p-4 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all backdrop-blur-md"
+        className="absolute top-6 right-6 p-4 bg-surface/10 text-white rounded-full hover:bg-surface/20 transition-all backdrop-blur-md"
       >
         <X size={24} />
       </button>

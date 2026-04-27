@@ -223,7 +223,7 @@ export default function InventoryDashboard() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-outline/10 text-right"
+              className="relative bg-surface w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-outline/10 text-right"
               dir="rtl"
             >
               <div className="p-8 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
@@ -277,7 +277,7 @@ export default function InventoryDashboard() {
                     className="space-y-8"
                   >
                     <div className="bg-primary/5 p-8 rounded-[40px] border border-primary/10 flex items-start gap-6">
-                       <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-primary border border-outline/10">
+                       <div className="w-20 h-20 rounded-3xl bg-surface shadow-xl flex items-center justify-center text-primary border border-outline/10">
                          <Bot size={44} />
                        </div>
                        <div className="space-y-2">

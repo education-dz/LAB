@@ -73,14 +73,14 @@ export default function FollowUpRegistry() {
         <div className="flex flex-wrap items-center gap-4 relative z-10">
           <button 
             onClick={() => setIsTimeManagerOpen(true)}
-            className="bg-white text-primary border border-outline/10 px-6 py-4 rounded-[24px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-6 py-4 rounded-[24px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <Clock size={20} />
             تعديل المواقيت
           </button>
           <button 
             onClick={() => navigate('/pedagogical')}
-            className="bg-white text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
             العودة للفضاء البيداغوجي
@@ -133,16 +133,16 @@ export default function FollowUpRegistry() {
           <input 
             type="text" 
             placeholder="البحث في السجلات..." 
-            className="w-full bg-white border border-outline/10 rounded-[32px] pr-16 pl-8 py-5 text-lg font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-xl"
+            className="w-full bg-surface border border-outline/10 rounded-[32px] pr-16 pl-8 py-5 text-lg font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-xl"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-4">
-          <button className="p-5 bg-white border border-outline/10 rounded-[28px] text-primary hover:bg-primary/5 transition-all shadow-xl">
+          <button className="p-5 bg-surface border border-outline/10 rounded-[28px] text-primary hover:bg-primary/5 transition-all shadow-xl">
             <Filter size={24} />
           </button>
-          <button className="p-5 bg-white border border-outline/10 rounded-[28px] text-primary hover:bg-primary/5 transition-all shadow-xl">
+          <button className="p-5 bg-surface border border-outline/10 rounded-[28px] text-primary hover:bg-primary/5 transition-all shadow-xl">
             <Download size={24} />
           </button>
         </div>
@@ -280,7 +280,7 @@ function ToolsRegistry({ searchTerm }: { searchTerm: string }) {
         </button>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-x-auto custom-scrollbar">
+      <div className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-x-auto custom-scrollbar">
         <table className="w-full text-right min-w-[1400px]">
           <thead className="bg-surface-container-low/50 border-b border-outline/5">
             <tr>
@@ -568,7 +568,7 @@ function PracticalWorkRegistry({ searchTerm }: { searchTerm: string }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {filteredData.map((item) => (
-        <div key={item.id} className="bg-white p-8 rounded-[40px] border border-outline/10 shadow-xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
+        <div key={item.id} className="bg-surface p-8 rounded-[40px] border border-outline/10 shadow-xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
           <div className="absolute top-0 left-0 w-2 h-full bg-secondary/20 group-hover:bg-secondary transition-colors" />
           <div className="flex justify-between items-start mb-6">
             <div className="p-4 bg-secondary/10 rounded-2xl text-secondary">
@@ -605,7 +605,7 @@ function ProgramProgressRegistry({ searchTerm }: { searchTerm: string }) {
 
   return (
     <div className="grid grid-cols-1 gap-8">
-      <div className="bg-white p-10 rounded-[40px] border border-outline/10 shadow-2xl">
+      <div className="bg-surface p-10 rounded-[40px] border border-outline/10 shadow-2xl">
         <div className="flex items-center gap-4 mb-10">
           <div className="p-4 bg-primary/10 rounded-2xl text-primary">
             <TrendingUp size={24} />

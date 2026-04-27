@@ -59,8 +59,8 @@ export default function ChemicalStorageMatrix() {
   const zoneColors: Record<string, string> = {
     'red': 'bg-red-500 text-white',
     'blue': 'bg-blue-500 text-white',
-    'yellow': 'bg-yellow-500 text-black',
-    'white': 'bg-white text-gray-800 border border-gray-300',
+    'yellow': 'bg-yellow-500 text-on-surface',
+    'white': 'bg-surface text-gray-800 border border-gray-300',
     'green': 'bg-green-600 text-white',
     'orange': 'bg-orange-500 text-white',
   };
@@ -218,11 +218,11 @@ export default function ChemicalStorageMatrix() {
                         <p className="text-gray-700 text-sm mb-6 flex-1 leading-relaxed"><Info size={16} className="inline mr-2 opacity-50"/>{zone.description}</p>
                         
                         {zone.recommendedChemicals && zone.recommendedChemicals.length > 0 && (
-                          <div className="bg-white/60 p-4 rounded-2xl">
+                          <div className="bg-surface/60 p-4 rounded-2xl">
                              <p className="text-xs font-bold text-gray-500 mb-2 uppercase">المواد التابعة:</p>
                              <div className="flex flex-wrap gap-2">
                                {zone.recommendedChemicals.map((chem, j) => (
-                                 <span key={j} className="bg-white text-gray-800 text-[11px] font-bold px-2 py-1 rounded border border-gray-200">
+                                 <span key={j} className="bg-surface text-gray-800 text-[11px] font-bold px-2 py-1 rounded border border-gray-200">
                                    {chem}
                                  </span>
                                ))}

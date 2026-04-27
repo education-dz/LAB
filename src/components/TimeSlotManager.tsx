@@ -57,7 +57,7 @@ export default function TimeSlotManager({ isOpen, onClose }: TimeSlotManagerProp
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-outline/10"
+            className="bg-surface w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-outline/10"
           >
             {/* Header */}
             <div className="p-8 bg-primary/5 border-b border-outline/5 flex justify-between items-center">

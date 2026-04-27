@@ -73,7 +73,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="bg-surface w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
           <div className="p-6 border-b border-outline/10 flex justify-between items-center bg-surface-container-low/30">
@@ -92,7 +92,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
           </div>
 
           {/* Filters */}
-          <div className="p-6 space-y-4 bg-white border-b border-outline/5">
+          <div className="p-6 space-y-4 bg-surface border-b border-outline/5">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40" size={18} />
@@ -109,7 +109,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   onClick={() => setSelectedType('all')}
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs font-black transition-all",
-                    selectedType === 'all' ? "bg-white text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
+                    selectedType === 'all' ? "bg-surface text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
                   )}
                 >
                   الكل
@@ -118,7 +118,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   onClick={() => setSelectedType('equipment')}
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2",
-                    selectedType === 'equipment' ? "bg-white text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
+                    selectedType === 'equipment' ? "bg-surface text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
                   )}
                 >
                   <Package size={14} />
@@ -128,7 +128,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   onClick={() => setSelectedType('chemical')}
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2",
-                    selectedType === 'chemical' ? "bg-white text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
+                    selectedType === 'chemical' ? "bg-surface text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
                   )}
                 >
                   <FlaskConical size={14} />
@@ -138,7 +138,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   onClick={() => setSelectedType('glassware')}
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2",
-                    selectedType === 'glassware' ? "bg-white text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
+                    selectedType === 'glassware' ? "bg-surface text-primary shadow-sm" : "text-on-surface/40 hover:text-primary"
                   )}
                 >
                   <Beaker size={14} />
@@ -171,7 +171,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                           "w-full p-4 rounded-2xl text-right transition-all border-2 flex items-center justify-between group",
                           isSelected 
                             ? "bg-primary/5 border-primary/20 shadow-sm" 
-                            : "bg-white border-outline/5 hover:border-primary/20"
+                            : "bg-surface border-outline/5 hover:border-primary/20"
                         )}
                       >
                         <div className="flex items-center gap-3">
@@ -216,7 +216,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
                   </button>
                 )}
               </div>
-              <div className="bg-white rounded-[24px] border border-outline/5 p-4 min-h-[100px] max-h-[400px] overflow-y-auto space-y-2">
+              <div className="bg-surface rounded-[24px] border border-outline/5 p-4 min-h-[100px] max-h-[400px] overflow-y-auto space-y-2">
                 {selectedItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-on-surface/20">
                     <Boxes size={40} className="mb-2" />
@@ -251,7 +251,7 @@ export default function ResourcePicker({ isOpen, onClose, onSelect, initialValue
           <div className="p-6 border-t border-outline/10 bg-surface-container-low/30 flex justify-end gap-3">
             <button 
               onClick={onClose}
-              className="px-8 py-3 rounded-2xl font-black text-on-surface/60 hover:bg-white transition-all"
+              className="px-8 py-3 rounded-2xl font-black text-on-surface/60 hover:bg-surface transition-all"
             >
               إلغاء
             </button>

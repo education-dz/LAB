@@ -464,7 +464,7 @@ export default function Login() {
         {/* Branding Content */}
         <div className="relative z-20 h-full flex flex-col justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center p-2 shadow-lg">
+            <div className="w-16 h-16 bg-surface/10 backdrop-blur-md rounded-2xl flex items-center justify-center p-2 shadow-lg">
               <img 
                 src={logo}
                 alt="Ministry Logo" 
@@ -548,7 +548,7 @@ export default function Login() {
                     <User size={20} />
                   </div>
                   <input 
-                    className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-5 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
+                    className="w-full bg-surface border-2 border-transparent focus:border-primary/20 focus:bg-surface rounded-[20px] py-3.5 pr-12 pl-5 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
                     id="reset-email" 
                     type="email" 
                     placeholder="name@institution.dz"
@@ -601,7 +601,7 @@ export default function Login() {
                     <User size={20} />
                   </div>
                   <input 
-                    className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-5 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
+                    className="w-full bg-surface border-2 border-transparent focus:border-primary/20 focus:bg-surface rounded-[20px] py-3.5 pr-12 pl-5 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
                     id="email" 
                     type="email" 
                     placeholder="name@institution.dz"
@@ -630,7 +630,7 @@ export default function Login() {
                     <LockIcon size={20} />
                   </div>
                   <input 
-                    className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-12 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
+                    className="w-full bg-surface border-2 border-transparent focus:border-primary/20 focus:bg-surface rounded-[20px] py-3.5 pr-12 pl-12 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
                     id="password" 
                     type={showPassword ? "text" : "password"} 
                     placeholder="••••••••"
@@ -656,7 +656,7 @@ export default function Login() {
                       <ShieldCheck size={20} />
                     </div>
                     <input 
-                      className="w-full bg-white border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[20px] py-3.5 pr-12 pl-12 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
+                      className="w-full bg-surface border-2 border-transparent focus:border-primary/20 focus:bg-surface rounded-[20px] py-3.5 pr-12 pl-12 text-on-surface font-bold placeholder-on-surface/20 shadow-sm focus:shadow-xl transition-all outline-none text-sm"
                       id="confirmPassword" 
                       type={showConfirmPassword ? "text" : "password"} 
                       placeholder="••••••••"
@@ -718,7 +718,7 @@ export default function Login() {
             <button 
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full bg-white border-2 border-outline/10 hover:border-primary/30 text-on-surface font-black py-3 rounded-full transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-md active:scale-95 text-xs"
+              className="w-full bg-surface border-2 border-outline/10 hover:border-primary/30 text-on-surface font-black py-3 rounded-full transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-md active:scale-95 text-xs"
             >
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4 ml-1" alt="Google" />
               {isLogin ? 'جوجل' : 'جوجل'}

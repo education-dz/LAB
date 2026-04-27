@@ -56,7 +56,7 @@ export default function Timetable() {
         <div className="flex items-center gap-4 relative z-10">
           <button 
             onClick={() => navigate('/pedagogical')}
-            className="bg-white text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
             العودة للفضاء البيداغوجي
@@ -71,7 +71,7 @@ export default function Timetable() {
       </header>
 
       {/* Toolbar */}
-      <section className="bg-white p-6 rounded-[32px] border border-outline/5 shadow-xl flex flex-wrap items-center gap-6">
+      <section className="bg-surface p-6 rounded-[32px] border border-outline/5 shadow-xl flex flex-wrap items-center gap-6">
         <div className="flex-grow relative">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40" size={20} />
           <input 
@@ -101,7 +101,7 @@ export default function Timetable() {
       </section>
 
       {/* Timetable Grid/List */}
-      <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
+      <section className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse">
             <thead>

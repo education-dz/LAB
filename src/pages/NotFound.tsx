@@ -16,7 +16,7 @@ export default function NotFound() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full bg-white p-12 rounded-[48px] shadow-2xl border border-outline/5 text-center flex flex-col items-center gap-6"
+        className="max-w-md w-full bg-surface p-12 rounded-[48px] shadow-2xl border border-outline/5 text-center flex flex-col items-center gap-6"
       >
         <div className="w-24 h-24 bg-error/10 text-error rounded-full flex items-center justify-center mb-4">
           <AlertTriangle size={48} />

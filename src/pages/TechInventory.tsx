@@ -156,7 +156,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
           </div>
           
           <div className="flex items-center gap-4 relative z-10">
-            <div className="flex bg-white/50 backdrop-blur-sm p-1 rounded-full border border-outline/10 shadow-lg">
+            <div className="flex bg-surface/50 backdrop-blur-sm p-1 rounded-full border border-outline/10 shadow-lg">
               <button 
                 onClick={() => setFilterType('all')}
                 className={cn(
@@ -179,7 +179,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
             </div>
             <div className="relative group">
               <input 
-                className="w-64 bg-white border border-outline/10 rounded-full px-6 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-xl"
+                className="w-64 bg-surface border border-outline/10 rounded-full px-6 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-xl"
                 placeholder="البحث عن جهاز..." 
                 type="text"
                 value={searchTerm}
@@ -214,9 +214,9 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                 stat.color
               )}
             >
-              <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute top-0 left-0 w-24 h-24 bg-surface/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
               <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <div className="p-4 bg-surface rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
                   <stat.icon size={24} />
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.05 }}
-                className="group bg-white rounded-[40px] border border-outline/5 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col"
+                className="group bg-surface rounded-[40px] border border-outline/5 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col"
               >
                 <div className="relative h-64 overflow-hidden bg-surface-container-low">
                   <img 
@@ -268,7 +268,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                   <div className="absolute top-6 right-6 bg-primary/90 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                     {device.location || 'مخبر غير محدد'}
                   </div>
-                  <div className="absolute bottom-6 left-6 bg-white/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 shadow-lg">
+                  <div className="absolute bottom-6 left-6 bg-surface/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 shadow-lg">
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">ID: {device.serialNumber || 'N/A'}</span>
                   </div>
                 </div>
@@ -313,13 +313,13 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                   <div className="pt-4 flex gap-3">
                     <button 
                       onClick={() => setSelectedDevice(device)}
-                      className="flex-1 bg-white border-2 border-primary/10 text-primary py-4 rounded-full font-black text-xs hover:bg-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                      className="flex-1 bg-surface border-2 border-primary/10 text-primary py-4 rounded-full font-black text-xs hover:bg-primary hover:text-white transition-all active:scale-95 shadow-sm"
                     >
                       المواصفات الكاملة
                     </button>
                     <button 
                       onClick={() => navigate(`/equipment?id=${device.id}`)}
-                      className="w-14 h-14 flex items-center justify-center rounded-full bg-white border-2 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                      className="w-14 h-14 flex items-center justify-center rounded-full bg-surface border-2 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95 shadow-sm"
                     >
                       <Settings size={20} />
                     </button>
@@ -335,7 +335,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
           onClick={() => navigate('/equipment')}
           className="group bg-surface-container-low/50 border-4 border-dashed border-outline/10 rounded-[40px] p-12 flex flex-col items-center justify-center gap-6 hover:bg-surface-container-low transition-all duration-500 min-h-[500px]"
         >
-          <div className="w-20 h-20 rounded-[28px] bg-white flex items-center justify-center text-primary shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+          <div className="w-20 h-20 rounded-[28px] bg-surface flex items-center justify-center text-primary shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
             <Plus size={40} />
           </div>
           <div className="text-center space-y-2">
@@ -383,7 +383,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
+              className="bg-surface w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Left: Image & Quick Info */}
@@ -401,7 +401,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                 </div>
                 <button 
                   onClick={() => setSelectedDevice(null)}
-                  className="absolute top-6 right-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition-all"
+                  className="absolute top-6 right-6 w-12 h-12 bg-surface/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-surface/40 transition-all"
                 >
                   <Plus className="rotate-45" size={24} />
                 </button>
@@ -446,7 +446,7 @@ export default function TechInventory({ isNested = false }: { isNested?: boolean
                   <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10 space-y-4">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm">
+                        <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-primary shadow-sm">
                           <Activity size={20} />
                         </div>
                         <div>

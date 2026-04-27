@@ -292,7 +292,7 @@ export default function LoanRequest() {
             <button 
               onClick={handleSave}
               disabled={isSaving}
-              className="px-8 py-4 bg-white text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
+              className="px-8 py-4 bg-surface text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
             >
               {isSaving ? <RefreshCw size={20} className="animate-spin" /> : <Save size={20} />}
               حفظ الطلب
@@ -311,7 +311,7 @@ export default function LoanRequest() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[40px] shadow-2xl border border-outline/5 overflow-hidden relative"
+          className="bg-surface rounded-[40px] shadow-2xl border border-outline/5 overflow-hidden relative"
         >
           {/* Watermark/Background decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />

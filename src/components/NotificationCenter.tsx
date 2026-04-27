@@ -234,7 +234,7 @@ export default function NotificationCenter() {
                         exit={{ opacity: 0, scale: 0.95 }}
                         className={cn(
                           "relative p-4 rounded-2xl transition-all group border border-transparent",
-                          !notif.read ? "bg-white shadow-sm" : "hover:bg-white/50",
+                          !notif.read ? "bg-surface shadow-sm" : "hover:bg-surface/50",
                           notif.type === 'alert' && !notif.read ? "border-error/20" : "",
                           notif.type === 'warning' && !notif.read ? "border-tertiary/20" : ""
                         )}

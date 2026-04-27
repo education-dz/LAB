@@ -63,7 +63,7 @@ export default function ClassPicker({ isOpen, onClose, onSelect, initialValue }:
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="bg-surface w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
           <div className="p-6 border-b border-outline/10 flex justify-between items-center bg-surface-container-low/30">
@@ -82,7 +82,7 @@ export default function ClassPicker({ isOpen, onClose, onSelect, initialValue }:
           </div>
 
           {/* Filters */}
-          <div className="p-6 space-y-4 bg-white border-b border-outline/5">
+          <div className="p-6 space-y-4 bg-surface border-b border-outline/5">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40" size={18} />
@@ -145,7 +145,7 @@ export default function ClassPicker({ isOpen, onClose, onSelect, initialValue }:
                             "px-5 py-3 rounded-2xl font-bold transition-all border-2 flex items-center gap-2 active:scale-95",
                             isSelected 
                               ? "bg-primary text-on-primary border-primary shadow-lg shadow-primary/20" 
-                              : "bg-white border-outline/10 text-on-surface/70 hover:border-primary/30 hover:bg-primary/5"
+                              : "bg-surface border-outline/10 text-on-surface/70 hover:border-primary/30 hover:bg-primary/5"
                           )}
                         >
                           {isSelected && <Check size={16} />}

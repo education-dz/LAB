@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export default function DataDeletion() {
   return (
     <div className="min-h-screen bg-surface-container-low text-on-surface p-8 lg:p-24 rtl font-sans" dir="rtl">
-      <div className="max-w-4xl mx-auto bg-white rounded-[40px] shadow-2xl border border-outline/10 p-12">
+      <div className="max-w-4xl mx-auto bg-surface rounded-[40px] shadow-2xl border border-outline/10 p-12">
         <div className="flex items-center gap-4 mb-12">
           <div className="p-4 bg-error/10 rounded-3xl text-error">
             <Trash2 size={40} />

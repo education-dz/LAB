@@ -738,7 +738,7 @@ export default function SettingsPage() {
               <p className="text-sm text-tertiary font-semibold px-3 py-1 bg-tertiary/10 rounded-full mt-2">{jobTitle || 'ملحق مخبري رئيسي'}</p>
               
               <div className="mt-6 flex flex-col gap-2 w-full">
-                <div className="flex justify-between items-center text-xs text-on-surface-variant bg-white/50 p-3 rounded-lg group">
+                <div className="flex justify-between items-center text-xs text-on-surface-variant bg-surface/50 p-3 rounded-lg group">
                   <span>الرمز الوظيفي للموظف:</span>
                   <div className="flex items-center gap-2">
                     {isEditingEmployeeId ? (
@@ -747,7 +747,7 @@ export default function SettingsPage() {
                           type="text"
                           value={employeeId}
                           onChange={(e) => setEmployeeId(e.target.value)}
-                          className="w-40 bg-white border border-primary/20 rounded px-1 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary"
+                          className="w-40 bg-surface border border-primary/20 rounded px-1 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary"
                           autoFocus
                           onBlur={() => setIsEditingEmployeeId(false)}
                           onKeyDown={(e) => e.key === 'Enter' && setIsEditingEmployeeId(false)}
@@ -772,7 +772,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex justify-between items-center text-xs text-on-surface-variant bg-white/50 p-3 rounded-lg">
+                <div className="flex justify-between items-center text-xs text-on-surface-variant bg-surface/50 p-3 rounded-lg">
                   <span>تاريخ الانضمام:</span>
                   <span className="font-bold">
                     {auth.currentUser?.metadata.creationTime 
@@ -792,7 +792,7 @@ export default function SettingsPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-[40px] p-8 lg:p-12 shadow-xl shadow-primary/5 border border-outline-variant/10 min-h-[600px]"
+            className="bg-surface rounded-[40px] p-8 lg:p-12 shadow-xl shadow-primary/5 border border-outline-variant/10 min-h-[600px]"
           >
             {activeTab === 'profile' && (
               <div className="space-y-12">
@@ -901,7 +901,7 @@ export default function SettingsPage() {
                         "flex items-center gap-3 px-6 py-3 rounded-2xl font-bold transition-all border-2",
                         auth.currentUser?.providerData.some(p => p.providerId === 'google.com')
                           ? "bg-green-50 border-green-100 text-green-700 cursor-default"
-                          : "bg-white border-outline-variant/30 text-primary hover:border-primary/30"
+                          : "bg-surface border-outline-variant/30 text-primary hover:border-primary/30"
                       )}
                     >
                       <Chrome size={18} className={auth.currentUser?.providerData.some(p => p.providerId === 'google.com') ? "text-green-600" : "text-[#4285F4]"} />
@@ -915,7 +915,7 @@ export default function SettingsPage() {
                         "flex items-center gap-3 px-6 py-3 rounded-2xl font-bold transition-all border-2",
                         auth.currentUser?.providerData.some(p => p.providerId === 'facebook.com')
                           ? "bg-blue-50 border-blue-100 text-blue-700 cursor-default"
-                          : "bg-white border-outline-variant/30 text-primary hover:border-primary/30"
+                          : "bg-surface border-outline-variant/30 text-primary hover:border-primary/30"
                       )}
                     >
                       <Facebook size={18} className={auth.currentUser?.providerData.some(p => p.providerId === 'facebook.com') ? "text-blue-600" : "text-[#1877F2]"} />
@@ -1066,7 +1066,7 @@ export default function SettingsPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                           <h4 className="text-lg font-black text-primary">{level.name}</h4>
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-outline-variant/50 shadow-sm">
+                            <div className="flex items-center gap-3 bg-surface px-4 py-2 rounded-2xl border border-outline-variant/50 shadow-sm">
                               <span className="text-[10px] font-black text-secondary uppercase tracking-wider">الأفواج</span>
                               <input 
                                 type="number"
@@ -1100,7 +1100,7 @@ export default function SettingsPage() {
                               initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
                               key={idx} 
-                              className="bg-white border border-outline-variant/40 p-1 pr-4 rounded-2xl flex items-center justify-between group shadow-sm hover:border-primary/30 transition-all"
+                              className="bg-surface border border-outline-variant/40 p-1 pr-4 rounded-2xl flex items-center justify-between group shadow-sm hover:border-primary/30 transition-all"
                             >
                               <input 
                                 type="text"
@@ -1238,7 +1238,7 @@ export default function SettingsPage() {
                           onClick={() => {
                             window.location.hash = '#/database-management';
                           }}
-                          className="flex-1 bg-white border border-outline-variant/50 text-primary py-3 rounded-xl font-bold hover:bg-background transition-all"
+                          className="flex-1 bg-surface border border-outline-variant/50 text-primary py-3 rounded-xl font-bold hover:bg-background transition-all"
                         >
                           تصدير سريع
                         </button>
@@ -1309,7 +1309,7 @@ export default function SettingsPage() {
                         <div className="space-y-3">
                           <label className="text-sm font-black text-secondary mr-2">كلمة المرور الجديدة</label>
                           <input 
-                            className="w-full bg-white border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-primary transition-all font-bold" 
+                            className="w-full bg-surface border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-primary transition-all font-bold" 
                             type="password" 
                             placeholder="••••••••"
                             value={newPassword}
@@ -1319,7 +1319,7 @@ export default function SettingsPage() {
                         <div className="space-y-3">
                           <label className="text-sm font-black text-secondary mr-2">تأكيد كلمة المرور</label>
                           <input 
-                            className="w-full bg-white border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-primary transition-all font-bold" 
+                            className="w-full bg-surface border-2 border-transparent rounded-[20px] px-6 py-4 focus:ring-0 focus:border-primary transition-all font-bold" 
                             type="password" 
                             placeholder="••••••••"
                             value={confirmPassword}
@@ -1376,7 +1376,7 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Google */}
                     <div className="bg-background p-6 rounded-3xl border border-outline-variant/30 flex flex-col items-center text-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                      <div className="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center shadow-sm">
                         <Chrome className="text-[#4285F4]" size={24} />
                       </div>
                       <div>
@@ -1406,7 +1406,7 @@ export default function SettingsPage() {
 
                     {/* Facebook */}
                     <div className="bg-background p-6 rounded-3xl border border-outline-variant/30 flex flex-col items-center text-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                      <div className="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center shadow-sm">
                         <Facebook className="text-[#1877F2]" size={24} />
                       </div>
                       <div>
@@ -1446,7 +1446,7 @@ export default function SettingsPage() {
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                         <div className="space-y-4">
                           <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                            <div className="p-3 bg-surface/10 rounded-2xl backdrop-blur-md">
                               <History size={24} className="text-primary-fixed" />
                             </div>
                             <div>
@@ -1467,7 +1467,7 @@ export default function SettingsPage() {
                           <button 
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isImporting}
-                            className="bg-white/10 text-white px-8 py-5 rounded-[24px] font-black flex items-center gap-3 hover:bg-white/20 transition-all shadow-xl hover:-translate-y-1 active:translate-y-0 disabled:opacity-50"
+                            className="bg-surface/10 text-white px-8 py-5 rounded-[24px] font-black flex items-center gap-3 hover:bg-surface/20 transition-all shadow-xl hover:-translate-y-1 active:translate-y-0 disabled:opacity-50"
                           >
                             {isImporting ? (
                               <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1476,7 +1476,7 @@ export default function SettingsPage() {
                             )}
                             استيراد من XLS
                           </button>
-                          <button className="bg-primary-fixed text-primary px-8 py-5 rounded-[24px] font-black flex items-center gap-3 hover:bg-white transition-all shadow-xl hover:-translate-y-1 active:translate-y-0">
+                          <button className="bg-primary-fixed text-primary px-8 py-5 rounded-[24px] font-black flex items-center gap-3 hover:bg-surface transition-all shadow-xl hover:-translate-y-1 active:translate-y-0">
                             <CloudUpload size={24} />
                             تصدير نسخة احتياطية (.json)
                           </button>
@@ -1509,7 +1509,7 @@ export default function SettingsPage() {
                     
                     <div className="space-y-4">
                       {fixResults.map((res, i) => (
-                        <div key={i} className="flex items-center justify-between bg-white p-4 rounded-2xl border border-outline-variant/20">
+                        <div key={i} className="flex items-center justify-between bg-surface p-4 rounded-2xl border border-outline-variant/20">
                           <div className="flex items-center gap-3">
                             {res.success ? (
                               <CheckCircle2 size={20} className="text-green-500" />
@@ -1616,7 +1616,7 @@ export default function SettingsPage() {
                       <label className="text-sm font-black text-secondary mr-2">الوضع الليلي</label>
                       <div className="flex items-center gap-4 bg-background p-4 rounded-[20px] border-2 border-transparent">
                         <div className="w-12 h-6 bg-outline-variant rounded-full relative cursor-not-allowed opacity-50">
-                          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full" />
+                          <div className="absolute left-1 top-1 w-4 h-4 bg-surface rounded-full" />
                         </div>
                         <span className="text-sm font-bold text-secondary opacity-50">غير متاح حالياً</span>
                       </div>

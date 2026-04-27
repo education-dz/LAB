@@ -46,7 +46,7 @@ export default function StorageMap({ chemicals }: StorageMapProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-white border border-outline/10 rounded-2xl shadow-sm overflow-hidden flex flex-col"
+            className="bg-surface border border-outline/10 rounded-2xl shadow-sm overflow-hidden flex flex-col"
           >
             <div className="bg-primary/5 p-4 border-b border-outline/5 flex justify-between items-center">
               <h4 className="font-black text-primary flex items-center gap-2">

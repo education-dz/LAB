@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { onSnapshot, query, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { db, handleFirestoreError, OperationType, getUserCollection } from '../firebase';
 import * as XLSX from 'xlsx';
 import { useSearchParams } from 'react-router-dom';
@@ -1203,6 +1204,15 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
 
   const lowStockCount = chemicals.filter(c => c.quantity < 10).length;
 
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: sortedChemicals.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 10,
+  });
+
   return (
     <div className={cn("space-y-10 max-w-7xl mx-auto pb-20", !isNested && "px-4")}>
       {/* Header */}
@@ -1222,28 +1232,28 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
             />
             <button 
               onClick={() => setIsQRScannerOpen(true)}
-              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+              className="bg-surface text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
             >
               <QrCode size={20} />
               مسح QR
             </button>
             <button 
               onClick={handlePrintList}
-              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+              className="bg-surface text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
             >
               <Printer size={20} />
               طباعة القائمة
             </button>
             <button 
               onClick={() => handlePrintInventoryCards(sortedChemicals)}
-              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+              className="bg-surface text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
             >
               <Printer size={20} className="text-primary" />
               طباعة بطاقات المخزون
             </button>
             <button 
               onClick={handleExportPDF}
-              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+              className="bg-surface text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
             >
               <FileText size={20} />
               تصدير PDF
@@ -1251,7 +1261,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm disabled:opacity-50"
+              className="bg-surface text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm disabled:opacity-50"
             >
               {isImporting ? (
                 <div className="w-5 h-5 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin" />
@@ -1262,7 +1272,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
             </button>
             <button 
               onClick={handleExportXLS}
-              className="bg-white text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+              className="bg-surface text-secondary border border-outline/10 px-6 py-3.5 rounded-full flex items-center gap-2 font-bold hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
             >
               <Download size={20} />
               تصدير الجرد
@@ -1320,7 +1330,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
             </h3>
           </div>
           <div className="bg-primary p-7 rounded-[32px] text-on-primary shadow-xl shadow-primary/20 hover:shadow-2xl transition-all group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+            <div className="absolute top-0 right-0 w-24 h-24 bg-surface/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
             <div className="relative z-10">
               <p className="text-white/60 text-xs font-black uppercase tracking-widest mb-3">سعة التخزين</p>
               <h3 className="text-4xl font-black">68%</h3>
@@ -1381,9 +1391,12 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
               </div>
             </div>
 
-            <div className="overflow-x-auto scrollbar-hide relative">
-              <table className="w-full text-right border-collapse table-auto">
-                <thead>
+            <div 
+              ref={parentRef}
+              className="overflow-auto scrollbar-hide relative max-h-[700px] w-full"
+            >
+              <table className="w-full text-right border-collapse table-auto relative">
+                <thead className="sticky top-0 z-20 bg-surface-container-lowest">
                   <tr className="bg-surface-container-low/50 text-secondary/60 text-[11px] font-black uppercase tracking-widest">
                     <th className="px-3 py-5 text-right w-12">
                       <div 
@@ -1467,7 +1480,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                     <th className="px-3 py-5 text-center w-24">إجراءات</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline/5">
+                <tbody className="divide-y divide-outline/5 relative w-full">
                   {loading ? (
                     <tr>
                       <td colSpan={12} className="px-8 py-20 text-center text-outline/60 font-bold">جاري التحميل...</td>
@@ -1477,11 +1490,20 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                       <td colSpan={12} className="px-8 py-20 text-center text-outline/60 font-bold">لا توجد مواد مطابقة للبحث</td>
                     </tr>
                   ) : (
-                    sortedChemicals.map((c, index) => (
-                      <tr 
-                        key={c.id} 
-                        onClick={() => setSelectedChemical(c)}
-                        className={cn(
+                    <>
+                      {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[0].start > 0 && (
+                        <tr><td style={{ padding: 0, height: `${rowVirtualizer.getVirtualItems()[0].start}px` }} colSpan={12} /></tr>
+                      )}
+                      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                        const index = virtualRow.index;
+                        const c = sortedChemicals[index];
+                        return (
+                          <tr 
+                            key={c.id} 
+                            onClick={() => setSelectedChemical(c)}
+                            ref={rowVirtualizer.measureElement}
+                            data-index={index}
+                            className={cn(
                           "hover:bg-surface-container-low/40 transition-all group cursor-pointer text-base",
                           selectedChemical?.id === c.id && "bg-surface-container-low/60 border-r-4 border-primary"
                         )}
@@ -1525,7 +1547,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                             {c.ghs?.slice(0, 3).map((g, i) => (
                               <div 
                                 key={i} 
-                                className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-outline/20 p-1 shadow-sm hover:scale-125 transition-transform z-10 relative group/ghs" 
+                                className="w-9 h-9 bg-surface rounded-lg flex items-center justify-center border border-outline/20 p-1 shadow-sm hover:scale-125 transition-transform z-10 relative group/ghs" 
                                 title={GHS_LABELS[g] || g}
                               >
                                 {GHS_ICONS[g] ? (
@@ -1604,7 +1626,12 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                           </div>
                         </td>
                       </tr>
-                    ))
+                      );
+                    })}
+                    {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems()?.at(-1)?.end || 0) > 0 && (
+                      <tr><td style={{ padding: 0, height: `${rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems()?.at(-1)?.end || 0)}px` }} colSpan={12} /></tr>
+                    )}
+                    </>
                   )}
                 </tbody>
               </table>
@@ -1681,7 +1708,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
                         {selectedChemical.ghs.map((g, i) => (
                           <div 
                             key={i} 
-                            className="bg-white p-3 rounded-2xl border border-outline/10 shadow-md hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-2 group/card"
+                            className="bg-surface p-3 rounded-2xl border border-outline/10 shadow-md hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-2 group/card"
                           >
                             <div className="w-16 h-16 flex items-center justify-center group-hover/card:scale-110 transition-transform">
                               {GHS_ICONS[g] ? (
@@ -1779,7 +1806,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
               <span className="text-[10px] text-white/60 font-bold">يمكنك إجراء عمليات جماعية على هذه المواد</span>
             </div>
 
-            <div className="h-10 w-px bg-white/10" />
+            <div className="h-10 w-px bg-surface/10" />
 
             <div className="flex gap-4">
               <button 
@@ -1791,7 +1818,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
               </button>
               
               <button 
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-sm"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-surface/10 hover:bg-surface/20 transition-all font-black text-sm"
                 onClick={() => {
                   const items = chemicals.filter(c => selectedIds.includes(c.id));
                   const worksheet = XLSX.utils.json_to_sheet(items.map(c => ({
@@ -1823,7 +1850,7 @@ export default function Chemicals({ isNested = false }: { isNested?: boolean }) 
 
               <button 
                 onClick={() => setSelectedIds([])}
-                className="p-2.5 hover:bg-white/10 rounded-full transition-all"
+                className="p-2.5 hover:bg-surface/10 rounded-full transition-all"
               >
                 <X size={20} />
               </button>

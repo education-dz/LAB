@@ -160,7 +160,7 @@ export default function BackupCenter() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Export Card */}
-        <section className="bg-white p-10 rounded-[40px] border border-outline/10 shadow-sm flex flex-col items-center text-center space-y-6 group hover:border-primary/20 transition-all">
+        <section className="bg-surface p-10 rounded-[40px] border border-outline/10 shadow-sm flex flex-col items-center text-center space-y-6 group hover:border-primary/20 transition-all">
           <div className="w-20 h-20 rounded-[32px] bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
             <Download size={40} />
           </div>
@@ -181,7 +181,7 @@ export default function BackupCenter() {
         </section>
 
         {/* Import Card */}
-        <section className="bg-white p-10 rounded-[40px] border border-outline/10 shadow-sm flex flex-col items-center text-center space-y-6 group hover:border-tertiary/20 transition-all">
+        <section className="bg-surface p-10 rounded-[40px] border border-outline/10 shadow-sm flex flex-col items-center text-center space-y-6 group hover:border-tertiary/20 transition-all">
           <div className="w-20 h-20 rounded-[32px] bg-tertiary/5 flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
             <Upload size={40} />
           </div>
@@ -208,7 +208,7 @@ export default function BackupCenter() {
           <h2 className="text-2xl font-black">منطقة الخطر</h2>
         </div>
         
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8 bg-white p-8 rounded-3xl border border-error/5 shadow-inner">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 bg-surface p-8 rounded-3xl border border-error/5 shadow-inner">
           <div className="space-y-1">
              <h4 className="text-xl font-black text-primary">تصفير كافة السجلات</h4>
              <p className="text-sm font-bold text-secondary/60">سيؤدي هذا الإجراء إلى حذف كافة الجرود والنتائج نهائياً. يستخدم غالباً في بداية الموسم الدراسي الجديد.</p>
@@ -231,7 +231,7 @@ export default function BackupCenter() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl p-10 text-center space-y-8"
+              className="relative bg-surface w-full max-w-md rounded-[40px] shadow-2xl p-10 text-center space-y-8"
             >
               <div className="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center text-error mx-auto border-4 border-error/5">
                 <AlertTriangle size={40} />

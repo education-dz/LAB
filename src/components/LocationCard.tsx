@@ -131,7 +131,7 @@ export default function LocationCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white p-8 rounded-[40px] border border-outline/5 shadow-xl relative overflow-hidden group h-full"
+      className="bg-surface p-8 rounded-[40px] border border-outline/5 shadow-xl relative overflow-hidden group h-full"
     >
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000" />
       
@@ -177,7 +177,7 @@ export default function LocationCard({
             >
               <div className="flex items-center justify-between p-5 bg-primary/5 rounded-[24px] border border-primary/10">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white rounded-xl shadow-sm text-primary">
+                  <div className="p-3 bg-surface rounded-xl shadow-sm text-primary">
                     <Navigation size={20} />
                   </div>
                   <div className="flex flex-col">
@@ -189,7 +189,7 @@ export default function LocationCard({
                 </div>
                 <button
                   onClick={copyToClipboard}
-                  className="p-3 bg-white rounded-xl shadow-sm text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-90"
+                  className="p-3 bg-surface rounded-xl shadow-sm text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-90"
                 >
                   {copied ? <Check size={18} /> : <Copy size={18} />}
                 </button>
@@ -209,7 +209,7 @@ export default function LocationCard({
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.1 }}
                         onClick={() => onSelect?.(inst)}
-                        className="flex items-center gap-4 p-4 bg-white border border-outline/5 rounded-[20px] shadow-sm hover:border-primary/30 transition-all cursor-pointer group/item hover:shadow-md"
+                        className="flex items-center gap-4 p-4 bg-surface border border-outline/5 rounded-[20px] shadow-sm hover:border-primary/30 transition-all cursor-pointer group/item hover:shadow-md"
                       >
                         <div className="p-2.5 bg-primary/5 rounded-xl text-primary group-hover/item:bg-primary group-hover/item:text-on-primary transition-colors">
                           <School size={18} />

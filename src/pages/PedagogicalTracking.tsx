@@ -449,7 +449,7 @@ export default function PedagogicalTracking() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl border border-outline/10"
+            className="bg-surface rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl border border-outline/10"
           >
             <div className="p-8 border-b border-outline/5 bg-surface-container-low/50 flex justify-between items-center">
               <div className="flex items-center gap-4">
@@ -474,7 +474,7 @@ export default function PedagogicalTracking() {
                   <div className="space-y-2">
                     <label className="text-sm font-black text-primary mr-2">المستوى</label>
                     <select 
-                      className="w-full bg-white border-none rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+                      className="w-full bg-surface border-none rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
                       value={editingEntry.level}
                       onChange={(e) => setEditingEntry({ ...editingEntry, level: e.target.value, branch: '', subject: '', domain: '', unit: '', lastLesson: '' })}
                     >
@@ -485,7 +485,7 @@ export default function PedagogicalTracking() {
                   <div className="space-y-2">
                     <label className="text-sm font-black text-primary mr-2">الشعبة</label>
                     <select 
-                      className="w-full bg-white border-none rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none disabled:opacity-50"
+                      className="w-full bg-surface border-none rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none disabled:opacity-50"
                       value={editingEntry.branch}
                       disabled={!editingEntry.level}
                       onChange={(e) => setEditingEntry({ ...editingEntry, branch: e.target.value, subject: '', domain: '', unit: '', lastLesson: '' })}
@@ -497,7 +497,7 @@ export default function PedagogicalTracking() {
                   <div className="space-y-2">
                     <label className="text-sm font-black text-primary mr-2">المادة</label>
                     <select 
-                      className="w-full bg-white border-none rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none disabled:opacity-50"
+                      className="w-full bg-surface border-none rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none disabled:opacity-50"
                       value={editingEntry.subject}
                       disabled={!editingEntry.branch}
                       onChange={(e) => setEditingEntry({ ...editingEntry, subject: e.target.value, domain: '', unit: '', lastLesson: '' })}
@@ -677,14 +677,14 @@ export default function PedagogicalTracking() {
           </button>
           <button 
             onClick={() => setIsTimeManagerOpen(true)}
-            className="bg-white text-primary border border-outline/10 px-6 py-4 rounded-[24px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-6 py-4 rounded-[24px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <Clock size={20} />
             تعديل المواقيت
           </button>
           <button 
             onClick={() => navigate('/pedagogical')}
-            className="bg-white text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
             العودة للفضاء البيداغوجي
@@ -712,7 +712,7 @@ export default function PedagogicalTracking() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="p-8 rounded-[40px] bg-primary/5 border border-primary/10 shadow-xl">
           <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white rounded-2xl shadow-sm text-primary">
+            <div className="p-4 bg-surface rounded-2xl shadow-sm text-primary">
               <CheckCircle2 size={24} />
             </div>
           </div>
@@ -721,7 +721,7 @@ export default function PedagogicalTracking() {
         </div>
         <div className="p-8 rounded-[40px] bg-success/5 border border-success/10 shadow-xl">
           <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white rounded-2xl shadow-sm text-success">
+            <div className="p-4 bg-surface rounded-2xl shadow-sm text-success">
               <TrendingUp size={24} />
             </div>
           </div>
@@ -730,7 +730,7 @@ export default function PedagogicalTracking() {
         </div>
         <div className="p-8 rounded-[40px] bg-error/5 border border-error/10 shadow-xl">
           <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-white rounded-2xl shadow-sm text-error">
+            <div className="p-4 bg-surface rounded-2xl shadow-sm text-error">
               <AlertCircle size={24} />
             </div>
           </div>
@@ -768,7 +768,7 @@ export default function PedagogicalTracking() {
                     <h3 className="text-sm font-black text-error mb-4 uppercase tracking-widest">تحذيرات تأخر حرجة</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {aiInsight.criticalDelays.map((delay, index) => (
-                        <div key={index} className="bg-white rounded-2xl p-6 border border-error/20 shadow-sm relative overflow-hidden">
+                        <div key={index} className="bg-surface rounded-2xl p-6 border border-error/20 shadow-sm relative overflow-hidden">
                           <div className="absolute top-0 left-0 w-1 h-full bg-error" />
                           <p className="font-black text-error mb-1">{delay.subject} - {delay.teacher}</p>
                           <p className="text-xs text-on-surface/60 font-bold mb-3">{delay.reason}</p>
@@ -786,7 +786,7 @@ export default function PedagogicalTracking() {
                   <h3 className="text-sm font-black text-primary mb-2 uppercase tracking-widest">توجيهات إدارية وبيداغوجية</h3>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {aiInsight.generalRecommendations.map((rec, i) => (
-                      <li key={i} className="flex gap-3 text-sm font-bold text-on-surface/80 bg-white p-4 rounded-xl border border-outline/5 shadow-sm">
+                      <li key={i} className="flex gap-3 text-sm font-bold text-on-surface/80 bg-surface p-4 rounded-xl border border-outline/5 shadow-sm">
                         <CheckCircle2 size={18} className="text-primary shrink-0" />
                         <span>{rec}</span>
                       </li>
@@ -807,11 +807,11 @@ export default function PedagogicalTracking() {
       </AnimatePresence>
 
       {/* Tracking List */}
-      <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
+      <section className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
         <div className="p-8 border-b border-outline/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-container-low/30">
           <div className="flex items-center gap-6 flex-wrap">
             <h2 className="text-2xl font-black text-primary">متابعة تنفيذ المناهج</h2>
-            <div className="flex items-center bg-white p-1 rounded-xl border border-outline/10 shadow-sm">
+            <div className="flex items-center bg-surface p-1 rounded-xl border border-outline/10 shadow-sm">
               {['الكل', 'أولى ثانوي', 'ثانية ثانوي', 'ثالثة ثانوي'].map(level => (
                 <button
                   key={level}
@@ -833,7 +833,7 @@ export default function PedagogicalTracking() {
             <input 
               type="text" 
               placeholder="بحث عن مادة، أستاذ..." 
-              className="w-full md:w-64 bg-white border border-outline/10 rounded-xl pr-10 pl-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full md:w-64 bg-surface border border-outline/10 rounded-xl pr-10 pl-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -881,7 +881,7 @@ export default function PedagogicalTracking() {
                   </div>
                   <button 
                     onClick={() => handleEdit(entry)}
-                    className="p-3 bg-white text-primary rounded-xl shadow-sm border border-outline/5 hover:bg-primary hover:text-on-primary transition-all active:scale-90"
+                    className="p-3 bg-surface text-primary rounded-xl shadow-sm border border-outline/5 hover:bg-primary hover:text-on-primary transition-all active:scale-90"
                     title="تعديل"
                   >
                     <Edit2 size={18} />

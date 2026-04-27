@@ -591,7 +591,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex flex-wrap gap-3 justify-center">
                   {expiringItems.map((item, i) => (
-                    <div key={item.id} className="bg-white/80 p-3 px-5 rounded-2xl border border-orange-200 flex items-center gap-3">
+                    <div key={item.id} className="bg-surface/80 p-3 px-5 rounded-2xl border border-orange-200 flex items-center gap-3">
                       <Clock size={14} className="text-orange-600" />
                       <span className="text-sm font-black text-orange-900">{item.nameAr}</span>
                       <span className="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{item.expiryDate}</span>
@@ -626,14 +626,14 @@ export default function Dashboard() {
                 stat.color
               )}
             >
-              <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute top-0 left-0 w-24 h-24 bg-surface/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
               <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className="p-4 bg-white rounded-[16px] shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-300">
+                <div className="p-4 bg-surface rounded-[16px] shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-300">
                   <Icon size={24} />
                 </div>
                 <span className={cn(
                   "text-[0.6875rem] font-black px-4 py-1.5 rounded-full shadow-sm tracking-widest",
-                  stat.label === 'تنبيهات النظام الحرجة' ? "bg-error text-white" : "bg-white text-primary"
+                  stat.label === 'تنبيهات النظام الحرجة' ? "bg-error text-on-error" : "bg-surface text-primary"
                 )}>
                   {stat.trend}
                 </span>
@@ -663,7 +663,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => navigate('/daily-report')}
-                className="bg-white p-6 rounded-[32px] border border-outline/5 shadow-xl hover:shadow-2xl transition-all cursor-pointer group"
+                className="bg-surface p-6 rounded-[32px] border border-outline/5 shadow-xl hover:shadow-2xl transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-primary/5 rounded-2xl text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
@@ -741,7 +741,7 @@ export default function Dashboard() {
       </section>
 
       {/* Activity Preview with Recharts */}
-      <section className="bg-white rounded-[50px] p-12 lg:p-16 flex flex-col lg:flex-row gap-16 items-center border border-outline/10 shadow-2xl relative overflow-hidden">
+      <section className="bg-surface rounded-[50px] p-12 lg:p-16 flex flex-col lg:flex-row gap-16 items-center border border-outline/10 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full -ml-64 -mt-64 blur-[100px] pointer-events-none" />
         
         <div className="flex-1 space-y-8 relative z-10">
@@ -798,7 +798,7 @@ export default function Dashboard() {
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-white p-3 rounded-xl shadow-xl border border-outline/10">
+                        <div className="bg-surface p-3 rounded-xl shadow-xl border border-outline/10">
                           <p className="text-[10px] font-black uppercase text-secondary/40 tracking-widest">{payload[0].payload.name}</p>
                           <p className="text-lg font-black text-primary">{payload[0].value} حصص</p>
                         </div>

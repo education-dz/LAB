@@ -49,7 +49,7 @@ export default function Sync() {
         <div className="flex items-center gap-4 relative z-10">
           <button 
             onClick={() => navigate('/pedagogical')}
-            className="bg-white text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
+            className="bg-surface text-primary border border-outline/10 px-8 py-4 rounded-[32px] font-black flex items-center gap-3 shadow-xl hover:bg-primary/5 transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
             العودة للفضاء البيداغوجي
@@ -69,7 +69,7 @@ export default function Sync() {
 
       {/* Sync Status Cards */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="p-8 rounded-[40px] bg-white border border-outline/10 shadow-xl flex items-center gap-6">
+        <div className="p-8 rounded-[40px] bg-surface border border-outline/10 shadow-xl flex items-center gap-6">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
             <Link size={32} />
           </div>
@@ -78,7 +78,7 @@ export default function Sync() {
             <span className="text-3xl font-black text-primary">24 / 32</span>
           </div>
         </div>
-        <div className="p-8 rounded-[40px] bg-white border border-outline/10 shadow-xl flex items-center gap-6">
+        <div className="p-8 rounded-[40px] bg-surface border border-outline/10 shadow-xl flex items-center gap-6">
           <div className="w-16 h-16 rounded-2xl bg-error/10 flex items-center justify-center text-error">
             <Unlink size={32} />
           </div>
@@ -90,7 +90,7 @@ export default function Sync() {
       </section>
 
       {/* Sync List */}
-      <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
+      <section className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
         <div className="p-8 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <h2 className="text-2xl font-black text-primary">قائمة المزامنة</h2>
         </div>
@@ -102,7 +102,7 @@ export default function Sync() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="p-6 rounded-[24px] bg-surface-container-low border border-outline/5 flex items-center justify-between group hover:bg-white hover:shadow-xl transition-all"
+              className="p-6 rounded-[24px] bg-surface-container-low border border-outline/5 flex items-center justify-between group hover:bg-surface hover:shadow-xl transition-all"
             >
               <div className="flex items-center gap-6">
                 <div className={cn(

@@ -205,14 +205,14 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
           <div className="flex flex-wrap gap-4 relative z-10">
             <button 
               onClick={handlePrint}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 transition-all shadow-xl active:scale-95"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 transition-all shadow-xl active:scale-95"
             >
               <Printer size={20} />
               طباعة البطاقات
             </button>
             <button 
               onClick={handleSeedData}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 transition-all shadow-xl active:scale-95"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 transition-all shadow-xl active:scale-95"
             >
               <Sparkles size={20} />
               إضافة النماذج (25 صنف)
@@ -245,7 +245,7 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
               className={cn("p-6 rounded-[32px] border border-outline/5 shadow-lg", stat.color)}
             >
               <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-white rounded-xl shadow-sm text-primary">
+                <div className="p-3 bg-surface rounded-xl shadow-sm text-primary">
                   <stat.icon size={20} />
                 </div>
               </div>
@@ -259,13 +259,13 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
       )}
 
       {/* Main Table Container */}
-      <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
+      <section className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
         {/* Table Actions (Screen Only) */}
         <div className="p-8 border-b border-outline/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-surface-container-low/30 print:hidden">
           <div className="relative w-full md:w-96">
             <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40" size={20} />
             <input 
-              className="w-full bg-white border-2 border-outline/5 rounded-full pr-14 pl-6 py-3 text-sm font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+              className="w-full bg-surface border-2 border-outline/5 rounded-full pr-14 pl-6 py-3 text-sm font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
               placeholder="بحث بالاسم أو النوع..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -273,7 +273,7 @@ export default function GlasswareBreakage({ isNested = false }: { isNested?: boo
           </div>
           <div className="flex gap-4">
             <select 
-              className="bg-white border-2 border-outline/5 rounded-full px-6 py-3 text-sm font-black text-primary focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+              className="bg-surface border-2 border-outline/5 rounded-full px-6 py-3 text-sm font-black text-primary focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >

@@ -389,7 +389,7 @@ export default function InventoryCardsRegistry() {
         ))}
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8 bg-white shadow-2xl rounded-[40px] my-8 font-sans transition-all duration-500 no-print" dir="rtl">
+      <div className="max-w-7xl mx-auto p-4 md:p-8 bg-surface shadow-2xl rounded-[40px] my-8 font-sans transition-all duration-500 no-print" dir="rtl">
       {/* Official Algeria Header */}
       <div className="border-b-4 border-double border-primary/20 pb-8 mb-10">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 text-sm font-bold text-on-surface/80">
@@ -423,7 +423,7 @@ export default function InventoryCardsRegistry() {
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
             <div className="w-full border-t border-primary/10"></div>
           </div>
-          <h2 className="relative inline-block bg-white px-8 text-3xl font-black text-primary tracking-tighter decoration-primary decoration-4 underline-offset-8">
+          <h2 className="relative inline-block bg-surface px-8 text-3xl font-black text-primary tracking-tighter decoration-primary decoration-4 underline-offset-8">
             سجل بطاقات الجرد - مخبر الوسائل التعليمية
           </h2>
         </div>
@@ -457,7 +457,7 @@ export default function InventoryCardsRegistry() {
           <input
             type="text"
             placeholder="بحث في السجل..."
-            className="w-full pr-14 pl-6 py-4 bg-surface-container-low border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[24px] font-bold text-sm shadow-inner transition-all outline-none"
+            className="w-full pr-14 pl-6 py-4 bg-surface-container-low border-2 border-transparent focus:border-primary/20 focus:bg-surface rounded-[24px] font-bold text-sm shadow-inner transition-all outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -586,7 +586,7 @@ export default function InventoryCardsRegistry() {
                 <td className="p-4 border-l border-primary/5">
                   <input 
                     type="text" 
-                    className="w-full bg-transparent border-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs text-center transition-all underline decoration-dotted decoration-primary/20"
+                    className="w-full bg-transparent border-none focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs text-center transition-all underline decoration-dotted decoration-primary/20"
                     value={item.serialNumber}
                     onChange={(e) => handleUpdateItem(item.id, 'serialNumber', e.target.value)}
                   />
@@ -594,7 +594,7 @@ export default function InventoryCardsRegistry() {
                 <td className="p-4 border-l border-primary/5">
                   <input 
                     type="text" 
-                    className="w-full bg-transparent border-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs transition-all decoration-primary/20"
+                    className="w-full bg-transparent border-none focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs transition-all decoration-primary/20"
                     value={item.name}
                     onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
                   />
@@ -618,7 +618,7 @@ export default function InventoryCardsRegistry() {
                 <td className="p-4 border-l border-primary/5">
                   <input 
                     type="number" 
-                    className="w-16 bg-transparent border-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs text-center transition-all"
+                    className="w-16 bg-transparent border-none focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs text-center transition-all"
                     value={item.totalQuantity}
                     onChange={(e) => handleUpdateItem(item.id, 'totalQuantity', parseInt(e.target.value) || 0)}
                   />
@@ -626,7 +626,7 @@ export default function InventoryCardsRegistry() {
                 <td className="p-4 border-l border-primary/5">
                   <input 
                     type="text" 
-                    className="w-full bg-transparent border-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs text-center transition-all"
+                    className="w-full bg-transparent border-none focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs text-center transition-all"
                     value={item.supplier}
                     onChange={(e) => handleUpdateItem(item.id, 'supplier', e.target.value)}
                   />
@@ -647,7 +647,7 @@ export default function InventoryCardsRegistry() {
                 <td className="p-4 border-l border-primary/5">
                   <input 
                     type="text" 
-                    className="w-full bg-transparent border-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs transition-all"
+                    className="w-full bg-transparent border-none focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 rounded px-2 font-bold text-xs transition-all"
                     value={item.notes}
                     onChange={(e) => handleUpdateItem(item.id, 'notes', e.target.value)}
                   />

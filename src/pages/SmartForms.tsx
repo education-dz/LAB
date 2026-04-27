@@ -121,7 +121,7 @@ export default function SmartForms() {
             <input 
               type="text"
               placeholder="اكتب ما تحتاجه (مثلاً: أريد محضر كسر)..."
-              className="w-full bg-white border-2 border-outline-variant/30 rounded-2xl px-6 py-3.5 pr-12 focus:border-primary transition-all font-bold text-sm shadow-lg outline-none"
+              className="w-full bg-surface border-2 border-outline-variant/30 rounded-2xl px-6 py-3.5 pr-12 focus:border-primary transition-all font-bold text-sm shadow-lg outline-none"
               value={aiQuery}
               onChange={(e) => setAiQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleFindForm()}
@@ -177,7 +177,7 @@ export default function SmartForms() {
                   "p-6 rounded-[32px] border-2 text-right transition-all group relative overflow-hidden",
                   selectedTemplate?.id === tmpl.id 
                     ? "border-primary bg-primary/5 shadow-xl -translate-y-1" 
-                    : "border-outline/5 bg-white hover:border-primary/20"
+                    : "border-outline/5 bg-surface hover:border-primary/20"
                 )}
               >
                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110", tmpl.color)}>
@@ -205,7 +205,7 @@ export default function SmartForms() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="bg-white rounded-[40px] border border-outline/10 shadow-sm overflow-hidden flex flex-col min-h-[600px]"
+                className="bg-surface rounded-[40px] border border-outline/10 shadow-sm overflow-hidden flex flex-col min-h-[600px]"
               >
                 <div className="p-8 border-b border-outline/5 bg-surface-container-low/30 flex justify-between items-center">
                   <div className="flex items-center gap-4">
@@ -219,7 +219,7 @@ export default function SmartForms() {
                       <Download size={18} />
                       تصدير PDF
                     </button>
-                    <button onClick={() => window.print()} className="p-3 bg-white border border-outline/10 rounded-full hover:bg-surface-container transition-all">
+                    <button onClick={() => window.print()} className="p-3 bg-surface border border-outline/10 rounded-full hover:bg-surface-container transition-all">
                       <Printer size={20} />
                     </button>
                   </div>
@@ -257,18 +257,18 @@ export default function SmartForms() {
                     <div className="space-y-3">
                       {formData.items.map((item, idx) => (
                         <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-surface-container-low p-4 rounded-3xl border border-outline/5">
-                           <input placeholder="اسم الوسيلة" className="bg-white border border-outline/10 rounded-xl px-4 py-2 text-sm font-bold" value={item.name} onChange={e => {
+                           <input placeholder="اسم الوسيلة" className="bg-surface border border-outline/10 rounded-xl px-4 py-2 text-sm font-bold" value={item.name} onChange={e => {
                              const newItems = [...formData.items];
                              newItems[idx].name = e.target.value;
                              setFormData({...formData, items: newItems});
                            }} />
-                           <input placeholder="الكمية" className="bg-white border border-outline/10 rounded-xl px-4 py-2 text-sm font-bold" value={item.quantity} onChange={e => {
+                           <input placeholder="الكمية" className="bg-surface border border-outline/10 rounded-xl px-4 py-2 text-sm font-bold" value={item.quantity} onChange={e => {
                              const newItems = [...formData.items];
                              newItems[idx].quantity = e.target.value;
                              setFormData({...formData, items: newItems});
                            }} />
                            <div className="flex gap-2">
-                             <select className="flex-1 bg-white border border-outline/10 rounded-xl px-4 py-2 text-xs font-bold" value={item.condition} onChange={e => {
+                             <select className="flex-1 bg-surface border border-outline/10 rounded-xl px-4 py-2 text-xs font-bold" value={item.condition} onChange={e => {
                                const newItems = [...formData.items];
                                newItems[idx].condition = e.target.value;
                                setFormData({...formData, items: newItems});
@@ -313,7 +313,7 @@ export default function SmartForms() {
               </motion.div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-20 bg-surface-container-low/20 rounded-[40px] border-2 border-dashed border-outline/10">
-                <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-secondary/20 mb-8 border border-outline/5 shadow-inner">
+                <div className="w-24 h-24 rounded-full bg-surface flex items-center justify-center text-secondary/20 mb-8 border border-outline/5 shadow-inner">
                    <PenTool size={48} />
                 </div>
                 <h3 className="text-2xl font-black text-primary mb-4">جاهز للبدء؟</h3>

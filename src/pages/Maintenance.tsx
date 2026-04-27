@@ -226,7 +226,7 @@ export default function Maintenance() {
               onClick={() => setViewMode('list')}
               className={cn(
                 "flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-sm font-black transition-all",
-                viewMode === 'list' ? "bg-white text-primary shadow-sm" : "text-secondary/50"
+                viewMode === 'list' ? "bg-surface text-primary shadow-sm" : "text-secondary/50"
               )}
             >
               <List size={18} />
@@ -236,7 +236,7 @@ export default function Maintenance() {
               onClick={() => setViewMode('calendar')}
               className={cn(
                 "flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-sm font-black transition-all",
-                viewMode === 'calendar' ? "bg-white text-primary shadow-sm" : "text-secondary/50"
+                viewMode === 'calendar' ? "bg-surface text-primary shadow-sm" : "text-secondary/50"
               )}
             >
               <CalendarDays size={18} />
@@ -281,7 +281,7 @@ export default function Maintenance() {
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={i} className="bg-white rounded-3xl p-6 border border-outline/5 shadow-sm flex items-center justify-between">
+            <div key={i} className="bg-surface rounded-3xl p-6 border border-outline/5 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-secondary font-bold text-xs mb-1 uppercase tracking-widest">{stat.label}</p>
                 <p className="text-3xl font-black text-primary">{stat.value}</p>
@@ -323,7 +323,7 @@ export default function Maintenance() {
                     <h3 className="text-sm font-black text-error mb-4 uppercase tracking-widest">إجراءات مستعجلة</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {aiInsight.urgentActions.map((action, index) => (
-                        <div key={index} className="bg-white rounded-2xl p-6 border border-error/20 shadow-sm">
+                        <div key={index} className="bg-surface rounded-2xl p-6 border border-error/20 shadow-sm">
                           <p className="font-black text-primary mb-1">{action.equipmentName}</p>
                           <p className="text-xs text-on-surface/60 font-bold mb-3">{action.issue}</p>
                           <div className="bg-error/5 p-3 rounded-xl border border-error/10">
@@ -339,7 +339,7 @@ export default function Maintenance() {
                   <h3 className="text-sm font-black text-primary mb-2 uppercase tracking-widest">توصيات وقائية</h3>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {aiInsight.preventiveMeasures.map((measure, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm font-bold text-on-surface/80 bg-white p-4 rounded-xl border border-outline/5 shadow-sm">
+                      <li key={i} className="flex items-start gap-3 text-sm font-bold text-on-surface/80 bg-surface p-4 rounded-xl border border-outline/5 shadow-sm">
                         <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />
                         <span>{measure}</span>
                       </li>
@@ -360,7 +360,7 @@ export default function Maintenance() {
       </AnimatePresence>
 
       {viewMode === 'calendar' ? (
-        <div className="bg-white rounded-[40px] border border-outline/10 shadow-sm overflow-hidden p-8">
+        <div className="bg-surface rounded-[40px] border border-outline/10 shadow-sm overflow-hidden p-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
             <h2 className="text-3xl font-black text-primary font-serif">
               {format(currentMonth, 'MMMM yyyy', { locale: ar })}
@@ -368,19 +368,19 @@ export default function Maintenance() {
             <div className="flex bg-surface-container-low p-1.5 rounded-2xl gap-2">
               <button 
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="p-3 hover:bg-white rounded-xl transition-all shadow-hover"
+                className="p-3 hover:bg-surface rounded-xl transition-all shadow-hover"
               >
                 <ChevronRight size={20} />
               </button>
               <button 
                 onClick={() => setCurrentMonth(new Date())}
-                className="px-6 py-2 bg-white text-primary font-black rounded-xl shadow-sm hover:scale-105 transition-all"
+                className="px-6 py-2 bg-surface text-primary font-black rounded-xl shadow-sm hover:scale-105 transition-all"
               >
                 الشهر الحالي
               </button>
               <button 
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="p-3 hover:bg-white rounded-xl transition-all shadow-hover"
+                className="p-3 hover:bg-surface rounded-xl transition-all shadow-hover"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -406,7 +406,7 @@ export default function Maintenance() {
                     key={day.toString()} 
                     className={cn(
                       "h-44 p-5 border border-outline/5 rounded-[32px] transition-all flex flex-col gap-3 relative group overflow-hidden",
-                      isToday(day) ? "bg-primary/5 ring-2 ring-primary/40 shadow-inner" : "bg-white hover:bg-surface-container-low/40"
+                      isToday(day) ? "bg-primary/5 ring-2 ring-primary/40 shadow-inner" : "bg-surface hover:bg-surface-container-low/40"
                     )}
                   >
                     <span className={cn(
@@ -440,7 +440,7 @@ export default function Maintenance() {
       ) : (
         /* Enhanced List View */
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 bg-white p-6 rounded-[32px] shadow-sm border border-outline/10">
+          <div className="flex flex-col md:flex-row gap-4 bg-surface p-6 rounded-[32px] shadow-sm border border-outline/10">
             <div className="relative flex-1">
               <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-secondary/30" size={20} />
               <input 
@@ -459,7 +459,7 @@ export default function Maintenance() {
                   className={cn(
                     "px-6 py-3 rounded-xl text-xs font-black transition-all whitespace-nowrap uppercase tracking-widest",
                     statusFilter === status 
-                      ? "bg-white text-primary shadow-sm" 
+                      ? "bg-surface text-primary shadow-sm" 
                       : "text-secondary/40 hover:text-secondary"
                   )}
                 >
@@ -480,7 +480,7 @@ export default function Maintenance() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-white p-8 rounded-[40px] border border-outline/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden"
+                  className="bg-surface p-8 rounded-[40px] border border-outline/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden"
                 >
                   <div className={cn(
                     "absolute top-0 right-0 w-2 h-full transition-all",
@@ -560,11 +560,11 @@ export default function Maintenance() {
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="bg-white w-full max-w-xl rounded-[48px] shadow-2xl relative z-10 overflow-hidden border border-outline/10"
+              className="bg-surface w-full max-w-xl rounded-[48px] shadow-2xl relative z-10 overflow-hidden border border-outline/10"
             >
               <div className="p-10 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
                 <h2 className="text-3xl font-black text-primary font-serif italic">تقرير عطل جديد</h2>
-                <button onClick={() => setIsAddingLog(false)} className="p-3 hover:bg-white rounded-full transition-all shadow-sm">
+                <button onClick={() => setIsAddingLog(false)} className="p-3 hover:bg-surface rounded-full transition-all shadow-sm">
                   <X size={28} className="text-secondary/40" />
                 </button>
               </div>

@@ -37,7 +37,7 @@ export default function OfflineBanner() {
         <span className="text-sm font-bold">أنت الآن في وضع عدم الاتصال (Offline). يتم حفظ البيانات محلياً.</span>
         <button 
           onClick={() => setDismissed(true)}
-          className="mr-4 p-1 hover:bg-white/20 rounded-full transition-all"
+          className="mr-4 p-1 hover:bg-surface/20 rounded-full transition-all"
         >
           <X size={16} />
         </button>

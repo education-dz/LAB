@@ -193,7 +193,7 @@ export default function Layout() {
           )}
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto no-scrollbar">
+        <nav role="navigation" aria-label="القائمة الرئيسية" className="flex-1 px-4 py-6 space-y-4 overflow-y-auto no-scrollbar">
           {navigationGroups.map((group) => {
             const isExpanded = expandedGroups.includes(group.title);
             const toggleGroup = () => {
@@ -403,7 +403,7 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="p-8 print:p-0">
+        <main role="main" aria-label="المحتوى الرئيسي" className="p-8 print:p-0">
           <Breadcrumbs />
           <ErrorBoundary>
             <Suspense fallback={

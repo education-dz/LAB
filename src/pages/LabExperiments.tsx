@@ -233,7 +233,7 @@ export default function LabExperiments() {
       </div>
 
       {/* Search and List */}
-      <div className="bg-white rounded-[32px] border border-outline/10 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-[32px] border border-outline/10 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <div className="flex items-center gap-6 flex-1">
              <div 
@@ -242,7 +242,7 @@ export default function LabExperiments() {
                   "w-6 h-6 rounded-lg border-2 cursor-pointer flex items-center justify-center transition-all shrink-0",
                   selectedIds.length === filteredExperiments.length && filteredExperiments.length > 0
                     ? "bg-primary border-primary text-white" 
-                    : "border-outline/30 hover:border-primary/50 bg-white"
+                    : "border-outline/30 hover:border-primary/50 bg-surface"
                 )}
               >
                 {selectedIds.length === filteredExperiments.length && filteredExperiments.length > 0 && <Check size={14} />}
@@ -252,7 +252,7 @@ export default function LabExperiments() {
               <input 
                 type="text" 
                 placeholder="بحث عن تجربة، أستاذ، أو قسم..." 
-                className="w-full bg-white border border-outline/10 rounded-2xl pr-12 pl-4 py-3 font-bold text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                className="w-full bg-surface border border-outline/10 rounded-2xl pr-12 pl-4 py-3 font-bold text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -281,7 +281,7 @@ export default function LabExperiments() {
                       handleToggleSelect(exp.id);
                     }}
                     className={cn(
-                      "w-6 h-6 rounded-lg border-2 cursor-pointer flex items-center justify-center transition-all bg-white mt-5",
+                      "w-6 h-6 rounded-lg border-2 cursor-pointer flex items-center justify-center transition-all bg-surface mt-5",
                       selectedIds.includes(exp.id) 
                         ? "bg-primary border-primary text-white scale-110" 
                         : "border-outline/30 group-hover:border-primary/50"
@@ -361,7 +361,7 @@ export default function LabExperiments() {
                     <button 
                       key={i}
                       onClick={() => handleAddMaterial(mat)}
-                      className="w-full text-right p-4 bg-white hover:bg-primary/5 rounded-2xl border border-outline/5 transition-all font-bold text-xs flex justify-between items-center group"
+                      className="w-full text-right p-4 bg-surface hover:bg-primary/5 rounded-2xl border border-outline/5 transition-all font-bold text-xs flex justify-between items-center group"
                     >
                       <span className="text-secondary group-hover:text-primary transition-colors">{mat.name}</span>
                       <Plus size={14} className="text-primary/40 group-hover:text-primary" />
@@ -371,7 +371,7 @@ export default function LabExperiments() {
               </div>
 
               {/* Form Area */}
-              <div className="flex-1 flex flex-col overflow-hidden bg-white">
+              <div className="flex-1 flex flex-col overflow-hidden bg-surface">
                 <div className="p-8 border-b border-outline/5 flex justify-between items-center shrink-0">
                   <h3 className="text-2xl font-black text-primary">تسجيل حصة تطبيقية</h3>
                   <button onClick={() => setIsModalOpen(false)} className="p-2.5 hover:bg-surface-container-high rounded-full transition-all active:scale-90"><X size={24} /></button>
@@ -432,7 +432,7 @@ export default function LabExperiments() {
                         <label className="text-xs font-black text-primary uppercase tracking-widest mb-3 block">المواد المستهلكة ({newExp.materialsUsed?.length})</label>
                         <div className="flex flex-wrap gap-2">
                            {newExp.materialsUsed?.map((m, idx) => (
-                             <div key={idx} className="bg-white border border-primary/20 px-3 py-1.5 rounded-xl text-[10px] font-black text-primary flex items-center gap-2">
+                             <div key={idx} className="bg-surface border border-primary/20 px-3 py-1.5 rounded-xl text-[10px] font-black text-primary flex items-center gap-2">
                                {m.name}
                                <input 
                                  type="number" 
@@ -498,7 +498,7 @@ export default function LabExperiments() {
               <span className="text-[10px] text-white/40 font-bold">عمليات جماعية</span>
             </div>
 
-            <div className="h-10 w-px bg-white/10" />
+            <div className="h-10 w-px bg-surface/10" />
 
             <div className="flex gap-4">
               <button 
@@ -510,7 +510,7 @@ export default function LabExperiments() {
               </button>
               
               <button 
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-sm"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-surface/10 hover:bg-surface/20 transition-all font-black text-sm"
                 onClick={() => {
                   const items = experiments.filter(e => selectedIds.includes(e.id));
                   const worksheet = XLSX.utils.json_to_sheet(items.map(e => ({
@@ -532,7 +532,7 @@ export default function LabExperiments() {
 
               <button 
                 onClick={() => setSelectedIds([])}
-                className="p-2.5 hover:bg-white/10 rounded-full transition-all"
+                className="p-2.5 hover:bg-surface/10 rounded-full transition-all"
               >
                 <X size={20} />
               </button>

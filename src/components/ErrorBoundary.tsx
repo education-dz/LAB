@@ -50,7 +50,7 @@ class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4 font-sans">
-          <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl shadow-primary/10 p-8 border border-primary/5">
+          <div className="max-w-md w-full bg-surface rounded-3xl shadow-2xl shadow-primary/10 p-8 border border-primary/5">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-10 h-10 text-red-500" />
@@ -88,7 +88,7 @@ class ErrorBoundary extends Component<Props, State> {
                     href="https://console.firebase.google.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-4 bg-white text-primary border-2 border-primary/10 rounded-2xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-surface text-primary border-2 border-primary/10 rounded-2xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                   >
                     <ExternalLink className="w-5 h-5" />
                     فتح Firebase Console

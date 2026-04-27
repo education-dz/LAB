@@ -59,6 +59,7 @@ const ChemicalStorage = React.lazy(() => import('./pages/ChemicalStorage'));
 const SchoolLegislation = React.lazy(() => import('./pages/SchoolLegislation'));
 const SafetyGuide = React.lazy(() => import('./pages/SafetyGuide'));
 const LabCalculators = React.lazy(() => import('./pages/LabCalculators'));
+const DesignSystem = React.lazy(() => import('./pages/DesignSystem'));
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -149,6 +150,7 @@ export default function App() {
                 <Route path="teachers" element={<Teachers />} />
                 <Route path="daily-report" element={<DailyReport />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="design-system" element={<DesignSystem />} />
                 {/* Catch-all 404 route for authenticated users */}
                 <Route path="*" element={<Navigate to="/not-found" replace />} />
               </Route>

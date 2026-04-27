@@ -83,7 +83,7 @@ export default function Reports() {
   return (
     <div className="space-y-12 max-w-7xl mx-auto px-6 pb-24 rtl font-sans" dir="rtl">
       {/* Header */}
-      <header className="relative overflow-hidden bg-white p-12 rounded-[40px] border border-outline/10 shadow-2xl flex justify-between items-start">
+      <header className="relative overflow-hidden bg-surface p-12 rounded-[40px] border border-outline/10 shadow-2xl flex justify-between items-start">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-[200px] -mr-20 -mt-20" />
         
         <div className="relative z-10 flex flex-col gap-4 text-right">
@@ -135,10 +135,10 @@ export default function Reports() {
               )}
             >
               <div className="flex justify-between items-start mb-8">
-                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <div className="p-4 bg-surface rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
                   <Icon size={24} />
                 </div>
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-white px-3 py-1 rounded-full shadow-sm">{kpi.trend}</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-surface px-3 py-1 rounded-full shadow-sm">{kpi.trend}</span>
               </div>
               <div>
                 <p className="text-5xl font-black text-primary leading-none tracking-tighter mb-2">{loading ? '...' : kpi.value}</p>
@@ -151,7 +151,7 @@ export default function Reports() {
 
       {/* Charts Row */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="bg-white p-10 rounded-[40px] flex flex-col gap-8 border border-outline/10 shadow-2xl relative overflow-hidden">
+        <div className="bg-surface p-10 rounded-[40px] flex flex-col gap-8 border border-outline/10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-br-[100px] -ml-10 -mt-10" />
           <div className="relative z-10 flex justify-between items-center">
             <h3 className="text-2xl font-black text-primary tracking-tight">توزيع النشاطات حسب المادة</h3>
@@ -182,7 +182,7 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="bg-white p-10 rounded-[40px] flex flex-col gap-8 border border-outline/10 shadow-2xl relative overflow-hidden">
+        <div className="bg-surface p-10 rounded-[40px] flex flex-col gap-8 border border-outline/10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -mr-10 -mt-10" />
           <div className="relative z-10 flex justify-between items-center">
             <h3 className="text-2xl font-black text-primary tracking-tight">حجم التجارب الأسبوعي</h3>
@@ -210,7 +210,7 @@ export default function Reports() {
       <div className="flex justify-center gap-8 pb-12">
         <button 
           onClick={() => navigate('/daily-report')}
-          className="bg-white text-primary border-2 border-primary/20 font-black py-5 px-10 rounded-full shadow-xl hover:bg-primary/5 hover:border-primary transition-all flex items-center gap-4 active:scale-95"
+          className="bg-surface text-primary border-2 border-primary/20 font-black py-5 px-10 rounded-full shadow-xl hover:bg-primary/5 hover:border-primary transition-all flex items-center gap-4 active:scale-95"
         >
           <FileText size={22} />
           التقرير اليومي

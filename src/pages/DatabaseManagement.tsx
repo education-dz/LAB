@@ -149,7 +149,7 @@ export default function DatabaseManagement() {
               "flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all border",
               connectionStatus === 'success' ? "bg-green-50 text-green-600 border-green-100" :
               connectionStatus === 'error' ? "bg-red-50 text-red-600 border-red-100" :
-              "bg-white text-primary border-primary/10 hover:bg-primary/5"
+              "bg-surface text-primary border-primary/10 hover:bg-primary/5"
             )}
           >
             {isCheckingConnection ? <RefreshCw size={18} className="animate-spin" /> : <Cloud size={18} />}
@@ -242,7 +242,7 @@ export default function DatabaseManagement() {
               className="w-full flex items-center justify-between p-5 bg-surface-container-low hover:bg-primary/5 rounded-2xl border border-outline/5 transition-all group"
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-white rounded-xl text-primary shadow-sm group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-surface rounded-xl text-primary shadow-sm group-hover:scale-110 transition-transform">
                   <Download size={20} />
                 </div>
                 <div className="text-right">
@@ -254,7 +254,7 @@ export default function DatabaseManagement() {
 
             <button className="w-full flex items-center justify-between p-5 bg-surface-container-low hover:bg-primary/5 rounded-2xl border border-outline/5 transition-all group opacity-50 cursor-not-allowed">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-white rounded-xl text-primary shadow-sm group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-surface rounded-xl text-primary shadow-sm group-hover:scale-110 transition-transform">
                   <Upload size={20} />
                 </div>
                 <div className="text-right">
@@ -269,7 +269,7 @@ export default function DatabaseManagement() {
               className="w-full flex items-center justify-between p-5 bg-surface-container-low hover:bg-primary/5 rounded-2xl border border-outline/5 transition-all group"
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-white rounded-xl text-primary shadow-sm group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-surface rounded-xl text-primary shadow-sm group-hover:scale-110 transition-transform">
                   <History size={20} />
                 </div>
                 <div className="text-right">
@@ -316,7 +316,7 @@ export default function DatabaseManagement() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-white rounded-[32px] p-10 max-w-md w-full shadow-2xl border border-outline/10 text-right"
+              className="relative bg-surface rounded-[32px] p-10 max-w-md w-full shadow-2xl border border-outline/10 text-right"
             >
               <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
                 <AlertTriangle size={40} className="text-red-600" />

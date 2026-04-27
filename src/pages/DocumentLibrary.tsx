@@ -149,7 +149,7 @@ export default function DocumentLibrary() {
               className={cn(
                 "p-8 rounded-[40px] border-2 text-right group relative overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1",
                 link.accent,
-                "bg-white"
+                "bg-surface"
               )}
             >
               <div className={cn("w-16 h-16 rounded-[24px] flex items-center justify-center mb-6 shadow-sm", link.color)}>
@@ -188,14 +188,14 @@ export default function DocumentLibrary() {
           </button>
         </div>
 
-        <div className="bg-white rounded-[40px] border border-outline/10 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-[40px] border border-outline/10 shadow-sm overflow-hidden">
           <div className="p-8 border-b border-outline/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-surface-container-low/30">
             <div className="relative w-full max-w-md">
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/40" size={20} />
               <input 
                 type="text" 
                 placeholder="بحث في أرشيف المستخدم..." 
-                className="w-full bg-white border border-outline/10 rounded-2xl pr-12 pl-4 py-4 font-bold text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                className="w-full bg-surface border border-outline/10 rounded-2xl pr-12 pl-4 py-4 font-bold text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -209,7 +209,7 @@ export default function DocumentLibrary() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-white p-8 group hover:bg-primary/5 transition-all flex flex-col h-full"
+                className="bg-surface p-8 group hover:bg-primary/5 transition-all flex flex-col h-full"
               >
                 <div className="flex justify-between items-start mb-6">
                   <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-primary/20 group-hover:text-primary transition-all">
@@ -273,7 +273,7 @@ export default function DocumentLibrary() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden border border-outline/10"
+              className="relative bg-surface w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden border border-outline/10"
             >
               <div className="p-8 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
                 <h3 className="text-2xl font-black text-primary flex items-center gap-3">

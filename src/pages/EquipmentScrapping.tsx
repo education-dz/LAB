@@ -325,8 +325,8 @@ export default function EquipmentScrapping() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button title="إعادة تهيئة النموذج" aria-label="إعادة تهيئة النموذج" onClick={handleReset} className="p-4 bg-white border border-outline/10 text-on-surface/40 rounded-2xl hover:text-primary transition-all active:scale-95 shadow-sm"><RotateCcw size={24} /></button>
-            <button onClick={handleSave} disabled={isSaving} className="px-8 py-4 bg-white text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50">
+            <button title="إعادة تهيئة النموذج" aria-label="إعادة تهيئة النموذج" onClick={handleReset} className="p-4 bg-surface border border-outline/10 text-on-surface/40 rounded-2xl hover:text-primary transition-all active:scale-95 shadow-sm"><RotateCcw size={24} /></button>
+            <button onClick={handleSave} disabled={isSaving} className="px-8 py-4 bg-surface text-primary border-2 border-primary/10 rounded-2xl font-black flex items-center gap-2 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50">
               {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
               حفظ السجل
             </button>
@@ -350,7 +350,7 @@ export default function EquipmentScrapping() {
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[48px] shadow-2xl border border-outline/5 overflow-hidden min-h-[600px] flex flex-col"
+          className="bg-surface rounded-[48px] shadow-2xl border border-outline/5 overflow-hidden min-h-[600px] flex flex-col"
         >
           {/* Paper Header */}
           <div className="p-12 border-b-2 border-primary/10 bg-surface-container-low/30 relative shrink-0">
@@ -524,7 +524,7 @@ export default function EquipmentScrapping() {
                          {!doc.data ? (
                            <label className="flex-1 cursor-pointer">
                               <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(key, e)} />
-                              <div className="w-full py-4 bg-white border border-outline/10 rounded-2xl font-black text-primary text-center hover:bg-primary/5 transition-all">تحميل الملف</div>
+                              <div className="w-full py-4 bg-surface border border-outline/10 rounded-2xl font-black text-primary text-center hover:bg-primary/5 transition-all">تحميل الملف</div>
                            </label>
                          ) : (
                            <>
@@ -576,7 +576,7 @@ export default function EquipmentScrapping() {
       <AnimatePresence>
         {previewDoc && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-on-surface/60 backdrop-blur-xl flex items-center justify-center p-8">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white w-full max-w-5xl h-[85vh] rounded-[48px] shadow-2xl flex flex-col relative overflow-hidden">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-surface w-full max-w-5xl h-[85vh] rounded-[48px] shadow-2xl flex flex-col relative overflow-hidden">
                <div className="p-8 border-b-2 border-primary/10 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                      <div className="p-4 bg-primary/10 text-primary rounded-2xl"><FileCheck size={24}/></div>
@@ -623,12 +623,12 @@ function TabButton({ active, onClick, icon, label, color }: { active: boolean, o
       onClick={onClick}
       className={cn(
         "flex items-center gap-3 px-6 py-4 rounded-3xl font-black transition-all active:scale-95",
-        active ? colorMap[color] : "text-on-surface/40 hover:bg-white hover:text-primary hover:shadow-lg"
+        active ? colorMap[color] : "text-on-surface/40 hover:bg-surface hover:text-primary hover:shadow-lg"
       )}
     >
       {icon}
       <span className="text-sm whitespace-nowrap">{label}</span>
-      {active && <motion.div layoutId="tab-pill" className="w-1.5 h-1.5 bg-white rounded-full ml-1" />}
+      {active && <motion.div layoutId="tab-pill" className="w-1.5 h-1.5 bg-surface rounded-full ml-1" />}
     </button>
   );
 }

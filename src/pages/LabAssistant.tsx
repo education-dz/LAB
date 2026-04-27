@@ -123,7 +123,7 @@ export default function LabAssistant() {
         </button>
       </header>
 
-      <main className="flex-1 overflow-hidden bg-white rounded-[40px] border border-outline/10 shadow-sm flex flex-col relative">
+      <main className="flex-1 overflow-hidden bg-surface rounded-[40px] border border-outline/10 shadow-sm flex flex-col relative">
         {/* Messages Stage */}
         <div 
           ref={scrollRef}
@@ -188,7 +188,7 @@ export default function LabAssistant() {
                 <button
                   key={i}
                   onClick={() => handleSend(p.text)}
-                  className="bg-white hover:bg-primary/5 p-4 rounded-2xl border border-outline/10 text-right text-xs font-bold text-secondary hover:text-primary transition-all flex items-center gap-3 group"
+                  className="bg-surface hover:bg-primary/5 p-4 rounded-2xl border border-outline/10 text-right text-xs font-bold text-secondary hover:text-primary transition-all flex items-center gap-3 group"
                 >
                   <div className="p-2 bg-surface-container rounded-lg text-primary/40 group-hover:text-primary transition-colors">
                     <p.icon size={16} />
@@ -210,7 +210,7 @@ export default function LabAssistant() {
             <textarea
               rows={1}
               placeholder="اطرح أي سؤال مخبري أو قم بتحميل صورة..."
-              className="w-full bg-white border-2 border-outline-variant/30 rounded-[32px] px-8 py-5 pr-14 pl-28 focus:border-primary/40 outline-none transition-all shadow-lg shadow-black/5 font-bold resize-none custom-scrollbar"
+              className="w-full bg-surface border-2 border-outline-variant/30 rounded-[32px] px-8 py-5 pr-14 pl-28 focus:border-primary/40 outline-none transition-all shadow-lg shadow-black/5 font-bold resize-none custom-scrollbar"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {

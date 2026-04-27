@@ -565,7 +565,7 @@ export default function DailyReport() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-[32px] p-8 max-w-md w-full shadow-2xl border border-outline/10 text-center"
+              className="bg-surface rounded-[32px] p-8 max-w-md w-full shadow-2xl border border-outline/10 text-center"
             >
               <div className="w-20 h-20 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={40} className="text-error" />
@@ -598,11 +598,11 @@ export default function DailyReport() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate(-1)}
-            className="p-3 text-primary hover:bg-white rounded-full transition-all active:scale-95 shadow-sm"
+            className="p-3 text-primary hover:bg-surface rounded-full transition-all active:scale-95 shadow-sm"
           >
             <ChevronLeft size={24} className="rotate-180" />
           </button>
-          <div className="bg-white p-1 rounded-2xl shadow-sm border border-outline/5 flex">
+          <div className="bg-surface p-1 rounded-2xl shadow-sm border border-outline/5 flex">
             <button
               onClick={() => setActiveTab('new')}
               className={cn(
@@ -629,7 +629,7 @@ export default function DailyReport() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsTimeManagerOpen(true)}
-            className="bg-white text-primary border-2 border-primary/10 px-6 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-primary/30 transition-all active:scale-95 font-black"
+            className="bg-surface text-primary border-2 border-primary/10 px-6 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-primary/30 transition-all active:scale-95 font-black"
           >
             <Clock size={20} />
             تعديل المواقيت
@@ -637,7 +637,7 @@ export default function DailyReport() {
           <button 
             onClick={handleSave}
             disabled={isSaving || activeTab === 'history'}
-            className="bg-white text-primary border-2 border-primary/10 px-8 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-primary/30 transition-all active:scale-95 font-black disabled:opacity-50"
+            className="bg-surface text-primary border-2 border-primary/10 px-8 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-primary/30 transition-all active:scale-95 font-black disabled:opacity-50"
           >
             {isSaving ? <Loader2 size={22} className="animate-spin" /> : <Save size={22} />}
             حفظ التقرير
@@ -646,13 +646,13 @@ export default function DailyReport() {
           <button 
             onClick={() => setShowDeleteConfirm(true)}
             disabled={isDeleting || activeTab === 'history'}
-            className="bg-white text-error border-2 border-error/10 px-6 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-error/30 transition-all active:scale-95 font-black disabled:opacity-50"
+            className="bg-surface text-error border-2 border-error/10 px-6 py-4 rounded-full flex items-center gap-3 shadow-sm hover:border-error/30 transition-all active:scale-95 font-black disabled:opacity-50"
           >
             {isDeleting ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
             حذف
           </button>
           
-          <div className="flex bg-white rounded-full border-2 border-primary/10 p-1.5 shadow-md gap-1">
+          <div className="flex bg-surface rounded-full border-2 border-primary/10 p-1.5 shadow-md gap-1">
             <button 
               onClick={handleExportPDF}
               className="p-3 text-primary hover:bg-primary/5 rounded-full transition-all hover:scale-110 active:scale-95"
@@ -685,7 +685,7 @@ export default function DailyReport() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="max-w-5xl mx-auto bg-white rounded-[40px] shadow-2xl p-8 md:p-16 min-h-[29.7cm] border border-outline/5 font-report print:shadow-none print:border-none print:p-0 relative overflow-hidden print:max-w-none print:w-full print:rounded-none print-container"
+              className="max-w-5xl mx-auto bg-surface rounded-[40px] shadow-2xl p-8 md:p-16 min-h-[29.7cm] border border-outline/5 font-report print:shadow-none print:border-none print:p-0 relative overflow-hidden print:max-w-none print:w-full print:rounded-none print-container"
             >
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-[200px] -mr-20 -mt-20 print:hidden" />
@@ -720,7 +720,7 @@ export default function DailyReport() {
               <div className="flex items-center gap-4 bg-surface-container-low/30 px-6 py-3 rounded-2xl border border-outline/5 print:bg-transparent print:border-none print:px-0">
                 <label className="font-black opacity-40 uppercase tracking-widest text-xs">التاريخ:</label>
                 <input 
-                  className="bg-transparent outline-none text-center w-48 font-black border-b-2 border-primary/20 focus:border-primary transition-all print:border-none print:text-black text-lg" 
+                  className="bg-transparent outline-none text-center w-48 font-black border-b-2 border-primary/20 focus:border-primary transition-all print:border-none print:text-on-surface text-lg" 
                   type="date" 
                   value={date}
                   onChange={(e) => handleDateChange(e.target.value)}
@@ -728,7 +728,7 @@ export default function DailyReport() {
               </div>
               <div className="flex items-center gap-4 bg-surface-container-low/30 px-6 py-3 rounded-2xl border border-outline/5 print:bg-transparent print:border-none print:px-0">
                 <label className="font-black opacity-40 uppercase tracking-widest text-xs">الموافق ليوم:</label>
-                <span className="font-black text-primary min-w-[100px] text-center print:text-black text-lg">{getDayName(date)}</span>
+                <span className="font-black text-primary min-w-[100px] text-center print:text-on-surface text-lg">{getDayName(date)}</span>
               </div>
             </div>
 
@@ -736,7 +736,7 @@ export default function DailyReport() {
         <div className="relative z-10 overflow-x-auto">
           <table className="w-full border-collapse border-2 border-primary/20">
                 <thead className="bg-primary/5 print:bg-transparent">
-                  <tr className="text-primary text-sm font-black uppercase tracking-widest print:text-black">
+                  <tr className="text-primary text-sm font-black uppercase tracking-widest print:text-on-surface">
                     <th className="border-2 border-primary/20 p-4 w-16 no-print">ترتيب</th>
                     <th className="border-2 border-primary/20 p-4 w-12">رقم</th>
                     <th className="border-2 border-primary/20 p-4 w-1/5">الأستاذ(ة)</th>
@@ -934,7 +934,7 @@ export default function DailyReport() {
             <div className="relative z-10 mt-16 print:mt-8">
               <table className="w-full border-collapse border-2 border-primary/20 rounded-[24px] overflow-hidden shadow-sm">
                 <thead className="bg-primary/5 print:bg-transparent">
-                  <tr className="text-primary text-sm font-black uppercase tracking-widest print:text-black">
+                  <tr className="text-primary text-sm font-black uppercase tracking-widest print:text-on-surface">
                     <th className="border-2 border-primary/20 p-4 w-1/3">ملاحظات {institution?.jobTitle || 'مسؤول المخبر'}</th>
                     <th className="border-2 border-primary/20 p-4 w-1/3">ملاحظات الناظر</th>
                     <th className="border-2 border-primary/20 p-4 w-1/3">ملاحظات المدير</th>
@@ -977,7 +977,7 @@ export default function DailyReport() {
             {/* Footer Signatures */}
             <div className="relative z-10 grid grid-cols-3 gap-8 mt-24 text-center print:mt-16">
               <div className="space-y-16 print:space-y-12">
-                <p className="text-sm font-black text-primary underline underline-offset-8 print:text-black">توقيع {institution?.jobTitle || 'ملحق مخبري'}</p>
+                <p className="text-sm font-black text-primary underline underline-offset-8 print:text-on-surface">توقيع {institution?.jobTitle || 'ملحق مخبري'}</p>
                 <div 
                   onClick={() => setIsSignatureModalOpen(true)}
                   className="h-24 border-2 border-dashed border-primary/10 rounded-3xl print:border-none flex items-center justify-center bg-surface-container-low/10 cursor-pointer hover:bg-primary/5 transition-all group overflow-hidden"
@@ -993,13 +993,13 @@ export default function DailyReport() {
                 </div>
               </div>
               <div className="space-y-16 print:space-y-12">
-                <p className="text-sm font-black text-primary underline underline-offset-8 print:text-black">توقيع الناظر</p>
+                <p className="text-sm font-black text-primary underline underline-offset-8 print:text-on-surface">توقيع الناظر</p>
                 <div className="h-24 border-2 border-dashed border-primary/10 rounded-3xl print:border-none flex items-center justify-center">
                   <span className="text-primary/10 font-sans text-4xl opacity-20 print:hidden italic">Signature</span>
                 </div>
               </div>
               <div className="space-y-16 print:space-y-12">
-                <p className="text-sm font-black text-primary underline underline-offset-8 print:text-black">توقيع المدير</p>
+                <p className="text-sm font-black text-primary underline underline-offset-8 print:text-on-surface">توقيع المدير</p>
                 <div className="h-24 border-2 border-dashed border-primary/10 rounded-3xl print:border-none flex items-center justify-center">
                   <span className="text-primary/10 font-sans text-4xl opacity-20 print:hidden italic">Signature</span>
                 </div>
@@ -1024,7 +1024,7 @@ export default function DailyReport() {
                 <p className="text-primary font-black">جاري تحميل الأرشيف...</p>
               </div>
             ) : history.length === 0 ? (
-              <div className="bg-white rounded-[40px] p-20 text-center border border-outline/5 shadow-xl">
+              <div className="bg-surface rounded-[40px] p-20 text-center border border-outline/5 shadow-xl">
                 <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6">
                   <FileText size={40} className="text-primary/20" />
                 </div>
@@ -1037,7 +1037,7 @@ export default function DailyReport() {
                   <motion.div
                     key={report.id}
                     whileHover={{ y: -5 }}
-                    className="bg-white rounded-[32px] p-6 border border-outline/5 shadow-lg hover:shadow-2xl transition-all cursor-pointer group relative overflow-hidden"
+                    className="bg-surface rounded-[32px] p-6 border border-outline/5 shadow-lg hover:shadow-2xl transition-all cursor-pointer group relative overflow-hidden"
                     onClick={() => loadReport(report)}
                   >
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-8 -mt-8 transition-all group-hover:scale-150" />
@@ -1160,7 +1160,7 @@ export default function DailyReport() {
                 </button>
               </div>
               <div className="p-8 space-y-6">
-                <div className="bg-white rounded-2xl border-2 border-outline/10 overflow-hidden touch-none">
+                <div className="bg-surface rounded-2xl border-2 border-outline/10 overflow-hidden touch-none">
                   <canvas
                     ref={signatureCanvasRef}
                     width={400}

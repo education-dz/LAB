@@ -51,9 +51,9 @@ export default function ConsumablesSDS({ isNested = false }: { isNested?: boolea
                 stat.color
               )}
             >
-              <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute top-0 left-0 w-24 h-24 bg-surface/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
               <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <div className="p-4 bg-surface rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
                   <stat.icon size={24} />
                 </div>
               </div>
@@ -67,17 +67,17 @@ export default function ConsumablesSDS({ isNested = false }: { isNested?: boolea
       )}
 
       {/* Consumables List Placeholder */}
-      <section className="bg-white rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
+      <section className="bg-surface rounded-[40px] border border-outline/10 shadow-2xl overflow-hidden">
         <div className="p-10 border-b border-outline/5 flex justify-between items-center bg-surface-container-low/30">
           <div className="flex items-center gap-4">
             <div className="w-2 h-8 bg-primary rounded-full"></div>
             <h3 className="text-2xl font-black text-primary">قائمة المستهلكات والربط مع SDS</h3>
           </div>
           <div className="flex gap-4">
-            <button className="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-outline/10 text-primary hover:bg-primary/5 transition-all">
+            <button className="w-12 h-12 flex items-center justify-center rounded-full bg-surface border border-outline/10 text-primary hover:bg-primary/5 transition-all">
               <Search size={20} />
             </button>
-            <button className="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-outline/10 text-primary hover:bg-primary/5 transition-all">
+            <button className="w-12 h-12 flex items-center justify-center rounded-full bg-surface border border-outline/10 text-primary hover:bg-primary/5 transition-all">
               <Filter size={20} />
             </button>
           </div>

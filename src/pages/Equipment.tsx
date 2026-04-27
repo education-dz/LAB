@@ -911,21 +911,21 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
             </button>
             <button 
               onClick={handlePrintInventoryCards}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
             >
               <QrCode size={20} />
               طباعة بطاقات الجرد
             </button>
             <button 
               onClick={handlePrintList}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
             >
               <Printer size={20} />
               طباعة القائمة
             </button>
             <button 
               onClick={handleExportPDF}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
             >
               <FileDown size={20} />
               تصدير PDF
@@ -933,7 +933,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
             <button 
               onClick={() => setIsBulkConfirmOpen(true)}
               disabled={isBulkUpdating}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
             >
               {isBulkUpdating ? (
                 <RefreshCw size={20} className="animate-spin" />
@@ -944,7 +944,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
             </button>
             <button 
               onClick={() => setIsQRScannerOpen(true)}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95"
             >
               <QrCode size={20} />
               مسح QR
@@ -952,7 +952,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="bg-white text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
+              className="bg-surface text-primary border-2 border-primary/10 px-6 py-3.5 rounded-full font-black flex items-center gap-2 hover:bg-primary/5 hover:border-primary transition-all shadow-xl active:scale-95 disabled:opacity-50"
             >
               {isImporting ? (
                 <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -997,7 +997,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                 unit.color
               )}
             >
-              <div className="p-3 rounded-2xl bg-white shadow-sm group-hover:scale-110 transition-transform">
+              <div className="p-3 rounded-2xl bg-surface shadow-sm group-hover:scale-110 transition-transform">
                 <unit.icon size={20} />
               </div>
               <span className="text-[10px] font-black uppercase tracking-tight leading-tight">{unit.label}</span>
@@ -1027,9 +1027,9 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                 filterStatus === stat.status && "ring-4 ring-primary/20 border-primary"
               )}
             >
-              <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute top-0 left-0 w-24 h-24 bg-surface/40 rounded-br-[80px] -ml-6 -mt-6 group-hover:scale-150 transition-transform duration-700" />
               <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className="p-4 bg-white rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <div className="p-4 bg-surface rounded-2xl shadow-sm text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
                   <stat.icon size={24} />
                 </div>
               </div>
@@ -1043,19 +1043,19 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
       )}
 
       {/* Main Content */}
-      <div className="bg-white rounded-[50px] overflow-hidden shadow-2xl border border-outline/5 relative">
+      <div className="bg-surface rounded-[50px] overflow-hidden shadow-2xl border border-outline/5 relative">
         <div className="p-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-surface-container-low/30 border-b border-outline/5">
           <div className="relative w-full md:w-96 group">
             <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 group-focus-within:text-primary transition-colors" size={20} />
             <input 
-              className="w-full bg-white border-2 border-outline/5 rounded-full pr-14 pl-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
+              className="w-full bg-surface border-2 border-outline/5 rounded-full pr-14 pl-6 py-4 text-base font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-inner"
               placeholder="بحث في قائمة العتاد..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex gap-4">
-            <div className="flex items-center gap-2 bg-white px-6 py-2 rounded-full border border-outline/10 shadow-sm">
+            <div className="flex items-center gap-2 bg-surface px-6 py-2 rounded-full border border-outline/10 shadow-sm">
               <Filter size={18} className="text-primary/40" />
               <select 
                 className="bg-transparent border-none text-sm font-black text-primary focus:ring-0 cursor-pointer"
@@ -1252,7 +1252,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                             setQrCodeItem(e);
                             setIsQRModalOpen(true);
                           }}
-                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-white"
+                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-surface"
                           title="عرض رمز QR"
                         >
                           <QrCode size={20} />
@@ -1260,7 +1260,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                         <button 
                           onClick={() => handleRequestSmartUpdate(e)}
                           disabled={isAnalyzing}
-                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-white disabled:opacity-50"
+                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-surface disabled:opacity-50"
                           title="تحليل ذكي للبيانات"
                         >
                           {isAnalyzing && selectedEquipment?.id === e.id ? (
@@ -1288,28 +1288,28 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                             });
                             setIsAddModalOpen(true);
                           }}
-                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-white"
+                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-surface"
                           title="تعديل الصنف"
                         >
                           <Edit size={20} />
                         </button>
                         <button 
                           onClick={() => handlePrint(e)}
-                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-white"
+                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-surface"
                           title="طباعة البطاقة التقنية"
                         >
                           <Printer size={20} />
                         </button>
                         <button 
                           onClick={() => fetchHistory(e.id, e.name)}
-                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-white"
+                          className="p-3 text-primary/40 hover:text-primary transition-colors rounded-2xl hover:bg-primary/10 shadow-sm border border-outline/5 bg-surface"
                           title="سجل الحركات"
                         >
                           <History size={20} />
                         </button>
                         <button 
                           onClick={() => handleDeleteEquipment(e.id, e.name)}
-                          className="p-3 text-primary/40 hover:text-error transition-colors rounded-2xl hover:bg-error/10 shadow-sm border border-outline/5 bg-white"
+                          className="p-3 text-primary/40 hover:text-error transition-colors rounded-2xl hover:bg-error/10 shadow-sm border border-outline/5 bg-surface"
                           title="حذف الصنف"
                         >
                           <Trash2 size={20} />
@@ -1339,7 +1339,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-white/20 p-10 text-center"
+              className="relative bg-surface w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-white/20 p-10 text-center"
             >
               <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mx-auto mb-8">
                 <Sparkles size={40} />
@@ -1380,7 +1380,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl p-12 text-center"
+              className="relative bg-surface w-full max-w-md rounded-[40px] shadow-2xl p-12 text-center"
             >
               <div className="relative w-32 h-32 mx-auto mb-8">
                 <div className="absolute inset-0 border-8 border-primary/10 rounded-full" />
@@ -1430,7 +1430,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">عمليات جماعية</span>
             </div>
 
-            <div className="h-8 w-px bg-white/10" />
+            <div className="h-8 w-px bg-surface/10" />
 
             <div className="flex gap-2">
               <button 
@@ -1456,7 +1456,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               </button>
               
               <button 
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-xs"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface/10 hover:bg-surface/20 transition-all font-black text-xs"
                 onClick={() => {
                   const items = equipment.filter(e => selectedIds.includes(e.id));
                   const worksheet = XLSX.utils.json_to_sheet(items.map(e => ({
@@ -1477,7 +1477,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
 
               <button 
                 onClick={() => setSelectedIds([])}
-                className="p-2 hover:bg-white/10 rounded-full transition-all ml-2"
+                className="p-2 hover:bg-surface/10 rounded-full transition-all ml-2"
               >
                 <X size={18} />
               </button>
@@ -1501,7 +1501,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="relative bg-white w-full max-w-3xl rounded-[50px] shadow-2xl overflow-hidden border border-white/20"
+              className="relative bg-surface w-full max-w-3xl rounded-[50px] shadow-2xl overflow-hidden border border-white/20"
             >
               <div className="p-10 flex justify-between items-center bg-surface-container-low/50 border-b border-outline/5">
                 <div className="flex items-center gap-4">
@@ -1683,7 +1683,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               <span className="text-[10px] text-white/60 font-bold">يمكنك إجراء عمليات جماعية على هذه التجهيزات</span>
             </div>
 
-            <div className="h-10 w-px bg-white/10" />
+            <div className="h-10 w-px bg-surface/10" />
 
             <div className="flex gap-4">
               <button 
@@ -1697,14 +1697,14 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               <div className="flex gap-1">
                 <button 
                   onClick={() => handleBulkStatusUpdate('functional')}
-                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-[10px] uppercase"
+                  className="px-4 py-2.5 rounded-full bg-surface/10 hover:bg-surface/20 transition-all font-black text-[10px] uppercase"
                   title="تحديد كسليم"
                 >
                   سليم
                 </button>
                 <button 
                   onClick={() => handleBulkStatusUpdate('maintenance')}
-                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-[10px] uppercase"
+                  className="px-4 py-2.5 rounded-full bg-surface/10 hover:bg-surface/20 transition-all font-black text-[10px] uppercase"
                   title="تحديد قيد الصيانة"
                 >
                   صيانة
@@ -1712,7 +1712,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               </div>
 
               <button 
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all font-black text-sm"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-surface/10 hover:bg-surface/20 transition-all font-black text-sm"
                 onClick={() => {
                   const items = equipment.filter(e => selectedIds.includes(e.id));
                   const worksheet = XLSX.utils.json_to_sheet(items.map(e => ({
@@ -1733,7 +1733,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
 
               <button 
                 onClick={() => setSelectedIds([])}
-                className="p-2.5 hover:bg-white/10 rounded-full transition-all"
+                className="p-2.5 hover:bg-surface/10 rounded-full transition-all"
               >
                 <X size={20} />
               </button>
@@ -1751,7 +1751,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
               initial={{ opacity: 0, scale: 0.9, y: 40 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.9, y: 40 }} 
-              className="relative bg-white w-full max-w-2xl rounded-[50px] shadow-2xl p-12 max-h-[85vh] overflow-hidden flex flex-col border border-white/20"
+              className="relative bg-surface w-full max-w-2xl rounded-[50px] shadow-2xl p-12 max-h-[85vh] overflow-hidden flex flex-col border border-white/20"
             >
               <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-4">
@@ -1825,7 +1825,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
                 <p className="text-xs text-secondary font-bold">{qrCodeItem.serialNumber}</p>
               </div>
               
-              <div className="bg-white p-4 rounded-3xl shadow-inner border border-outline/5">
+              <div className="bg-surface p-4 rounded-3xl shadow-inner border border-outline/5">
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ id: qrCodeItem.id, type: 'equipment', name: qrCodeItem.name }))}`}
                   alt="QR Code"
@@ -1858,7 +1858,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
         {isBulkConfirmOpen && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsBulkConfirmOpen(false)} className="absolute inset-0 bg-primary/20 backdrop-blur-3xl" />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl p-10 text-center">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-surface w-full max-w-md rounded-[40px] shadow-2xl p-10 text-center">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
                 <Sparkles size={40} />
               </div>
@@ -1880,7 +1880,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
         {isReviewModalOpen && suggestedUpdate && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-primary/20 backdrop-blur-3xl" />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl p-10 overflow-hidden">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-surface w-full max-w-lg rounded-[40px] shadow-2xl p-10 overflow-hidden">
               <div className="flex items-center gap-4 mb-8">
                 <div className="p-3 bg-primary/10 rounded-2xl text-primary">
                   <Sparkles size={24} />
@@ -1913,7 +1913,7 @@ export default function Equipment({ isNested = false }: { isNested?: boolean }) 
         {isBulkUpdating && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center">
             <div className="absolute inset-0 bg-primary/10 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative bg-white p-12 rounded-[40px] shadow-2xl text-center max-w-sm w-full mx-6">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative bg-surface p-12 rounded-[40px] shadow-2xl text-center max-w-sm w-full mx-6">
               <RefreshCw className="w-16 h-16 text-primary mx-auto mb-6 animate-spin" />
               <h3 className="text-2xl font-black text-primary mb-2">جاري التحديث الذكي</h3>
               <p className="text-on-surface/40 font-bold mb-8">يرجى الانتظار، جاري معالجة البيانات...</p>
